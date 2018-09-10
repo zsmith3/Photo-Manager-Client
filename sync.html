@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Sync files</title>
+
+		<link rel="icon" href="icons/favicon.ico" />
+
+		<div id="imports">
+			<link rel="import" href="mdc-templates.html" />
+		</div>
+
+		<link rel="stylesheet" href="fonts/material-icons.css">
+		<link rel="stylesheet" type="text/css" href="css/default.css" />
+		<link rel="stylesheet" type="text/css" href="css/sync.css" />
+
+
+		<script src="js/default.js"></script>
+		<script src="js/external/jquery.js"></script>
+        <script src="js/external/msgpack.js"></script>
+        <script src="js/classes/elements/mdc-elements.js"></script>
+
+		<script src="js/classes/utils.js"></script>
+		<script src="js/Platform.js"></script>
+		<script src="js/classes/Sync.js"></script>
+		<script src="js/other/manage-sync.js"></script>
+		<script src="js/default_end.js"></script>
+	</head>
+
+	<body>
+		<div id="templates">
+			<template id="template-sync-row">
+				<extension-panel icon="true">
+					<div class="collapsible-header mdc-list-item mdc-ripple-surface">
+						<i class="material-icons">sync</i>
+						<span class="sync-header"></span>
+					</div>
+
+					<nav class="collapsible-body" style="max-height: 0px; transition: max-height 0.2s ease-in;">
+						<li>
+							<mdc-text class="sync-remote"></mdc-text>
+						</li>
+						<li>
+							<mdc-file-input></mdc-file-input>
+						</li>
+					</nav>
+				</extension-panel>
+			</template>
+		</div>
+
+		<h1>ZSmith Fileserver</h1>
+		<div id="body" class="z-depth-1">
+			<a href="index.html" id="homeLink">Back to Browser</a>
+
+			<br />
+
+			<ul id="syncs-list" class="collapsible"></ul>
+
+			<button id="addbtn" class="mdc-button mdc-button--raised mdc-ripple-surface" onclick="createSyncRow($('#syncs-table tbody tr').length, {remote: '', local: '', autoUpdate: true, useSize: false, useTime: false});">+</button>
+
+			<br />
+			<br />
+
+			<!-- TODO add option here to enable saving -->
+
+			<input type="checkbox" class="filled-in" id="savemeta" />
+			<label for="savemeta">Save file listings locally (for offline use)</label>
+
+			<br />
+			<br />
+
+			<button class="mdc-button mdc-button--raised mdc-ripple-surface" onclick="applyChanges();">Apply Changes</button>
+
+			<br />
+			<br />
+
+			<button class="mdc-button mdc-button--raised mdc-ripple-surface" onclick="applySaveMeta();">Download all file listings</button>
+
+			<p>Saved file listings for each page will be automatically updated whenever you view them.</p>
+
+			<p id="status"></p>
+
+			<br />
+
+			<p>
+				Select remote folders to synchronise files from (use the <a href="index">browser</a>) and browse for local folders on your computer to synchronise to. 'Automatic update' sync pairs will scan for changes every 30 minutes (when this program is open) and automatically download/delete files. Comparing either size or timestamp is useful for detecting renaming or editing of files, but will take a long time.
+			</p>
+		</div>
+	</body>
+</html>

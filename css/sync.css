@@ -1,0 +1,96 @@
+body {
+	overflow: hidden;
+}
+
+body h1 {
+	font-size: 40px;
+	margin-top: 30px;
+}
+
+#body {
+	width: 90vw;
+	height: calc(95vh - 80px);
+	margin-left: 5vw;
+}
+
+#homeLink {
+	position: absolute;
+	left: 0;
+	margin-left: 15px;
+	top: 0;
+	margin-top: 10px;
+}
+
+.file-field .btn {
+	padding-left: 10px;
+	padding-right: 10px;
+	text-transform: none;
+}
+
+table .input-field {
+	margin-top: 0;
+}
+
+table .input-field input[type=text] {
+	margin-bottom: 10px;
+}
+
+.file-field .btn {
+	height: 36px;
+	line-height: 36px;
+	margin-top: 10px;
+}
+
+#addbtn {
+	float: left;
+	font-size: 24px;
+	height: 24px;
+	line-height: 24px;
+	padding: 0 7px;
+	margin: 5px 0 0 5px;
+}
+
+#table-cont {
+	height: calc(95vh - 460px);
+	width: 98%;
+	margin-left: 1%;
+	overflow-y: auto;
+}
+
+td {
+	padding: 0px 5px;
+}
+
+.remoteRow {
+	background: rgba(0, 150, 0, 0.5);
+}
+
+.localRow {
+	background: rgba(150, 0, 0, 0.5);
+}
+
+input[type="checkbox"] + label::after {
+	margin-top: 2px;
+}
+
+input[type="checkbox"] + label::before {
+	margin-top: 4px;
+}
+
+#syncs-list .collapsible-header button {
+    position: absolute;
+	right: 30px;
+    margin-top: -8px;
+}
+
+#syncs-list > li > ul.collapsible-body {
+	padding: 0 20px;
+}
+
+#syncs-list ul.collapsible-body > li:not(.smaller) {
+	height: 50px;
+}
+
+input[type=checkbox]#savemeta + label {
+	font-size: 18px;
+}
