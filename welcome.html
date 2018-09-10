@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Select Server URL</title>
+
+		<link rel="icon" href="icons/favicon.ico" />
+
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+		<link rel="stylesheet" href="/node_modules/material-components-web/dist/material-components-web.min.css" />
+
+		<link rel="stylesheet" type="text/css" href="css/default.css" />
+		<link rel="stylesheet" type="text/css" href="css/sync.css" />
+
+
+		<script src="js/default.js"></script>
+		<script src="js/external/jquery.js"></script>
+
+		<script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+		<script src="/node_modules/material-components-web/dist/material-components-web.js"></script>
+
+		<script src="js/welcome.js"></script>
+		<script src="js/default_end.js"></script>
+	</head>
+
+	<body>
+		<h1>ZSmith Fileserver</h1>
+		<div id="body" class="z-depth-1">
+			<br />
+
+			<mdc-text id="serverurl" label="File Server URL"></mdc-text>
+
+			<p>Enter a server URL to connect to and fetch files from.</p>
+
+			<br />
+
+			<button class="mdc-button mdc-button--raised mdc-ripple-surface" onclick="serverConnect();">Connect</button>
+		</div>
+	</body>
+</html>
