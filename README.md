@@ -11,16 +11,22 @@ Example use case: I want to be able to remotely synchronise the photos on my pho
 
 ## Branches
 
-- web: main web client
-- server: Django-based API
-- cordova: Cordova-based mobile app
-- electron: Electron-based desktop app
+- **Master**: shared client-side code
+	- Any modifications to shared code should be made to this branch and then merged into the others
+- **Web**: main web client
+- **Cordova**: Cordova-based mobile client
+- **Electron**: Electron-based desktop client
+- **Server**: Django-based API
+
+## Installation
+
+This project does not yet exist in an easy-to-install format. There are relevant installation instructions in each branch, but it's quite involved, and may not work yet. If you are interested in using this then contact me and I'll work on this.
 
 ## Features
 
 This is a list of all of the existing features, as well as some that I want to add.
 
-- TODO add existing features
+- TODO add existing features here
 - [ ] JS Database class
 	- Should handle all interactions with the "database"
     - On the web, this will be all API calls
