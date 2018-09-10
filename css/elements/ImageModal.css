@@ -1,0 +1,56 @@
+image-modal {
+	visibility: hidden;
+	position: fixed;
+	z-index: 1001;
+	left: 0;
+	top: 0;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+#im-image {
+	position: absolute;
+	cursor: move;
+}
+
+.im-image-shown {
+	transform: scale(1);
+	transition: all .2s ease-out;
+}
+
+.im-image-hidden {
+	transform: scale(0);
+	transition: all .1s ease-in;
+}
+
+.im-arrow {
+	width: 100px;
+	height: 100px;
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 50px;
+	top: calc(50vh - 20px);
+	position: absolute;
+	opacity: 0.4;
+	cursor: pointer;
+	font-size: 100px;
+	box-sizing: border-box;
+	color: white;
+	z-index: 2;
+}
+
+#im-arrow-left {
+	left: calc(10px + 2%);
+	padding-right: 5px;
+}
+
+#im-arrow-right{
+	right: calc(10px + 2%);
+	padding-left: 5px;
+}
+
+.im-arrow:hover {
+	background: rgba(0, 0, 0, 0.8);
+	opacity: 1;
+}

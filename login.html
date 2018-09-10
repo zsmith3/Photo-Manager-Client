@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>ZSmith FileServer - Login</title>
+
+		<link rel="icon" href="/fileserver/icons/favicon.ico" />
+
+		<div id="imports">
+			<link rel="import" href="/fileserver/templates/mdc-templates.html" />
+		</div>
+
+		<!-- <link rel="stylesheet" type="text/css" href="css/external/materialize.css" /> -->
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+		<link rel="stylesheet" href="/fileserver/css/external/material-components-web.min.css" />
+		<link rel="stylesheet" type="text/css" href="/fileserver/css/default.css" />
+		<link rel="stylesheet" type="text/css" href="/fileserver/css/other/login.css" />
+
+
+		<script src="/fileserver/js/default.js"></script>
+
+		<meta name="google-signin-scope" content="profile email">
+		<meta name="google-signin-client_id" content="328523614541-3nhuk0k4f2k5ajladsbff8mdk4mmlk61.apps.googleusercontent.com">
+		<script src="https://apis.google.com/js/platform.js" async defer></script>
+		<script src="/fileserver/js/external/jquery.js"></script>
+		<script src="/fileserver/js/external/msgpack.js"></script>
+		<script src="/fileserver/js/external/cookie.js"></script>
+		<!-- <script src="js/external/materialize.js"></script> -->
+
+		<script src="/fileserver/js/utils.js"></script>
+		<script src="/fileserver/js/other/login.js"></script>
+		<script src="/fileserver/js/default_end.js"></script>
+
+		<script>
+			var msClientId = "a7ee6a44-edb0-4f26-9a5a-82ebce8c9900";
+			var msRedirect = "https://zsmith.ddns.net:8443/fileserver/api/mstoken";
+		</script>
+	</head>
+
+	<body>
+		<div id="body">
+			<h1>ZSmith FileServer</h1>
+			<p id="welcome">Welcome! Please sign in to access shared files.</p>
+			<div id="form-box" class="mdc-elevation--z2">
+				<h2>Login</h2>
+				<h3>Please enter your credentials</h3>
+				<div id="input-cont">
+					<mdc-text id="username" label="Username or Email"></mdc-text>
+					<mdc-text id="password" label="Password" type="password"></mdc-text>
+					<br />
+					<mdc-checkbox id="remain_in" label="Remain Logged In"></mdc-checkbox>
+				</div>
+				<br />
+				<button class="mdc-button mdc-button--raised" id="submit-button" type="button" onclick="submitLogin();">Sign in</button>
+				<input type="hidden" id="accountDetails" value="{}" />
+
+				<br />
+				<br />
+
+				<!-- <div id="google-button" class="g-signin2" data-onsuccess="onSignIn" data-theme="dark" onclick="googleClick();"></div>
+
+				<br />
+				<br />
+
+				<div id="ms-button" onclick="openMsPopup();">
+					<div id="ms-icon"></div>
+					Sign in with Microsoft
+				</div>
+
+				<br /> -->
+
+				<h4 id="status"></h4>
+
+				<br />
+
+				<a id="pwforgot" href="pwreset.php">Forgot your password?</a>
+				<a id="create" href="register">Create an account</a>
+
+				<br />
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,354 @@
+#files {
+	width: 100%;
+	height: calc(100vh - 345px);
+	padding: 32px 10px;
+	overflow-y: auto;
+	transition: width 0.2s ease-in-out;
+}
+
+#files .mdc-linear-progress {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+/* #files .indeterminate {
+	background-color: rgb(50, 180, 240);
+}
+
+#selectform {
+	text-align: left;
+} */
+
+file-box {
+	margin: 4px 0 4px 8px;
+	vertical-align: top;
+	display: inline-block;
+	overflow: hidden;
+	box-sizing: border-box;
+	border: 1px solid transparent;
+	transition: border 0.1s ease-in-out;
+	cursor: default;
+}
+file-box:hover {
+    border: 1px solid rgba(98, 0, 238, 0.05);
+}
+file-box:active {
+	border: 1px solid rgba(98, 0, 238, 0.2);
+	transition: border 0.2s ease-in-out;
+}
+
+.fcbox-cont {
+	display: block;
+}
+
+.filecheckbox {
+	float: right;
+	height: 100%;
+}
+
+.facecheckbox {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin-top: calc(-4px - 2%);
+	margin-right: calc(-4px - 2%);
+}
+
+/* input[type=checkbox].filled-in.filecheckbox + label, input[type=checkbox].filled-in.facecheckbox + label {
+	padding-left: 0;
+	float: right;
+	margin-right: 8%;
+	margin-top: 5%;
+	line-height: 0.9;
+	box-sizing: content-box;
+}
+
+input[type=checkbox].filled-in.filecheckbox + label::after, input[type=checkbox].filled-in.facecheckbox + label::after {
+	width: 100%;
+	height: 100%;
+}
+
+input[type=checkbox].filled-in.filecheckbox + label::before, input[type=checkbox].filled-in.facecheckbox + label::before {
+	top: 0px !important;
+	left: 1px !important;
+} */
+
+/* .cboxscale1::after {
+	border: 1px solid #5a5a5a;
+}
+.cboxscale2::after {
+	border: 2px solid #5a5a5a;
+}
+.cboxscale3::after {
+	border: 3px solid #5a5a5a;
+} */
+
+file-box.file-selected {
+	/* background-color: lightblue;
+	border: 1px solid blue; */
+	background-color: rgba(3, 200, 255, 0.3);
+	border: 1px solid rgba(3, 200, 255, 0.8);
+}
+
+.thumbbox {
+	width: calc(100% - 18px);
+	height: calc((100% - 18px) * 2 / 3);
+	display: inline-block;
+	position: relative;
+	overflow: hidden;
+}
+
+.thumbbox::after {
+	font-family: "Material Icons";
+	color: #0f2f2a;
+}
+
+.thumbbox[data-type=folder]::after {
+	content: "folder_open";
+	font-size: 120%;
+}
+
+.thumbbox[data-type=file]::after {
+	content: "insert_drive_file";
+}
+
+.imgthumb {
+	width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.facethumb {
+	object-fit: unset;
+}
+
+.fullthumbbox {
+	width: 100%;
+	height: calc(100% * 2 / 3);
+}
+
+.thumbbox * {
+	display: none;
+}
+
+.vidlength {
+	font-weight: bold;
+	color: white;
+	position: absolute;
+	background: rgba(0,0,0,0.6);
+	margin-top: 5%;
+	right: 0;
+	margin-right: 5%;
+	padding: 2px;
+	line-height: 1.5;
+	z-index: 2;
+}
+
+.filestar, .filebin, .filetick {
+	position: absolute;
+	bottom: 0;
+	text-shadow: 0 0 20px white;
+	opacity: 0.8;
+	z-index: 2;
+}
+
+.filestar {
+	left: 0;
+	margin-left: 8%;
+	margin-bottom: 2%;
+}
+
+.filebin, .filetick {
+	right: 0;
+	margin-right: 5%;
+	margin-bottom: 1%;
+}
+
+.filename {
+	margin-top: 0px;
+	font-size: 14px;
+	cursor: default;
+	height: 20%;
+	line-height: 1.1;
+}
+
+.filelinkname {
+	text-decoration: underline;
+	cursor: pointer;
+	text-align: center;
+	overflow: hidden;
+}
+
+.filelink {
+	text-decoration: none;
+	color: blue;
+}
+
+.filelink:visited {
+	color: blue;
+}
+
+#infoPopup {
+	position: absolute;
+	z-index: 3;
+	background-color: white;
+	margin-top: calc(-30px - 4vh);
+	padding: 10px;
+	transition: transform 0.1s ease-in-out;
+	transform: scale(0);
+	transform-origin: top left;
+}
+
+.imgthumb-fail {
+	font-family: 'Material Icons';
+	font-size: 130px;
+	line-height: 100px;
+	color: #0f2f2a;
+}
+
+/* #view-map {
+	height: calc(100% - 15px);
+	margin-top: 5px;
+	margin-bottom: 10px;
+	margin-left: 5px;
+	margin-right: 10px;
+}
+
+#view-map * {
+	cursor: unset;
+}
+
+#view-pac-input, #view-map {
+	display: none;
+}
+
+#view-pac-input {
+	width: calc(200px + 20%);
+	margin-left: 10px;
+	margin-top: 5px;
+	background-color: white;
+	padding-left: 5px;
+	cursor: text;
+} */
+
+.files-group {
+	margin: 5px 10px 20px 10px;
+	padding: 5px 20px;
+	text-align: left;
+}
+
+.files-group > h3 {
+	margin: 5px 0;
+	text-align: left;
+}
+
+person-box {
+	position: relative;
+	display: inline-block;
+	margin: 5px;
+}
+
+face-box {
+	position: relative;
+	margin: 5px;
+	display: inline-block;
+}
+
+.face-box-sel-border {
+	opacity: 0;
+	transition: .3s ease-in-out;
+}
+
+.file-selected .face-box-sel-border {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	border: 3px solid rgba(3, 200, 255, 0.8);
+	box-sizing: border-box;
+	opacity: 1;
+}
+
+/* .facebox:not(.face-root) .facethumb {
+	position: absolute !important;
+	top: 0;
+	left: 0;
+} */
+
+face-box .face-alt, person-box .face-alt {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.facethumb.face-thumb-unloaded {
+	visibility: hidden;
+}
+
+.facethumb:not(.face-thumb-unloaded) + .face-alt {
+	display: none;
+}
+
+face-box .face-status {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	opacity: 0.6;
+	-webkit-text-stroke: 1px white;
+	font-style: normal;
+	width: 100%;
+	/* font-size: 40px;
+	line-height: 160px; */
+}
+
+/* .facebox .cbox-label {
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding-left: 26px;
+}
+
+.facebox .cbox-label::after {
+	background-color: rgba(60, 60, 60, 0.6);
+} */
+
+/* .face-root .facethumb {
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+
+.face-root .filename {
+	position: absolute;
+	bottom: 0;
+	margin-bottom: 0.5%;
+	width: 100%;
+	height: unset;
+	overflow: hidden;
+} */
+
+.personbox-name {
+	float: left;
+	margin-left: 5px;
+	text-align: left;
+	width: 200px;
+}
+
+.personbox-count {
+	position: absolute;
+	right: 0;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-color: white;
+}
+
+#filesContainer {
+	display: block;
+	text-align: left;
+}
+
+#filesMap {
+	display: block;
+	width: 100%;
+	height: calc(100vh - 345px);
+}

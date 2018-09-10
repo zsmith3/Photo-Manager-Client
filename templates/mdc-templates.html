@@ -1,0 +1,111 @@
+<!-- HTML templates for MDC custom elements -->
+<div id="templates-mdc">
+	<template id="template-mdc-checkbox">
+		<div class="mdc-form-field">
+			<div class="mdc-checkbox">
+				<input type="checkbox" class="mdc-checkbox__native-control" onchange="if ($(this).closest('mdc-checkbox').get(0).onchange) $(this).closest('mdc-checkbox').get(0).onchange();"
+				/>
+				<div class="mdc-checkbox__background">
+					<svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+						<path class="mdc-checkbox__checkmark-path" fill="none" stroke="white" d="M1.73,12.91 8.1,19.28 22.79,4.59" />
+					</svg>
+					<div class="mdc-checkbox__mixedmark"></div>
+				</div>
+			</div>
+			<label></label>
+		</div>
+	</template>
+
+	<template id="template-mdc-slider">
+		<div class="mdc-slider">
+			<div class="mdc-slider__track-container">
+				<div class="mdc-slider__track"></div>
+			</div>
+			<div class="mdc-slider__thumb-container">
+				<svg class="mdc-slider__thumb" width="21" height="21">
+					<circle cx="10.5" cy="10.5" r="7.875"></circle>
+				</svg>
+				<div class="mdc-slider__focus-ring"></div>
+			</div>
+		</div>
+	</template>
+
+	<template id="template-mdc-select">
+		<div class="mdc-select" role="listbox">
+			<div class="mdc-select__surface" tabindex="0">
+				<div class="mdc-select__label"></div>
+				<div class="mdc-select__selected-text"></div>
+				<div class="mdc-select__bottom-line"></div>
+			</div>
+			<div class="mdc-menu mdc-select__menu">
+				<ul class="mdc-list mdc-menu__items"></ul>
+			</div>
+		</div>
+	</template>
+
+	<template id="template-mdc-modal">
+		<aside class="mdc-dialog">
+			<div class="mdc-dialog__surface">
+				<header class="mdc-dialog__header">
+					<h2 class="mdc-dialog__header__title"></h2>
+				</header>
+				<section class="mdc-dialog__body"></section>
+				<footer class="mdc-dialog__footer">
+					<button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+					<button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Continue</button>
+				</footer>
+			</div>
+			<div class="mdc-dialog__backdrop"></div>
+		</aside>
+	</template>
+
+	<template id="template-mdc-text">
+		<div class="mdc-text-field">
+			<i class="material-icons mdc-text-field__icon mdc-icon-toggle mdc-text-field__icon-before" tabindex="0"></i>
+			<input type="text" class="mdc-text-field__input">
+			<label class="mdc-text-field__label"></label>
+			<i class="material-icons mdc-text-field__icon mdc-icon-toggle mdc-text-field__icon-after" tabindex="0"></i>
+			<div class="mdc-line-ripple"></div>
+		</div>
+	</template>
+
+	<template id="template-mdc-textarea">
+		<div class="mdc-text-field mdc-text-field--textarea">
+			<textarea class="mdc-text-field__input"></textarea>
+			<label class="mdc-text-field__label"></label>
+		</div>
+	</template>
+
+	<template id="template-mdc-menu">
+		<div class="mdc-menu" tabindex="-1">
+			<ul class="mdc-menu__items mdc-list"></ul>
+		</div>
+	</template>
+</div>
+
+<!-- Generic (non-MDC) templates -->
+<div id="templates-generic">
+	<template id="template-mdc-file-input">
+		<input type="file" />
+		<button class="mdc-button mdc-button--raised mdc-ripple-surface"></button>
+		<mdc-text value="No File Chosen"></mdc-text>
+	</template>
+</div>
+
+
+<!-- Move imported contents to the main document TODO auto create this, rather than needing in HTML -->
+<script>
+	document.querySelector("#imports").appendChild(document.currentScript.ownerDocument.querySelector("*"));
+</script>
+
+
+<!-- Import MDC stylesheets -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="/fileserver/css/external/material-components-web.min.css" />
+<link rel="stylesheet" type="text/css" href="/fileserver/css/external/mdc-elements.css" />
+
+<!-- Import MDC scripts -->
+<script src="/fileserver/js/external/jquery.js"></script>
+<script src="/fileserver/js/external/webcomponents-loader.js"></script>
+<script src="/fileserver/js/external/material-components-web.min.js"></script>
+<script src="/fileserver/js/external/mdc-elements.js"></script>

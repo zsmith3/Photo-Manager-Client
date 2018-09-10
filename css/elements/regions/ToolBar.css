@@ -1,0 +1,132 @@
+#toolBar {
+	text-align: left;
+	position: relative;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: block;
+	padding-bottom: 20px;
+	visibility: hidden;
+	max-height: 0;
+	transition: max-height 0.1s ease-in-out;
+}
+
+#toolBar-large-container {
+	position: absolute;
+	top: 0px;
+	left: 157px;
+	white-space: nowrap;
+	padding-right: 10px;
+}
+
+.tool-button {
+	display: inline-block;
+	margin-left: 10px;
+	margin-top: 6px;
+	white-space: normal;
+	font-size: 16px;
+	padding: 0px;
+	text-transform: none;
+	color: rgba(0, 0, 0, 0.9);
+	background-color: #bfdad0;
+}
+
+.tool-button * {
+	cursor: pointer;
+}
+
+.tool-button-small {
+	width: 140px;
+	height: 29.5px;
+	margin-bottom: 2px;
+	text-align: left;
+	line-height: 1.3;
+	padding-left: 5px;
+	font-size: 14px;
+}
+
+.tool-button-small .material-icons {
+	font-size: 1.5rem;
+	line-height: 1.3;
+}
+
+.tool-button-large {
+	width: 90px;
+	height: 105px;
+	vertical-align: top;
+	line-height: 1.1;
+}
+
+.tool-button-large .material-icons {
+	font-size: 60px;
+}
+
+.tool-button-cont {
+	border: none;
+	background-color: transparent;
+	position: relative;
+}
+
+.tool-button-cont button {
+	width: 100%;
+	margin: 0px;
+	z-index: 1;
+}
+
+.tool-button-upper {
+	height: 56px;
+	line-height: 1;
+}
+
+.tool-button-upper .material-icons {
+	font-size: 50px;
+}
+
+.tool-button-lower {
+	height: 45px;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	line-height: 1.15;
+}
+
+.tool-button-lower .material-icons + .material-icons {
+	font-size: 30px;
+	font-weight: bold;
+	position: absolute;
+	margin-left: -26px;
+	margin-top: 15px;
+	/* text-shadow: -2px 0 #bfdad0, 0 2px #bfdad0, 2px 0 #bfdad0, 0 -2px #bfdad0; */
+	text-shadow: -2px 0 var(--mdc-theme-secondary), 0 2px var(--mdc-theme-secondary), 2px 0 var(--mdc-theme-secondary), 0 -2px var(--mdc-theme-secondary);
+}
+
+.tool-button-large:not(.tool-button-cont) .material-icons + .material-icons {
+	font-size: 40px;
+	font-weight: bold;
+	position: absolute;
+	margin-left: -35px;
+	margin-top: 30px;
+	/* text-shadow: -2px 0 #bfdad0, 0 2px #bfdad0, 2px 0 #bfdad0, 0 -2px #bfdad0; */
+	text-shadow: -2px 0 var(--mdc-theme-secondary), 0 2px var(--mdc-theme-secondary), 2px 0 var(--mdc-theme-secondary), 0 -2px var(--mdc-theme-secondary);
+}
+
+.tool-button-lower .material-icons {
+	font-size: 40px;
+}
+
+.toolbar-text {
+	position: absolute;
+	margin-top: 7px;
+	margin-left: 2px;
+}
+
+/* Confirmation modal styles */
+
+#modal-confirm h3 {
+	text-align: left;
+	margin-left: 5%;
+}
+
+#modal-confirm-options {
+	text-align: left;
+	margin-left: 10%;
+}

@@ -1,0 +1,90 @@
+#filterBar {
+	margin-top: -2px;
+	position: relative;
+	display: block;
+	width: 100%;
+	overflow: hidden;
+	max-height: 0;
+	transition: max-height 0.1s ease-in-out;
+}
+
+#filterBar-title {
+	position: absolute;
+	margin: 0 0 5px 20px;
+}
+
+#filterBar-list {
+	display: block;
+	float: left;
+	margin: 15px 75px 15px 30px;
+	padding: 0px;
+	text-align: left;
+}
+
+.filteritem {
+	border-radius: 2px;
+	display: inline-block;
+	padding: 4px 32px 0 32px;
+	line-height: 1;
+	margin: 5px;
+	border-radius: 2px;
+	background-color: #dffaf0;
+	position: relative;
+}
+
+.filteritem:not(.draggable) {
+	padding: 4px 8px 0 8px;
+}
+
+.filteritem + button {
+	margin-left: 10px;
+    width: 40px;
+    height: 40px;
+    top: 6px;
+}
+
+.filteritem mdc-select {
+	display: inline-block;
+	margin-top: -28px;
+}
+
+.filterhandle {
+	cursor: move;
+	font-size: 24px;
+	font-weight: bold;
+	vertical-align: sub;
+	position: absolute;
+	left: 3px;
+	top: 6px;
+}
+
+.filterclose {
+	font-weight: bold;
+	cursor: pointer;
+	color: #304040;
+	vertical-align: middle;
+	position: absolute;
+	right: 2px;
+	top: 2px;
+	width: 32px;
+	height: 32px;
+}
+
+.sortable-ghost {
+	opacity: .2;
+}
+
+#filterBar-isf-check {
+	position: absolute;
+    right: 15px;
+    top: 0;
+    line-height: 2.4;
+}
+
+#filterBar-button-submit {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	margin-right: 15px;
+	margin-bottom: 10px;
+}

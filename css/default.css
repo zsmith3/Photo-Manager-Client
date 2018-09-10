@@ -1,0 +1,121 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto");
+
+* {
+	text-align: center;
+	font-family: roboto;
+	cursor: default;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	box-sizing: unset;
+	-webkit-box-sizing: unset;
+}
+
+a {
+	text-decoration: none;
+}
+
+/* .modal * {
+	user-select: auto;
+	-moz-user-select: auto;
+	-webkit-user-select: auto;
+}
+
+h1 {
+	font-size: 60px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+} */
+
+h2 {
+	font-size: 32pt;
+}
+
+h3 {
+	font-size: 1.5rem;
+	font-weight: bold;
+}
+
+h4 {
+	font-size: 1rem;
+	font-weight: bold;
+}
+
+a, a * {
+	cursor: pointer;
+}
+
+a:hover {
+	color: #4a6a6a;
+}
+
+input[type=text], textarea {
+	cursor: text;
+	text-align: left;
+}
+
+input:focus {
+	outline: none;
+}
+
+/* .dropdown-content li span {
+	color: #176860;
+}
+
+.waves-effect.waves-blue .waves-ripple {
+	background-color: rgba(76, 80, 175, 0.7) !important;
+} */
+
+/* input[type=checkbox]+label {
+	float: right;
+	height: 20px !important;
+	margin-top: 5px;
+	margin-bottom: 5px;
+} */
+
+/* input[type=checkbox] + label {
+	font-size: 20px;
+	box-sizing: border-box;
+}
+
+input[type=checkbox]:checked+label::before {
+	content: "check" !important;
+}
+
+input[type=checkbox] + label::before {
+	top: -4px !important;
+	left: 0px !important;
+
+	border: none !important;
+	-webkit-transform: rotateZ(0deg) !important;
+	transform: rotateZ(0deg) !important;
+
+	color: white;
+	font-family: 'Material Icons';
+} */
+
+/* input[type=checkbox]+label::after {
+	width: 16px !important;
+	height: 16px !important;
+} */
+
+/* input[type=range]+.thumb.active {
+	display: none;
+}
+
+#fullpage-loader {
+	position: absolute;
+	top: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: white;
+	z-index: 1001;
+}
+
+#fullpage-loader .preloader-wrapper {
+	margin-top: calc(50vh - 32px);
+}
+
+.preloader-wrapper * {
+	box-sizing: border-box;
+} */
