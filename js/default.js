@@ -1,8 +1,8 @@
-var serverUrl = "";
+var serverUrl = "/fileserver/";
 
 function getPageUrl (page, query) {
 	if (page == "index") page = "";
-	return page + (query ? ("?" + query) : "");
+	return "/fileserver/" + page + (query ? ("?" + query) : "");
 }
 
 function getCurrentAddress () {
@@ -14,7 +14,7 @@ function getCurrentQuery () {
 }
 
 function getDisplayUrl (url) {
-	return url;
+	return "/fileserver/" + url;
 }
 
 /* //Encode filename for a URL
