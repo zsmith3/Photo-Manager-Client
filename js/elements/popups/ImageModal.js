@@ -1,25 +1,65 @@
+// Class for loading images
+class ImageLoader extends HTMLElement {
+	constructor () {
+		super();
+
+		this.imageState = -1;
+
+		this.maxState = ImageLoader.imgSizes.length - 1;
+	}
+
+	loadImage () {
+		if (this.imageState >= 0 && !(this.imageState in this.file.data)) {
+			let rotations = {3: 180, 6: 90, 8: -90};
+			if (ImageLoader.imgSizes[this.imageState] == "/" && this.file.orientation in rotations) {
+				let data = getRotatedImage(this.image.get(0), rotations[this.file.orientation]);
+				this.image.get(0).src = data;
+				this.file.data[this.imageState] = data;
+			} else this.file.data[this.imageState] = getBase64Image(this.image.get(0));
+		}
+
+		if (this.imageState + 1 > this.maxState) return;
+
+		if (!this.image.get(0).onload) {
+			let parent = this;
+			this.image.get(0).onload = function () { parent.loadImage(); };
+			this.image.get(0).onerror = function () { parent.loadImage(); };
+		}
+
+		for (var i = this.maxState; i > this.imageState; i--) {
+			if (i in this.file.data) {
+				this.image.attr("src", this.file.data[i]);
+				this.imageState = i;
+				return;
+			}
+		}
+
+		this.imageState += 1;
+
+		this.image.attr("src", serverUrl + "api/images/" + this.file.id + ImageLoader.imgSizes[this.imageState]);
+
+		if (this.onloadimg) this.onloadimg();
+	}
+}
+
+ImageLoader.imgSizes = ["/thumbnail/", "/300x200/", "/1800x1200/", "/"];
+
 // Image modal class
-class ImageModal extends HTMLElement {
+class ImageModal extends ImageLoader {
 	connectedCallback () {
 		this.open = false;
 		this.dragging = { isMoving: false };
 
-		let _this = this;
+		let parent = this;
 		window.addEventListener("load", function () {
-			$(_this).find("*").each(function () { this.modal = _this; });
+			$(parent).find("*").each(function () { this.modal = parent; });
 		});
 	}
 
 	openFile (file) {
 		this.file = file;
-
-		let _this = this;
-		if (!this.imageLoader) this.imageLoader = new ImageLoader(this.image.get(0), null, null, function () {
-			_this.setZoom("min", "min", "c", "c");
-			_this.imageLoader.onImageLoad = null;
-		});
-
-		this.imageLoader.update(this.file);
+		this.imageState = -1;
+		this.loadImage();
 
 		this.setZoom();
 
@@ -84,6 +124,10 @@ class ImageModal extends HTMLElement {
 
 	set open (value) {
 		return $(this).attr("data-open", value);
+	}
+
+	onloadimg () {
+		this.setZoom("min", "min", "c", "c");
 	}
 
 	//Set the zoom and position of the image

@@ -136,7 +136,9 @@ class NavigationDrawer extends HTMLElement {
 
 		groupEl.get(0).ontoggle = function () {
 			$(this).find("img").each(function () {
-				if (this.imageLoader) this.imageLoader.loadImage();
+				if (this.src == "" && $(this).attr("data-src") !== null) {
+					this.src = $(this).attr("data-src");
+				}
 			});
 		};
 
@@ -162,7 +164,8 @@ class NavigationDrawer extends HTMLElement {
 
 		personEl.attr("data-id", person.id).attr("href", "people/" + person.full_name);
 
-		if (person.thumbnail !== null) personEl.find("img").get(0).imageLoader = new ImageLoader(personEl.find("img").get(0), {id: person.thumbnail, type: "face"}, 0, null, true);
+		if (person.thumbnail !== null) personEl.find("img").attr("data-src", serverUrl + "api/images/faces/" + person.thumbnail +"/30/");
+		else personEl.find("img").attr("data-src", null);
 
 		personEl.find(".personListName").attr("href", "/people/" + person.full_name).attr("data-api", "/people/" + person.id).find("span").text(person.full_name);
 

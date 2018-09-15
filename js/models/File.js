@@ -27,7 +27,6 @@ class FileObject {
 	}
 
 	getSrc (index) {
-		// TODO remove this (and all uses)
 		if (index in this.data) {
 			return this.data[index];
 		} else {
