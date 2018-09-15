@@ -1,49 +1,77 @@
-// Function to handle all requests to the API
-function apiRequest (url, type, data) {
+// Base HTTP requests function
+function httpRequest (url, type, data, headers, responseType, readerType) {
 	type = type || "GET";
-	var encData;
-	if (data) encData = new Blob([msgpack.encode(data)]);
-	else encData = null;
+	headers = headers || {};
+	responseType = responseType || "blob";
+	readerType = readerType || "readAsArrayBuffer";
 
 	return new Promise(function (resolve, reject) {
 		var xhr = new XMLHttpRequest();
-		xhr.open(type, serverUrl + "api/" + url);
-		if (type != "DELETE") xhr.setRequestHeader("Accept", "application/msgpack");
-		if (data) xhr.setRequestHeader("Content-Type", "application/msgpack");
+		xhr.open(type, url);
 		var jwtToken = window.sessionStorage.getItem("jwtToken") || window.localStorage.getItem("jwtToken");
 		if (jwtToken) xhr.setRequestHeader("Authorization", "JWT " + jwtToken);
-		xhr.responseType = "blob";
+
+		for (var key in headers) xhr.setRequestHeader(key, headers[key]);
+		xhr.responseType = responseType;
 
 		xhr.onload = function () {
 			var status = [200, 201, 204].indexOf(this.status) !== -1;
 
-			if (!this.response.size) {
-				if (status) resolve();
-				else reject();
-				return;
-			}
+			if (this.response.size && responseType == "blob") {
+				var fileReader = new FileReader();
 
-			var fileReader = new FileReader();
+				fileReader.onload = function () {
+					if (status) resolve(this.result);
+					else reject(this.result);
+				};
 
-			fileReader.onload = function () {
-				var byteArray = new Uint8Array(this.result);
-				try {
-					var resData = msgpack.decode(byteArray);
-					if (status) resolve(resData);
-					else reject(resData);
-				} catch (error) {
-					reject(error);
-				}
-			};
+				fileReader.onerror = reject;
 
-			fileReader.onerror = reject;
-
-			fileReader.readAsArrayBuffer(this.response);
+				fileReader[readerType](this.response);
+			} else if (status) resolve(this.response);
+			else reject(this.response);
 		};
 
 		xhr.onerror = reject;
 
-		xhr.send(encData);
+		xhr.send(data);
+	});
+}
+
+// API (MessagePack) requests function
+function apiRequest (url, type, data) {
+	var encData;
+	if (data) encData = new Blob([msgpack.encode(data)]);
+	else encData = null;
+	var headers = {};
+	if (type != "DELETE") headers["Accept"] = "application/msgpack";
+	if (data) headers["Content-Type"] = "application/msgpack";
+
+	return new Promise(function (resolve, reject) {
+		httpRequest(serverUrl + "api/" + url, type, encData, headers).then(function (data) {
+			var byteArray = new Uint8Array(data);
+			try {
+				var resData = msgpack.decode(byteArray);
+				resolve(resData);
+			} catch (error) {
+				reject(error);
+			}
+		}).catch(function (error) {
+			try {
+				var byteArray = new Uint8Array(error);
+				var resData = msgpack.decode(byteArray);
+				reject(resData);
+			} catch (err) {
+				reject(error);
+			}
+		});
+	});
+}
+
+// Base64 data url requests function
+function mediaRequest (url) {
+	return new Promise (function (resolve, reject) {
+		httpRequest(serverUrl + url, "GET", null, null, "blob", "readAsDataURL").then(resolve).catch(reject);
 	});
 }
 

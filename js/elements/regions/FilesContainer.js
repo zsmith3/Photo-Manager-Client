@@ -102,7 +102,7 @@ class FilesContainer extends HTMLElement {
 		$(this).find("file-box, face-box").each(function () { this.scale(scale); });
 	}
 
-	selectAll (value) {
+	selectAll (value, auto) {
 		$("file-box, face-box").each(function () { this.selected = value; });
 
 		/* var hiddenChecks = document.getElementsByClassName("hiddenfilecheck");
@@ -118,7 +118,7 @@ class FilesContainer extends HTMLElement {
 			pageLoader.config.set("select_mode", 1);
 		}
 
-		this.onSelectionChange();
+		if (!auto) this.onSelectionChange();
 	}
 
 	invertSelection () {

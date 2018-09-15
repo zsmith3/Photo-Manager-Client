@@ -19,7 +19,7 @@ class Personbox extends Filebox {
 		var person = this.person;
 
 		if (person.thumbnail !== null) {
-			$(this).find(".imgthumb").attr("src", serverUrl + "api/images/faces/" + person.thumbnail + "/300/");
+			this.imageLoader = new ImageLoader($(this).find(".imgthumb").get(0), {id: person.thumbnail, type: "face"}, 2);
 		}
 
 		$(this).find(".filelink").attr("href", "/people/" + person.full_name).attr("data-api", "/people/" + person.id);

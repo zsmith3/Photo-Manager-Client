@@ -1,13 +1,11 @@
 // File box element class
-class Filebox extends ImageLoader {
+class Filebox extends HTMLElement {
 	constructor () {
 		super();
 
 		this.template = "#template-filebox";
 
 		this.classes = "mdc-elevation--z1 mdc-ripple-surface mdc-ripple-surface--primary";
-
-		this.maxState = 1;
 	}
 
 	connectedCallback () {
@@ -60,16 +58,16 @@ class Filebox extends ImageLoader {
 			return false;
 		};
 
-		let parent = this;
+		/*let parent = this;
 		$(this).find(".imgthumb").on("load", function () {
-			/* if ("data" in parent.file) { TODO not sure this is needed
+			if ("data" in parent.file) { // TODO not sure this is needed
 				let rotations = {3: 180, 6: 270, 8: 90};
 				if (parent.file.orientation in rotations) {
 					let data = getRotatedImage(this, rotations[parent.file.orientation]);
 					this.src = data;
 					parent.file.data[0] = data;
 				} else parent.file.data[0] = getBase64Image(this);
-			} */
+			}
 
 			let img = this;
 			let checkData = function () {
@@ -80,9 +78,7 @@ class Filebox extends ImageLoader {
 				}
 			};
 			checkData();
-
-			// TODO generalise the ImageModal.loadImage function if possible, otherwise just copy it (for exif thumbs)
-		});
+		});*/
 
 		this.generate();
 	}
@@ -93,7 +89,8 @@ class Filebox extends ImageLoader {
 		if (file === null) return;
 
 		if (file.type == "image") {
-			this.loadImage();
+			this.imageLoader = new ImageLoader($(this).find(".imgthumb").get(0), file, 1);
+			// this.loadImage();
 			$(this).find(".imgthumb").css("display", "block");
 		} else if (file.type == "video") {
 			// TODO
@@ -145,10 +142,10 @@ class Filebox extends ImageLoader {
 		if (Input.isDown("Control") || (pageLoader.config.get("select_mode") == 2 && !checkboxClicked)) {
 			this.selected = !this.selected;
 		} else if (Input.isDown("Shift")) {
-			this.container.selectAll(false);
+			this.container.selectAll(false, true);
 			this.container.selectRange(this);
 		} else if (!checkboxClicked) {
-			this.container.selectAll(false);
+			this.container.selectAll(false, true);
 			this.selected = true;
 		}
 
