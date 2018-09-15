@@ -320,6 +320,7 @@ class GMapView extends GoogleMap {
 					scaledSize: new google.maps.Size(markerSize[0], markerSize[1]),
 					anchor: new google.maps.Point(markerSize[0] / 2, markerSize[1] / 2)
 				}
+				// TODO get this to use imageloader somehow
 			});
 			this.api.imageMarkers[id].setCursor("pointer");
 			this.api.imageMarkers[id].file = files[id];
