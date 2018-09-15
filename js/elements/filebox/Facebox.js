@@ -7,9 +7,9 @@ class Facebox extends Filebox {
 	}
 
 	generate () {
-		$(this).find(".imgthumb").attr("src", serverUrl + "api/images/faces/" + $(this).attr("data-id") + "/200/");
-
 		if (this.face === null) return;
+
+		this.imageLoader = new ImageLoader($(this).find(".imgthumb").get(0), this.face, 1);
 
 		this.showIcons();
 
