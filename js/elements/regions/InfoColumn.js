@@ -1,8 +1,14 @@
 // Info column class
 class InfoColumn extends ToggleBar {
-	//Display info about a selection TOREM infocol/setfdetails
+	//Display info about a selection
 	setInfo (selection) {
+		if (!this.imageLoader) this.imageLoader = new ImageLoader($("#infocolumn-thumb").get(0), null, 1, function () {
+			$("#infocolumn-thumb").css("display", "");
+			$("#infocolumn-thumb-icon").css("display", "none");
+		});
+
 		if (!this.open) return;
+		if (selection == this.lastSelection) return;
 
 		if (selection !== null && selection.constructor == Array) {
 			if (selection.length == 0) {
@@ -34,16 +40,17 @@ class InfoColumn extends ToggleBar {
 			} else if (selection.constructor == Face) {
 				this.setInfo(selection.file);
 			} else if (selection.constructor == FileObject) {
-				if ((selection.type == "image" || selection.type == "video") && selection.data[0]) {
-					$("#infocolumn-thumb").attr("src", selection.data[0]).css("display", "");
-				} else {
-					let icons = {
-						image: "photo",
-						video: "movie",
-						folder: "folder_open",
-						file: "insert_drive_file"
-					};
-					$("#infocolumn-thumb-icon").text(icons[selection.type] || icons.file).css("display", "");
+				let icons = {
+					image: "photo",
+					video: "movie",
+					folder: "folder_open",
+					file: "insert_drive_file"
+				};
+				$("#infocolumn-thumb-icon").text(icons[selection.type] || icons.file).css("display", "");
+
+				if ((selection.type == "image" || selection.type == "video")) {
+					$("#infocolumn-thumb").attr("src", "");
+					this.imageLoader.update(selection);
 				}
 
 				infoObj = {
@@ -66,8 +73,8 @@ class InfoColumn extends ToggleBar {
 			} else if (selection.constructor == Person) {
 				if (selection.thumbnail) {
 					let thumb = Face.getById(selection.thumbnail);
-					if (thumb && "data" in thumb && thumb.data[0]) $("#infocolumn-thumb").attr("src", thumb.data[0]).css("display", "");
-					else $("#infocolumn-thumb").attr("src", serverUrl + "api/images/faces/" + selection.thumbnail + "/").css("display", "");
+					if (!thumb) thumb = {id: selection.thumbnail, type: "face"};
+					this.imageLoader.update(thumb);
 				} else {
 					$("#infocolumn-thumb-icon").text("face").css("display", "");
 				}
@@ -87,6 +94,8 @@ class InfoColumn extends ToggleBar {
 					$("#infocolumn-info-" + attr).html(infoObj[attr]).parent().css("display", "");
 				}
 			}
+
+			this.lastSelection = selection;
 		}
 
 		/* $(this).find("#infocolumn-info").html("");
