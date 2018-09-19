@@ -45,31 +45,29 @@ class FileObject {
 
 	get starred () { return this.is_starred; }
 
-	set starred (value) {
-		let parent = this;
-		apiRequest("files/" + this.id + "/", "PATCH", {is_starred: value}).then(function () {
-			parent.is_starred = value;
-			pageLoader.filesContainer.getFilebox(parent.id).showIcons();
-		});
-	}
-
 	get deleted () { return this.is_deleted; }
 
-	set deleted (value) {
-		let parent = this;
-		apiRequest("files/" + this.id + "/", "PATCH", {is_deleted: value}).then(function () {
-			parent.is_deleted = value;
-			pageLoader.filesContainer.getFilebox(parent.id).showIcons();
+	// Function to set a boolean field (for private use)
+	_setBool (type, value) {
+		let _this = this;
+		return new Promise(function (resolve, reject) {
+			Database.update("files", _this.id, { [type]: value }).then(function () {
+				_this[type] = value;
+				pageLoader.filesContainer.getFilebox(_this.id).showIcons();
+				resolve();
+			}).catch(reject);
 		});
 	}
 
-	/* generateFilebox () {
-		//TODO this (alongside python?)
-	}
+	// Wrappers for _setBool
 
-	getThumbnail () {
-		//simple on web, but includes getimagesrc on native
-	} */
+	star () { return this._setBool("is_starred", true); }
+
+	unstar () { return this._setBool("is_starred", false); }
+
+	markDelete () { return this._setBool("is_deleted", true); }
+
+	unmarkDelete () { return this._setBool("is_deleted", false); }
 }
 
 // Create a list of Files from a list of objects

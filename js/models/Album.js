@@ -16,18 +16,30 @@ class Album {
 		});
 	}
 
-	removeFiles (files) {
-		for (i in files) {
-			let fileId = files[i];
-			apiRequest("albums/" + this.id + "/files/" + fileId + "/", "DELETE").then(function () {
-				pageLoader.filesContainer.removeFile(fileId);
-				apiRequest("albums/").then(function (data) {
-					Album.albums = Album.createFromList(data);
-					navigationDrawer.refreshAlbums();
-				});
-			});
-		}
+	removeFile (file, multiple) {
+		let _this = this;
+		return new Promise(function (resolve, reject) {
+			apiRequest("albums/" + _this.id + "/files/" + file.id + "/", "DELETE").then(function () {
+				pageLoader.filesContainer.removeFile(file.id);
+				if (!multiple) {
+					apiRequest("albums/").then(function (data) {
+						Album.albums = Album.createFromList(data);
+						navigationDrawer.refreshAlbums();
+						resolve();
+					});
+				} else resolve();
+			}).catch(reject);
+		});
+	}
 
+	removeFiles (files) {
+		let _this = this;
+		promiseChain(files, function (resolve, reject, file) { _this.removeFile({ id: file }, true).then(resolve).catch(reject); }).then(function () {
+			apiRequest("albums/").then(function (data) {
+				Album.albums = Album.createFromList(data);
+				navigationDrawer.refreshAlbums();
+			});
+		});
 	}
 
 	delete () {

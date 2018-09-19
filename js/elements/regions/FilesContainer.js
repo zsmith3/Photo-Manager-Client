@@ -163,6 +163,29 @@ class FilesContainer extends HTMLElement {
 		return selection;
 	}
 
+	// Apply a promise-based function to the current selection
+	applyToSelection (action, undoAction, selection) {
+		selection = selection || this.selection;
+
+		let _this = this;
+
+		var filesText = selection.length + " " + pageLoader.data.objectType;
+		if (selection.length == 1) filesText = filesText.substr(0, filesText.length - 1);
+
+		var afterSnackbar;
+		if (undoAction) afterSnackbar = { message: action.afterMessage.replace(/%f/g, filesText), actionText: "Undo", actionHandler: function () { _this.applyToSelection(undoAction, action, selection); } };
+		else afterSnackbar = { message: action.afterMessage.replace(/%f/g, filesText) };
+
+		return new Promise(function (resolve, reject) {
+			pageLoader.snackbar.show({ message: action.beforeMessage.replace(/%f/g, filesText) });
+			promiseChain(selection.map(id => _this.getFile(id)), action.callback).then(function () {
+				pageLoader.dismissSnackbar();
+				pageLoader.snackbar.show(afterSnackbar);
+				resolve();
+			}).catch(reject);
+		});
+	}
+
 	// Get the next/previous file
 	getAdjacentFile (file, direction, requireType) {
 		var searchArray;

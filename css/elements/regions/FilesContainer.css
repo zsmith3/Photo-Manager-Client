@@ -109,6 +109,16 @@ file-box.file-selected {
 	font-size: 120%;
 }
 
+.thumbbox[data-type=image]::after {
+	content: "photo";
+	font-size: 120%;
+}
+
+.thumbbox[data-type=video]::after {
+	content: "movie";
+	font-size: 120%;
+}
+
 .thumbbox[data-type=file]::after {
 	content: "insert_drive_file";
 }
@@ -117,6 +127,19 @@ file-box.file-selected {
 	width: 100%;
     height: 100%;
     object-fit: contain;
+	display: none;
+}
+
+.thumbbox[data-type=image] .imgthumb:not(.imgthumb-loading) {
+	display: block;
+}
+
+.imgthumb.facethumb:not(.imgthumb-loading) {
+	display: block;
+}
+
+.imgthumb.facethumb:not(.imgthumb-loading) + .face-alt {
+	display: none;
 }
 
 .facethumb {
@@ -200,12 +223,12 @@ file-box.file-selected {
 	transform-origin: top left;
 }
 
-.imgthumb-fail {
+/* .imgthumb-fail {
 	font-family: 'Material Icons';
 	font-size: 130px;
 	line-height: 100px;
 	color: #0f2f2a;
-}
+} */
 
 /* #view-map {
 	height: calc(100% - 15px);
@@ -275,19 +298,19 @@ face-box {
 	left: 0;
 } */
 
-face-box .face-alt, person-box .face-alt {
+/* face-box .face-alt, person-box .face-alt {
 	position: absolute;
 	top: 0;
 	left: 0;
-}
+} */
 
-.facethumb.face-thumb-unloaded {
+/* .facethumb.face-thumb-unloaded {
 	visibility: hidden;
 }
 
 .facethumb:not(.face-thumb-unloaded) + .face-alt {
 	display: none;
-}
+} */
 
 face-box .face-status {
 	position: absolute;
