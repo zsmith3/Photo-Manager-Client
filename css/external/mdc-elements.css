@@ -198,6 +198,10 @@ context-menu .mdc-list-item > span {
 	margin-left: 36px;
 }
 
+.mdc-snackbar {
+	z-index: 1000;
+}
+
 
 
 

@@ -49,6 +49,11 @@ function apiRequest (url, type, data) {
 
 	return new Promise(function (resolve, reject) {
 		httpRequest(serverUrl + "api/" + url, type, encData, headers).then(function (data) {
+			if (type == "DELETE") {
+				resolve();
+				return;
+			}
+
 			var byteArray = new Uint8Array(data);
 			try {
 				var resData = msgpack.decode(byteArray);

@@ -33,19 +33,23 @@ class Face {
 	}
 
 	setStatus (status) {
-		let face = this;
-		apiRequest("faces/" + this.id + "/", "PATCH", {status: status}).then(function (data) {
-			pageLoader.filesContainer.getFile(face.id).status = status;
-			pageLoader.filesContainer.getFilebox(face.id).showIcons();
+		let _this = this;
+		return new Promise(function (resolve, reject) {
+			apiRequest("faces/" + _this.id + "/", "PATCH", {status: status}).then(function (data) {
+				pageLoader.filesContainer.getFile(_this.id).status = status;
+				pageLoader.filesContainer.getFilebox(_this.id).showIcons();
 
-			if (status >= 4) {
-				Person.getById(face.personId).face_count--;
-				navigationDrawer.updatePersonFaceCount(face.personId);
+				if (status >= 4) {
+					Person.getById(_this.personId).face_count--;
+					navigationDrawer.updatePersonFaceCount(_this.personId);
 
-				if (pageLoader.data.folderType == "people") {
-					pageLoader.filesContainer.removeFile(face.id);
+					if (pageLoader.data.folderType == "people") {
+						pageLoader.filesContainer.removeFile(_this.id);
+					}
 				}
-			}
+
+				resolve();
+			}).catch(reject);
 		});
 	}
 }
