@@ -58,28 +58,6 @@ class Filebox extends HTMLElement {
 			return false;
 		};
 
-		/*let parent = this;
-		$(this).find(".imgthumb").on("load", function () {
-			if ("data" in parent.file) { // TODO not sure this is needed
-				let rotations = {3: 180, 6: 270, 8: 90};
-				if (parent.file.orientation in rotations) {
-					let data = getRotatedImage(this, rotations[parent.file.orientation]);
-					this.src = data;
-					parent.file.data[0] = data;
-				} else parent.file.data[0] = getBase64Image(this);
-			}
-
-			let img = this;
-			let checkData = function () {
-				if (parent.file) {
-					if ("data" in parent.file) parent.file.data[0] = getBase64Image(img);
-				} else {
-					setTimeout(checkData, 500);
-				}
-			};
-			checkData();
-		});*/
-
 		this.generate();
 	}
 
@@ -89,14 +67,8 @@ class Filebox extends HTMLElement {
 		if (file === null) return;
 
 		if (file.type == "image") {
-			this.imageLoader = new ImageLoader($(this).find(".imgthumb").get(0), file, 1);
-			// this.loadImage();
-			$(this).find(".imgthumb").css("display", "block");
+			this.imageLoader = new ImageLoader($(this).find(".imgthumb").get(0), file, 1, function () { $(this.image).removeClass("imgthumb-loading"); });
 		} else if (file.type == "video") {
-			// TODO
-		} else if (file.type == "folder") {
-			// TODO
-		} else {
 			// TODO
 		}
 

@@ -9,7 +9,7 @@ class Facebox extends Filebox {
 	generate () {
 		if (this.face === null) return;
 
-		this.imageLoader = new ImageLoader($(this).find(".imgthumb").get(0), this.face, 1);
+		this.imageLoader = new ImageLoader($(this).find(".imgthumb").get(0), this.face, 1, function () { $(this.image).removeClass("imgthumb-loading"); });
 
 		this.showIcons();
 
@@ -20,6 +20,7 @@ class Facebox extends Filebox {
 		scale = parseInt(scale || $("#thumbScaler").val());
 
 		$(this).css({"width": scale * 8 / 15, "height": scale * 2 / 3});
+		$(this).find(".face-alt").css({"font-size": (scale * 8 / 15) + "px", "line-height": (scale * 2 / 3) + "px"});
 		$(this).find(".face-status").css({"font-size": (scale / 5) + "px", "line-height": (scale * 4 / 15) + "px"});
 		$(this).find(".facecheckbox").css("display", pageLoader.config.get("select_mode") == 1 ? "none" : "");
 		//$(this).find(".thumbbox").css({"font-size": (scale * 2 / 3) + "px", "line-height": (scale * 2 / 3) + "px"});

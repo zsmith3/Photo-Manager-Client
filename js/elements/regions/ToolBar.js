@@ -66,7 +66,22 @@ class ToolBar extends ToggleBar {
 		button.addClass(type);
 		button.attr("id", layout.id);
 		button.attr("href", layout.modal);
-		button.attr("onclick", layout.onclick);
+
+		let _this = this;
+		if (layout.action) {
+			button.get(0).onclick = function () {
+				if (layout.confirmText) {
+					_this.confirmAction(layout.confirmText).then(function () {
+						pageLoader.filesContainer.applyToSelection(layout.action, layout.undoAction);
+					});
+				} else {
+					if (layout.modalSetup) layout.modalSetup();
+
+					pageLoader.filesContainer.applyToSelection(layout.action, layout.undoAction);
+				}
+			};
+		} else button.attr("onclick", layout.onclick);
+
 		button.attr("title", layout.title);
 		if (layout.modal) button.get(0).addEventListener("click", function () { $($(this).attr("href")).get(0).open(this); });
 
@@ -154,14 +169,28 @@ ToolBar.standardTBButtons = [
 	{
 		top: {
 			modal: "#modal-confirm",
-			onclick: "toolBar.confirmAction('star %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).starred = true; }); });",
+			confirmText: "star %f",
+			action: {
+				callback: function (resolve, reject, file) { file.star().then(resolve).catch(reject); },
+				beforeMessage: "Starring %f...",
+				afterMessage: "Starred %f."
+			},
+			get undoAction () { return ToolBar.standardTBButtons[0].bottom.action; },
+			// onclick: "toolBar.confirmAction('star %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).starred = true; }); });",
 			title: "Star Selection",
 			icon: ["star"],
 			text: "Star file(s)"
 		},
 		bottom: {
 			modal: "#modal-confirm",
-			onclick: "toolBar.confirmAction('remove stars from %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).starred = false; }); });",
+			confirmText: "remove stars from %f",
+			action: {
+				callback: function (resolve, reject, file) { file.unstar().then(resolve).catch(reject); },
+				beforeMessage: "Removing star(s) from %f...",
+				afterMessage: "Removed star(s) from %f."
+			},
+			get undoAction () { return ToolBar.standardTBButtons[0].top.action; },
+			// onclick: "toolBar.confirmAction('remove stars from %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).starred = false; }); });",
 			title: "Remove Stars from Selection (this will only work on files starred by you)",
 			icon: ["star", "clear"],
 			text: "Remove Star(s)"
@@ -170,14 +199,28 @@ ToolBar.standardTBButtons = [
 	{
 		top: {
 			modal: "#modal-confirm",
-			onclick: "toolBar.confirmAction('mark %f for deletion').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).deleted = true; }); });",
+			confirmText: "mark %f for deletion",
+			action: {
+				callback: function (resolve, reject, file) { file.markDelete().then(resolve).catch(reject); },
+				beforeMessage: "Marking %f for deletion...",
+				afterMessage: "Marked %f for deletion."
+			},
+			get undoAction () { return ToolBar.standardTBButtons[1].bottom.action; },
+			// onclick: "toolBar.confirmAction('mark %f for deletion').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).deleted = true; }); });",
 			title: "Mark Selected for Deletion",
 			icon: ["delete"],
 			text: "Mark for deletion"
 		},
 		bottom: {
 			modal: "#modal-confirm",
-			onclick: "toolBar.confirmAction('remove deletion marks from %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).deleted = false; }); });",
+			confirmText: "remove deletion mark(s) from %f",
+			action: {
+				callback: function (resolve, reject, file) { file.unmarkDelete().then(resolve).catch(reject); },
+				beforeMessage: "Removing deletion mark(s) from %f...",
+				afterMessage: "Removed deletion mark(s) from %f."
+			},
+			get undoAction () { return ToolBar.standardTBButtons[1].top.action; },
+			// onclick: "toolBar.confirmAction('remove deletion marks from %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { pageLoader.filesContainer.getFile(id).deleted = false; }); });",
 			title: "Remove Deletion Marks from Selected (this will only work on files marked for deletion by you)",
 			icon: ["delete", "clear"],
 			text: "Remove deletion mark(s)"
@@ -253,7 +296,14 @@ ToolBar.standardTBButtons = [
 	{
 		id: "albumRemButton",
 		modal: "#modal-confirm",
-		onclick: "toolBar.confirmAction('remove %f from the current album', /* [{'text': 'Remove from parent albums', 'input': 'remAlbParents'}] */).then(function () { pageLoader.data.album.removeFiles(pageLoader.filesContainer.selection); });",
+		confirmText: "remove %f from the current album",
+		action: {
+			callback: function (resolve, reject, file) { pageLoader.data.album.removeFile(file).then(resolve).catch(reject); },
+			beforeMessage: "Removing %f from the current album...",
+			afterMessage: "Removed %f from the current album."
+		},
+		// TODO undoAction
+		// onclick: "toolBar.confirmAction('remove %f from the current album', /* [{'text': 'Remove from parent albums', 'input': 'remAlbParents'}] */).then(function () { pageLoader.data.album.removeFiles(pageLoader.filesContainer.selection); });",
 		title: "Remove selection from this album (this will only work on files added to the album by you)",
 		icon: ["photo_album", "clear"],
 		text: "Remove file(s)"
@@ -263,7 +313,15 @@ ToolBar.standardTBButtons = [
 ToolBar.facesTBButtons = [
 	{
 		modal: "#modal-confirm",
-		onclick: "toolBar.confirmAction('confirm identification of %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { Face.getById(id).setStatus(1); }); });",
+		confirmText: "confirm identification of %f",
+		action: {
+			callback: function (resolve, reject, file) { file.setStatus(1).then(resolve).catch(reject); },
+			// TODO test that this works with faces
+			beforeMessage: "Confirming identification of %f...",
+			afterMessage: "Confirmed identification of %f."
+		},
+		// TODO undoAction
+		// onclick: "toolBar.confirmAction('confirm identification of %f').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { Face.getById(id).setStatus(1); }); });",
 		icon: ["check"],
 		text: "Confirm Person",
 		title: "Confirm that the selected faces have been correctly identified"
@@ -276,14 +334,28 @@ ToolBar.facesTBButtons = [
 	},
 	{
 		modal: "#modal-confirm",
-		onclick: "toolBar.confirmAction('ignore %f (this indicates that the selected faces are certainly of random strangers)').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { Face.getById(id).setStatus(4); }); });",
+		confirmText: "ignore %f (this indicates that the selected faces are certainly of random strangers)",
+		action: {
+			callback: function (resolve, reject, file) { file.setStatus(4).then(resolve).catch(reject); },
+			beforeMessage: "Ignoring %f...",
+			afterMessage: "Ignored %f."
+		},
+		// TODO undoAction
+		// onclick: "toolBar.confirmAction('ignore %f (this indicates that the selected faces are certainly of random strangers)').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { Face.getById(id).setStatus(4); }); });",
 		icon: ["face", "clear"],
 		text: "Ignore Face(s)",
 		title: "Mark the selected faces as certainly belonging to random strangers"
 	},
 	{
 		modal: "#modal-confirm",
-		onclick: "toolBar.confirmAction('remove %f (this indicates that the selected images are not in fact human faces)').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { Face.getById(id).setStatus(5); }); });",
+		confirmText: "remove %f (this indicates that the selected images are not in fact human faces)",
+		action: {
+			callback: function (resolve, reject, file) { file.setStatus(5).then(resolve).catch(reject); },
+			beforeMessage: "Removing %f...",
+			afterMessage: "Removed %f."
+		},
+		// TODO undoAction
+		// onclick: "toolBar.confirmAction('remove %f (this indicates that the selected images are not in fact human faces)').then(function () { pageLoader.filesContainer.selection.forEach(function (id) { Face.getById(id).setStatus(5); }); });",
 		icon: ["person_outline", "clear"],
 		text: "Remove Face(s)",
 		title: "Mark the selected faces as non-human objects"
