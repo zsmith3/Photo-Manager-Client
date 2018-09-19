@@ -21,7 +21,6 @@ var Events = {
 		Events.oldWidth = window.innerWidth;
 	},
 	onWindowSmaller: function () {
-		// TODO copy anything relevant
 		navigationDrawer.setTemporary();
 		navigationDrawer.optionsMenuToDrawer();
 		sortBar.toNavDrawer();
@@ -30,7 +29,6 @@ var Events = {
 		addressBar.hideSearch();
 	},
 	onWindowLarger: function () {
-		// TODO
 		navigationDrawer.setPermanent();
 		navigationDrawer.optionsMenuToHeader();
 		sortBar.fromNavDrawer();

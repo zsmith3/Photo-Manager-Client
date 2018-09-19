@@ -69,6 +69,7 @@
 		<script src="js/elements/filebox/Facebox.js"></script>
 		<script src="js/elements/filebox/Personbox.js"></script>
 
+		<script src="js/controllers/Database.js"></script>
 		<script src="js/controllers/Platform.js"></script>
 		<script src="js/controllers/FileViews.js"></script>
 		<script src="js/controllers/PageLoader.js"></script>
@@ -358,6 +359,14 @@
 
 		<!-- Main page -->
 		<div id="filebrowser" class="content mdc-toolbar-fixed-adjust row">
+			<!-- Notification snackbar -->
+			<div id="snackbar" class="mdc-snackbar mdc-snackbar--align-start">
+				<div class="mdc-snackbar__text"></div>
+				<div class="mdc-snackbar__action-wrapper">
+					<button type="button" class="mdc-snackbar__action-button"></button>
+				</div>
+		   </div>
+
 			<!-- Hoverinfo popup to display file details -->
 			<info-popup id="infoPopup" class="mdc-elevation--z8"></info-popup>
 

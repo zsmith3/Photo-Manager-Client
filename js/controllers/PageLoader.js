@@ -5,6 +5,10 @@ class PageLoader {
 		this.filesContainer = filesContainer;
 		this.filesMap = filesMap;
 
+		// Notification snackbar
+		this.snackbar = new mdc.snackbar.MDCSnackbar($("#snackbar").get(0));
+
+		// Page state data
 		this.data = {
 			_data: {
 				albumId: -1,
@@ -265,6 +269,12 @@ class PageLoader {
 		else if (!isNaN(parseFloat(value))) value = parseFloat(value);
 
 		return value;
+	}
+
+	dismissSnackbar () {
+		this.snackbar.foundation_.active_ = false;
+		this.snackbar.foundation_.queue_ = [];
+		$(this.snackbar.root_).removeClass("mdc-snackbar--active");
 	}
 }
 

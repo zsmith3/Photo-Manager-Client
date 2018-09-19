@@ -12,7 +12,7 @@
 			<i class="filebin material-icons">delete</i>
 			<i class="filetick material-icons">check</i>
 
-			<img class="imgthumb" onerror="$(this).addClass('imgthumb-fail');" style="display: none;" />
+			<img class="imgthumb imgthumb-loading" />
 		</div>
 
 		<br />
@@ -22,7 +22,7 @@
 
 	<template id="template-facebox">
 		<div class="face-box-sel-border"></div>
-		<img class="imgthumb facethumb" onload="$(this).parent().find('i.face-alt').css('display', 'none');" />
+		<img class="imgthumb facethumb imgthumb-loading" />
 		<i class="material-icons face-alt">face</i>
 		<i class="material-icons face-status"></i>
 		<mdc-checkbox class="facecheckbox"></mdc-checkbox>
@@ -30,7 +30,7 @@
 
 	<template id="template-personbox">
 		<a class="filelink">
-			<img class="imgthumb facethumb face-thumb-unloaded" onload="$(this).removeClass('face-thumb-unloaded');" />
+			<img class="imgthumb facethumb imgthumb-loading" />
 			<i class="material-icons face-alt">face</i>
 			<p class="filename filelinkname">
 				<span class="personbox-name"></span>
@@ -111,85 +111,6 @@
 			<span class="filterclose mdc-icon-toggle material-icons" onclick="$(this).parent().remove();">clear</span>
 		</li>
 	</template>
-
-
-	<!-- <template id="filebox-template">
-		<div class="filebox mdc-elevation--z1 mdc-ripple-surface mdc-ripple-surface--primary filebox-default" onmouseover="infoPopup.setup(this, event);"
-		 onmouseout="infoPopup.hide(this, event);" oncontextmenu="contextMenu.open(this, event); return false;">
-			<div class="fcbox-cont">
-				<mdc-checkbox class="filecheckbox"></mdc-checkbox>
-			</div>
-
-			<div class="thumbbox">
-				<span class="vidlength"></span>
-
-				<i class="filestar material-icons">star</i>
-				<i class="filebin material-icons">delete</i>
-				<i class="filetick material-icons">check</i>
-
-				<i class="material-icons folderthumb">folder_open</i>
-				<i class="material-icons filethumb">insert_drive_file</i>
-
-				<img class="imgthumb" onerror="this.classList.add('imgthumb-fail');" style="display: none;" />
-			</div>
-
-			<br />
-
-			<div class="filename ellipsis"></div>
-		</div>
-	</template>
-
-	<template id="fbox-root-template">
-		<div class="filebox fbox-root">
-			<a class="filelink">
-				<i class="folderthumb material-icons">folder</i>
-				<p class="filename filelinkname"></p>
-			</a>
-		</div>
-	</template>
-
-	<template id="facebox-template">
-		<div class="facebox mdc-elevation--z2 mdc-ripple-surface mdc-ripple-surface--primary" oncontextmenu="contextMenu.open(this, event); return false;">
-			<div class="face-box-sel-border"></div>
-			<img class="imgthumb facethumb" onload="$(this).parent().find('i.face-alt').css('display', 'none');" />
-			<i class="material-icons face-alt">face</i>
-			<i class="material-icons face-status"></i>
-			<mdc-checkbox class="facecheckbox"></mdc-checkbox>
-		</div>
-	</template>
-
-	<template id="facebox-root-template">
-		<div class="facebox face-root">
-			<a class="filelink">
-				<img class="imgthumb facethumb" onload="$(this).parent().find('i.face-alt').css('display', 'none');" />
-				<i class="material-icons face-alt">face</i>
-				<p class="filename filelinkname">
-					<span class="fbox-person-name"></span>
-					<span class="fbox-person-count"></span>
-				</p>
-			</a>
-		</div>
-	</template>
-
-	<template id="linksItem-template">
-		<span class="leftcolItem linksItem">
-			<div class="link linkName modal-trigger" href="#linkModal" onclick="showLink(this);"></div>
-			<input class="delLinkCheck" type="checkbox" name="delLink[]" />
-			<button class="linkDel btn waves-effect waves-light material-icons" onclick="this.previousElementSibling.checked = true; document.forms['linkDelForm'].submit();">clear</button>
-			<br />
-		</span>
-	</template>
-
-	<template id="peopleItem-template">
-		<a class="mdc-list-item">
-			<img class="bad-face-thumb" onload="$(this).removeClass('bad-face-thumb');" />
-			<i class="material-icons face-thumb-fail">face</i>
-			<span class="personListName">
-				<span></span>
-			</span>
-			<span class="personListCount"></span>
-		</a>
-	</template> -->
 </div>
 
 
