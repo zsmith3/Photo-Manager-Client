@@ -69,6 +69,7 @@ var Platform = {
 		// TODO different sizes (as parameter to this)
 	},
 
+	// Display notification
 	notify (data) {
 		cordova.plugins.notification.local.schedule({
 			id: data.id,
@@ -76,5 +77,15 @@ var Platform = {
 			text: data.text,
 			progressBar: (data.progress || data.progress === 0) ? { value: data.progress } : null
 		});
+	},
+
+	// Get the src for an image
+	getImgSrc: function (object, size) {
+		switch (object.type) {
+		case "file":
+			return mediaRequest("api/images/" + object.id + size);
+		case "face":
+			return mediaRequest("api/images/faces/" + object.id + size);
+		}
 	}
 };
