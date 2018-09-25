@@ -7,7 +7,7 @@ $(document).ready(function () {
 	} else {
 		apiRequest("membership/status/").then(function (data) {
 			if (data.authenticated) {
-				window.location = getPageUrl("index");
+				window.location = Platform.urls.getPageUrl("index");
 			}
 		}).catch(function () {});
 	}
@@ -21,7 +21,7 @@ function submitLogin () {
 	apiRequest("membership/login/", "POST", data).then(function (data) {
 		if ($("#remain_in").get(0).checked) window.localStorage.setItem("jwtToken", data.token);
 		else window.sessionStorage.setItem("jwtToken", data.token);
-		window.location = getPageUrl("index");
+		window.location = Platform.urls.getPageUrl("index");
 	}).catch(function (error) {
 		$("#status").text("Incorrect Credentials.");
 	});
