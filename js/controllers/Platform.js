@@ -1,5 +1,7 @@
 // Platform-specific functions
 var Platform = {
+	fileTransfer: null,
+
 	// Get the full paths of all files in a directory and subdirectories
 	getLocalFiles: function (baseDir) {
 		return new Promise(function (resolve, reject) {
@@ -64,7 +66,7 @@ var Platform = {
 	// Download a list of files and save them locally
 	downloadFiles: function (localDir, files) {
 		return promiseChain(files, function (resolve, reject, file) {
-			fileTransfer.download(serverUrl + "api/images/" + file.split("/").reverse()[0].split(".")[0] + "/", localDir + file, resolve, reject);
+			Platform.fileTransfer.download(serverUrl + "api/images/" + file.split("/").reverse()[0].split(".")[0] + "/", localDir + file, resolve, reject);
 		});
 		// TODO different sizes (as parameter to this)
 	},
@@ -89,3 +91,8 @@ var Platform = {
 		}
 	}
 };
+
+// Initialize when device is ready
+document.addEventListener("deviceready", function () {
+	Platform.fileTransfer = new FileTransfer();
+}, false);
