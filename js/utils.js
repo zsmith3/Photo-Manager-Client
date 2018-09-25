@@ -157,7 +157,7 @@ function trimUrl (url) {
 
 // Construct a new URL
 function getUrl (oldUrl, keepQuery, newQuery) {
-	oldUrl = oldUrl || getCurrentAddress();
+	oldUrl = oldUrl || Platform.urls.getCurrentAddress();
 	var qIndex = oldUrl.indexOf("?");
 	var queryParams, newUrl;
 	if (qIndex != -1) {

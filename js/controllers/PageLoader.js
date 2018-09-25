@@ -24,10 +24,10 @@ class PageLoader {
 
 			viewName: "files",
 			view: new FilesView(this),
-			queryParams: new URLSearchParams(getCurrentQuery()),
+			queryParams: new URLSearchParams(Platform.urls.getCurrentQuery()),
 
 			get folderType () {
-				let urlList = trimUrl(getCurrentAddress()).split("/");
+				let urlList = trimUrl(Platform.urls.getCurrentAddress()).split("/");
 				return urlList[0] + (urlList.length > 2 ? "" : "-root");
 			},
 			get objectType () {
@@ -81,14 +81,14 @@ class PageLoader {
 		}).catch(function () {
 			window.sessionStorage.removeItem("jwtToken");
 			window.localStorage.removeItem("jwtToken");
-			window.location = getPageUrl("login");
+			window.location = Platform.urls.getPageUrl("login");
 		});
 	}
 
 	logOut () {
 		window.localStorage.removeItem("jwtToken");
 		window.sessionStorage.removeItem("jwtToken");
-		window.location = getPageUrl("login");
+		window.location = Platform.urls.getPageUrl("login");
 	}
 
 	refreshConfig () {
@@ -149,7 +149,7 @@ class PageLoader {
 		$("#files .mdc-linear-progress").css("display", "");
 
 		apiUrl = trimUrl(displayUrl ? apiUrl : (this.data.apiUrl || ""));
-		displayUrl = trimUrl(displayUrl || getCurrentAddress() + getCurrentQuery());
+		displayUrl = trimUrl(displayUrl || Platform.urls.getCurrentAddress() + Platform.urls.getCurrentQuery());
 		if (queryParams) {
 			displayUrl = getUrl(displayUrl, !queryParams.removeOld, queryParams);
 			if (apiUrl) apiUrl = getUrl(apiUrl, !queryParams.removeOld, queryParams);
@@ -181,7 +181,7 @@ class PageLoader {
 		sortBar.refreshViewSwitcher();
 
 		addressBar.refreshUrls(linkType);
-		window.history.pushState("", "", getDisplayUrl(displayUrl));
+		window.history.pushState("", "", Platform.urls.getDisplayUrl(displayUrl));
 
 		if (apiUrl == "people/") {
 			if (this.data._data.loaded.people) this.refreshPeople();
@@ -202,7 +202,7 @@ class PageLoader {
 		if (fpp !== null) this.data.queryParams.set("fpp", fpp);
 		this.clearDefaultQueryParams();
 
-		window.history.pushState("", "", "/fileserver" + getCurrentAddress() + (this.data.queryParams.toString() ? ("?" + this.data.queryParams.toString()) : ""));
+		window.history.pushState("", "", "/fileserver" + Platform.urls.getCurrentAddress() + (this.data.queryParams.toString() ? ("?" + this.data.queryParams.toString()) : ""));
 
 		this.data.view.refreshPage(fpp, page);
 	}
@@ -251,7 +251,7 @@ class PageLoader {
 			this.data.view = new MapView(this);
 		}
 
-		if (!noRefresh) this.refreshFilesData(getCurrentAddress() + "?view=" + view);
+		if (!noRefresh) this.refreshFilesData(Platform.urls.getCurrentAddress() + "?view=" + view);
 	}
 
 	clearDefaultQueryParams () {

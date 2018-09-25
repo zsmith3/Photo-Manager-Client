@@ -21,7 +21,7 @@ class FileObject {
 			$("image-modal").get(0).openFile(this);
 		} else if (this.type == "folder") {
 			//pageLoader.refreshFilesData("folders/" + this.path.replace("&", "%26"), "folders/" + this.id);
-			pageLoader.refreshFilesData("folders/" + this.path.replace("&", "%26") + getCurrentQuery(), "folders/" + this.id + "/" + getCurrentQuery());
+			pageLoader.refreshFilesData("folders/" + this.path.replace("&", "%26") + Platform.urls.getCurrentQuery(), "folders/" + this.id + "/" + Platform.urls.getCurrentQuery());
 			// TODO more general approach to URL encoding
 		}
 	}

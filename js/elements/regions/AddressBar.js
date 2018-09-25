@@ -47,7 +47,7 @@ class AddressBar extends HTMLElement {
 
 	// Refresh stored history upon following link
 	refreshUrls (type) {
-		let currentUrl = getCurrentAddress() + getCurrentQuery();
+		let currentUrl = Platform.urls.getCurrentAddress() + Platform.urls.getCurrentQuery();
 		if (type == "back") {
 			this.backUrls.pop();
 			this.forwardUrls.push(currentUrl);
@@ -84,7 +84,7 @@ class AddressBar extends HTMLElement {
 
 		//$("#arrow-up-link").attr("href", addGet(toAdd, toDel));
 		let titleArray = pageLoader.data.address.split("/").filter(function (entry) { return entry.trim() != ""; });
-		$("#addressBar-arrow-up").attr("href", "/" + [pageLoader.data.folderType, titleArray.slice(0, titleArray.length - 1).join("/"), getCurrentQuery()].filter(function (entry) { return entry.trim() != ""; }).join("/"));
+		$("#addressBar-arrow-up").attr("href", "/" + [pageLoader.data.folderType, titleArray.slice(0, titleArray.length - 1).join("/"), Platform.urls.getCurrentQuery()].filter(function (entry) { return entry.trim() != ""; }).join("/"));
 	}
 
 	// Refresh folder address
@@ -100,7 +100,7 @@ class AddressBar extends HTMLElement {
 			let newItem;
 			if (i < titleArray.length - 1) {
 				newItem = $("<a class='link'></a>")
-					.attr("href", "/" + [pageLoader.data.folderType, titleArray.slice(0, parseInt(i) + 1).join("/"), getCurrentQuery()].join("/"))
+					.attr("href", "/" + [pageLoader.data.folderType, titleArray.slice(0, parseInt(i) + 1).join("/"), Platform.urls.getCurrentQuery()].join("/"))
 					.attr("title", pathItem);
 			} else {
 				newItem = $("<span></span>")
