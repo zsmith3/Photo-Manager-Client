@@ -31,7 +31,7 @@ class FileObject {
 		if (index in this.data) {
 			return this.data[index];
 		} else {
-			return serverUrl + "api/images/" + this.id + ImageLoader.imgSizes[index];
+			return Platform.urls.serverUrl + "api/images/" + this.id + ImageLoader.imgSizes[index];
 		}
 	}
 

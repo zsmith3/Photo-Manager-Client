@@ -48,7 +48,7 @@ function apiRequest (url, type, data) {
 	if (data) headers["Content-Type"] = "application/msgpack";
 
 	return new Promise(function (resolve, reject) {
-		httpRequest(serverUrl + "api/" + url, type, encData, headers).then(function (data) {
+		httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers).then(function (data) {
 			if (type == "DELETE") {
 				resolve();
 				return;
@@ -76,7 +76,7 @@ function apiRequest (url, type, data) {
 // Base64 data url requests function
 function mediaRequest (url) {
 	return new Promise (function (resolve, reject) {
-		httpRequest(serverUrl + url, "GET", null, null, "blob", "readAsDataURL").then(resolve).catch(reject);
+		httpRequest(Platform.urls.serverUrl + url, "GET", null, null, "blob", "readAsDataURL").then(resolve).catch(reject);
 	});
 }
 
