@@ -28,21 +28,26 @@ var Input = {
 	},
 
 	onEscape: function () {
-		imgPopup.classList.remove("imgPopupShown");
-		imgPopup.classList.add("imgPopupHidden");
-		setTimeout(function () {imgPopupModal.style.display = "none";}, 200);
-		// TODO
+		$("image-modal").get(0).hide();
 	},
 
-	onArrowLeft: function () { if (!switchFile(-1) && !modalIsOpen()) moveSel("x", -1); },
+	onArrowLeft: function () {
+		if ($("image-modal").get(0).open) $("image-modal").get(0).switchFile(-1);
+		else pageLoader.filesContainer.moveSelection("x", -1);
+	},
 
-	onArrowRight: function () { if (!switchFile(1) && !modalIsOpen()) moveSel("x", 1); },
+	onArrowRight: function () {
+		if ($("image-modal").get(0).open) $("image-modal").get(0).switchFile(1);
+		else pageLoader.filesContainer.moveSelection("x", 1);
+	},
 
-	onArrowUp: function () { if (folderType.indexOf("file") === -1 && imgPopupModal.style.display != "block" && !modalIsOpen()) moveSel("y", -1); },
+	onArrowUp: function () { if (!$("image-modal").get(0).open) pageLoader.filesContainer.moveSelection("y", -1); },
 
-	onArrowDown: function () { if (folderType.indexOf("file") === -1 && imgPopupModal.style.display != "block" && !modalIsOpen()) moveSel("y", 1); },
+	onArrowDown: function () { if (!$("image-modal").get(0).open) pageLoader.filesContainer.moveSelection("y", 1); },
 
-	onSpace: function () {
+	// TODO mobile stuff
+
+	/* onSpace: function () {
 		if (!modalIsOpen()) { // TODO Input
 			event.preventDefault();
 			confirmAction("star", "star %f");
@@ -56,7 +61,7 @@ var Input = {
 			confirmAction("delete", "mark %f for deletion");
 			$("#modal-confirm").modal("open");
 		}
-	},
+	}, */
 
 	on0: function () { $("image-modal").get(0).setZoom("min", "min", "c", "c"); },
 

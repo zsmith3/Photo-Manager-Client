@@ -130,17 +130,59 @@ class FilesContainer extends HTMLElement {
 	}
 
 	selectRange (last) {
-		if (!("lastSelected" in this)) this.lastSelected = $("file-box").get(0);
+		if (!("lastSelected" in this)) {
+			if (this.selection.length) this.lastSelected = this.getFilebox(this.selection[0]);
+			else this.lastSelected = $("file-box").get(0);
+		}
 
-		let container = this;
+		let _this = this;
 		$(this).find("file-box, face-box").each(function () {
-			if ((this.compareDocumentPosition(last) == container.lastSelected.compareDocumentPosition(last) &&
-				this.compareDocumentPosition(container.lastSelected) == last.compareDocumentPosition(container.lastSelected))
-				|| (this == container.lastSelected || this == last))
+			if ((this.compareDocumentPosition(last) == _this.lastSelected.compareDocumentPosition(last) &&
+				this.compareDocumentPosition(_this.lastSelected) == last.compareDocumentPosition(_this.lastSelected))
+				|| (this == _this.lastSelected || this == last))
 			{
 				this.checkbox.checked = true;
 			}
 		});
+
+		this.updateSelection();
+
+		this.onSelectionChange();
+	}
+
+	moveSelection (axis, direction) {
+		if (!("lastSelected" in this)) {
+			if (this.selection.length) this.lastSelected = this.getFilebox(this.selection[0]);
+			else this.lastSelected = $("file-box").get(0);
+		}
+
+		let currentRect = this.lastSelected.getBoundingClientRect();
+		let currentX = currentRect.x + currentRect.width / 2;
+		let currentY = currentRect.y + currentRect.height / 2;
+
+		let newX = currentX + direction * (axis == "x" ? currentRect.width : 0);
+		let newY = currentY + direction * (axis == "y" ? currentRect.height : 0);
+
+		let newFBoxes = $(document.elementFromPoint(newX, newY)).closest("file-box");
+
+		let lastFile = this.getAdjacentFile(this.lastSelected.file, -1);
+		let nextFile = this.getAdjacentFile(this.lastSelected.file, 1);
+		let defaults = {
+			"x-1": lastFile ? this.getFilebox(lastFile.id) : null,
+			"x1": nextFile ? this.getFilebox(nextFile.id) : null,
+			"y-1": $("file-box").get(0),
+			"y1": $("file-box").get($("file-box").length - 1)
+		};
+
+		let newFBox;
+		if (newFBoxes.length) newFBox = newFBoxes.get(0);
+		else newFBox = defaults[axis + direction];
+
+		if (newFBox === null) return;
+
+		this.selectAll(false, true);
+		newFBox.selected = true;
+		this.lastSelected = newFBox;
 
 		this.updateSelection();
 

@@ -30,9 +30,11 @@ class ImageModal extends HTMLElement {
 
 	switchFile (direction) {
 		if (pageLoader.data.objectType == "files") {
-			this.openFile(pageLoader.filesContainer.getAdjacentFile(this.file, direction, "image"));
+			let nextFile = pageLoader.filesContainer.getAdjacentFile(this.file, direction, "image");
+			if (nextFile) this.openFile(nextFile);
 		} else if (pageLoader.data.objectType == "faces") {
-			this.openFile(pageLoader.filesContainer.getAdjacentFile({id: this.file.parent}, direction).file);
+			let nextFile = pageLoader.filesContainer.getAdjacentFile({id: this.file.parent}, direction).file;
+			if (nextFile) this.openFile();
 		}
 	}
 
