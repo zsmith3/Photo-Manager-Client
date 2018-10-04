@@ -1,7 +1,7 @@
 image-modal {
 	visibility: hidden;
 	position: fixed;
-	z-index: 1001;
+	z-index: 5;
 	left: 0;
 	top: 0;
 	width: 100vw;
@@ -10,9 +10,92 @@ image-modal {
 	background-color: rgba(0, 0, 0, 0.8);
 }
 
+#im-toolbar {
+	position: fixed;
+	width: 100vw;
+	background: rgba(0, 0, 0, 0.6);
+	z-index: 5;
+}
+
+#im-icons-left {
+	float: left;
+	margin: 2px;
+	margin-left: 20px;
+}
+
+#im-icons-right {
+	float: right;
+	margin: 2px;
+	margin-right: 100px;
+}
+
+.im-button {
+	color: white;
+	cursor: pointer;
+	background: none;
+	border: none;
+	width: 60px;
+	height: 60px;
+	padding: 0;
+	margin: 0 10px;
+}
+
+.im-button .material-icons {
+	font-size: 48px;
+	cursor: pointer;
+	vertical-align: middle;
+}
+
+.im-button .material-icons + .material-icons {
+	font-size: 32px;
+	margin-left: -32px;
+	text-shadow: -2px 0 #000, 0 2px #000, 2px 0 #000, 0 -2px #000;
+	vertical-align: bottom;
+}
+
+.im-button:active .material-icons {
+	font-size: 40px;
+}
+
+.im-button:active .material-icons + .material-icons {
+	font-size: 26px;
+	margin-left: -26px;
+}
+
+.im-button:hover {
+	color: lightgrey;
+}
+
+.im-button:focus {
+	outline: none;
+}
+
+#im-button-close {
+	position: absolute;
+	top: 2px;
+}
+
+#im-title {
+	color: white;
+	margin: 6px;
+	display: inline-block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+
+#im-main {
+	position: fixed;
+	width: 100vw;
+	height: calc(100vh - 64px);
+	overflow: hidden;
+}
+
 #im-image {
 	position: absolute;
 	cursor: move;
+	margin-top: -96px;
 }
 
 .im-image-shown {
@@ -53,4 +136,92 @@ image-modal {
 .im-arrow:hover {
 	background: rgba(0, 0, 0, 0.8);
 	opacity: 1;
+}
+
+@media only screen and (max-width: 800px) {
+	#im-toolbar {
+		height: 56px;
+	}
+
+	#im-icons-left, #im-icons-left {
+		display: none;
+	}
+
+	#im-button-close, #im-button-menu {
+		width: 50px;
+		height: 50px;
+		top: 3px;
+	}
+
+	#im-button-close {
+		left: 3px;
+	}
+
+	#im-button-close .material-icons, #im-button-menu .material-icons {
+		font-size: 24px;
+	}
+
+	#im-button-menu {
+		position: absolute;
+		right: 3px;
+	}
+
+	#im-icon-options {
+		display: block;
+	}
+
+	#im-title {
+		font-size: 24px;
+		margin: 13px 20px;
+		width: calc(100vw - 140px);
+	}
+
+	#im-toolbar #toolBar-menu {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+	}
+
+	#im-toolbar #toolBar-menu-button {
+		color: white;
+	}
+
+	#im-main {
+		top: 56px;
+	}
+}
+
+@media only screen and (min-width: 800px) {
+	#im-toolbar {
+		height: 64px;
+	}
+
+	#im-button-close {
+		right: 4px;
+	}
+
+	#im-button-close .material-icons {
+		font-size: 56px;
+	}
+
+	#im-button-close:active .material-icons {
+		font-size: 48px;
+	}
+
+	#im-button-menu {
+		display: none;
+	}
+
+	#im-icon-options {
+		display: none;
+	}
+
+	#im-title {
+		font-size: 42px;
+		margin: 20px;
+	}
+
+	#im-main {
+		top: 64px;
+	}
 }

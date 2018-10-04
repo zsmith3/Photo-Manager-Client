@@ -2,12 +2,39 @@
 class ImageModal extends HTMLElement {
 	connectedCallback () {
 		this.open = false;
-		this.dragging = { isMoving: false };
+		this.dragging = { doneX: 0, doneY: 0, scaleDone: 1, resetTimeout: -1 };
 
 		let _this = this;
 		window.addEventListener("load", function () {
 			$(_this).find("*").each(function () { this.modal = _this; });
 		});
+
+		setTimeout(function () {
+			_this.hammerApi = new Hammer($(_this).find("#im-image").get(0));
+			_this.hammerApi.on("swipe", function (event) {
+				if (pageLoader.config.platform == "mobile") {
+					let direction = Math.round(-event.deltaX / 100);
+					direction = direction / Math.abs(direction);
+					if (direction) _this.switchFile(direction);
+				}
+			});
+
+			_this.hammerApi.get("pinch").set({ enable: true });
+			_this.hammerApi.on("pinch", function (event) {
+				if (event.eventType == Hammer.INPUT_START) _this.dragging.scaleDone = 1;
+
+				_this.zoom(event.scale / _this.dragging.scaleDone, event.center.x, event.center.y);
+				_this.dragging.scaleDone = event.scale;
+
+				_this.setResetTimeout();
+			});
+
+			_this.hammerApi.on("pan", function (event) {
+				_this.drag(event);
+
+				_this.setResetTimeout();
+			});
+		}, 0);
 	}
 
 	openFile (file) {
@@ -18,6 +45,8 @@ class ImageModal extends HTMLElement {
 			_this.setZoom("min", "min", "c", "c");
 			_this.imageLoader.onImageLoad = null;
 		});
+
+		$(this).find("#im-title").text(this.file.name);
 
 		this.imageLoader.update(this.file);
 
@@ -40,6 +69,9 @@ class ImageModal extends HTMLElement {
 
 	displayArrows () {
 		$(this).find(".im-arrow").css("display", "none");
+
+		if (pageLoader.config.platform == "mobile") return;
+
 		if (pageLoader.data.objectType == "files") {
 			if (pageLoader.filesContainer.getAdjacentFile(this.file, -1, "image")) {
 				$(this).find("#im-arrow-left").css("display", "");
@@ -64,6 +96,8 @@ class ImageModal extends HTMLElement {
 
 		this.image.removeClass("im-image-hidden").addClass("im-image-shown");
 
+		if (window.innerWidth < 800) $("#toolBar-menu").appendTo($(this).find("#im-toolbar"));
+
 		this.open = true;
 	}
 
@@ -72,6 +106,8 @@ class ImageModal extends HTMLElement {
 
 		this.image.removeClass("im-image-shown").addClass("im-image-hidden");
 		$(this).css("visibility", "hidden");
+
+		$(this).find("#toolBar-menu").appendTo(".mdc-toolbar__section--align-end");
 
 		this.open = false;
 	}
@@ -100,7 +136,7 @@ class ImageModal extends HTMLElement {
 		if (maxW == "max") maxW = this.file.width;
 		else if (maxW == "min") maxW = window.innerWidth - (pageLoader.config.platform == "mobile" ? 0 : 300);
 		if (maxH == "max") maxH = this.file.height;
-		else if (maxH == "min") maxH = (window.innerHeight - (pageLoader.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight)) * (pageLoader.config.platform == "mobile" ? 1 : 0.9);
+		else if (maxH == "min") maxH = window.innerHeight - (pageLoader.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight);
 		// TODO faces support
 
 		//maxW = (maxW || this.file.zoom.maxW) || (window.innerWidth - (pageLoader.config.platform == "mobile" ? 0 : 300));
@@ -158,32 +194,81 @@ class ImageModal extends HTMLElement {
 
 	// Drag the image
 	drag (event) {
-		if (!this.dragging.isMoving) return;
+		if (Math.abs(event.deltaX) < 10 && Math.abs(event.deltaY) < 10) return;
 
-		var deltaX = event.clientX - this.dragging.startX;
-		var deltaY = event.clientY - this.dragging.startY;
-
-		if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) return;
-
-		var newX = (getStyleValue($(this).find("#im-image").get(0).style.left) + deltaX - this.dragging.doneX);
-		var newY = (getStyleValue($(this).find("#im-image").get(0).style.top) + deltaY - this.dragging.doneY);
+		var newX = getStyleValue($(this).find("#im-image").get(0).style.left) + event.deltaX - this.dragging.doneX;
+		var newY = getStyleValue($(this).find("#im-image").get(0).style.top) + event.deltaY - this.dragging.doneY;
 
 		$(this).find("#im-image").css({"left": newX, "top": newY});
 
-		this.dragging.doneX = deltaX;
-		this.dragging.doneY = deltaY;
+		this.dragging.doneX = event.deltaX;
+		this.dragging.doneY = event.deltaY;
 
 		this.file.zoom.xPos = newX;
 		this.file.zoom.yPos = newY;
+
+		if (event.eventType == Hammer.INPUT_END) {
+			this.dragging.doneX = 0;
+			this.dragging.doneY = 0;
+		}
 	}
 
-	// Begin dragging the image
-	startDrag (event) {
-		this.dragging.isMoving = true;
-		this.dragging.startX = event.clientX;
-		this.dragging.startY = event.clientY;
-		this.dragging.doneX = 0;
-		this.dragging.doneY = 0;
+	clearToolbarButtons () {
+		$(this).find("#im-icons-left").html("");
+		$(this).find("#im-icons-right").html("");
+	}
+
+	addToolbarButton (layout, toolBar) {
+		if ("top" in layout && "bottom" in layout) {
+			this.addToolbarButton(layout.top, toolBar);
+			this.addToolbarButton(layout.bottom, toolBar);
+			return;
+		}
+
+		let button = $("<button></button>").addClass("im-button").appendTo($(this).find("#im-icons-left"));
+
+		let _this = this;
+		toolBar.setOnClick(button.get(0), layout, function () {
+			_this.selectCurrentFile();
+		});
+
+		button.attr("title", layout.title);
+
+		for (var i = 0; i < layout.icon.length; i++) {
+			$("<i class='material-icons'></i>").text(layout.icon[i]).appendTo(button);
+		}
+	}
+
+	updateButtonPositions () {
+		let allButtons = $(this).find("#im-icons-left .im-button, #im-icons-left .im-button");
+
+		for (var i = 0; i <= allButtons.length / 2; i++) $(allButtons.get(i)).appendTo($(this).find("#im-icons-left"));
+		for (; i < allButtons.length; i++) $(allButtons.get(i)).appendTo($(this).find("#im-icons-right"));
+
+		let maxWidth = Math.max($(this).find("#im-icons-left").width(), $(this).find("#im-icons-right").width() + 80);
+		$(this).find("#im-icons-left").css("width", maxWidth + "px");
+		$(this).find("#im-icons-right").css("width", (maxWidth - 80) + "px");
+
+		let totalUsed = $(this).find("#im-icons-left").width() + $(this).find("#im-icons-right").width() + 140;
+		let maxLeft = window.innerWidth - totalUsed;
+
+		$(this).find("#im-title").css("max-width", maxLeft);
+	}
+
+	selectCurrentFile () {
+		pageLoader.filesContainer.selectAll(false);
+		let fbox = pageLoader.filesContainer.getFilebox(this.file.id);
+		fbox.selected = true;
+		fbox.updateSelection();
+	}
+
+	setResetTimeout () {
+		window.clearTimeout(this.dragging.resetTimeout);
+
+		if (pageLoader.config.platform == "mobile") {
+			let _this = this;
+			this.dragging.resetTimeout = window.setTimeout(function () { if (Input.touchesDown == 0) _this.setZoom("min", "min", "c", "c"); }, 100);
+		}
 	}
 }
 

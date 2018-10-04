@@ -3,6 +3,7 @@ var Input = {
 	keysDown: {},
 	xPos: -1,
 	yPos: -1,
+	touchesDown: 0,
 
 	// Register pressed key
 	keydown: function (event) {
@@ -70,15 +71,23 @@ var Input = {
 	mousemove: function (event) {
 		Input.xPos = event.clientX;
 		Input.yPos = event.clientY;
-		$("image-modal").get(0).drag(event);
+		// $("image-modal").get(0).drag(event);
 	},
 
-	mouseup: function (event) {
+	/* mouseup: function (event) {
 		if ($("image-modal").get(0).dragging.isMoving) {
 			setTimeout(function () { $("image-modal").get(0).dragging.isMoving = false; }, 50);
 
 			event.stopPropagation();
 		}
+	}, */
+
+	touchstart: function (event) {
+		Input.touchesDown++;
+	},
+
+	touchend: function (event) {
+		Input.touchesDown--;
 	},
 
 	click: function (event) {
@@ -111,3 +120,6 @@ window.onmousemove = Input.mousemove;
 window.onmouseup = Input.mouseup;
 
 window.onclick = Input.click;
+
+window.ontouchstart = Input.touchstart;
+window.ontouchend = Input.touchend;
