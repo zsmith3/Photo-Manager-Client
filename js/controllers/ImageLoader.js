@@ -85,7 +85,11 @@ class ImageLoader {
 
 		this.currentState += 1;
 
+		let currentId = this.object.id;
+
 		Platform.getImgSrc(this.object, this.getSizes()[this.currentState]).then(function (url) {
+			if (_this.object.id != currentId) return;
+
 			$(_this.image).attr("src", url);
 			_this.object.file.data[_this.currentState] = url;
 		}).catch(function () { _this.loadImage(); });

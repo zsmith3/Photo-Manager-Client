@@ -245,25 +245,24 @@
 				<br />
 			</mdc-modal>
 
-			<image-modal onclick="if (event.target == this) this.hide();">
+			<image-modal>
 				<div id="im-toolbar">
-					<div id="iPIconsLeft"></div>
+					<div id="im-icons-left"></div>
 
-					<p id="iPFileName"></p>
+					<p id="im-title"></p>
 
-					<div id="iPIconsRight"></div>
+					<div id="im-icons-right"></div>
 
-					<span id="closeImgPopup" class="material-icons" onclick="this.modal.hide();">clear</span>
-					<span id="iPOptions" class="material-icons" onclick="$('#optionsButton')[0].onclick();">more_vert</span>
+					<button id="im-button-close" class="im-button" onclick="this.modal.hide();">
+						<i class="material-icons">clear</i>
+					</button>
 				</div>
 
 				<div id="im-main">
 					<div class="im-arrow material-icons" id="im-arrow-left" onclick="event.stopPropagation(); this.modal.switchFile(-1);">keyboard_arrow_left</div>
 					<div class="im-arrow material-icons" id="im-arrow-right" onclick="event.stopPropagation(); this.modal.switchFile(1);">keyboard_arrow_right</div>
-					<i class="material-icons iPArrowInd" id="iPArrowIndLeft">keyboard_arrow_left</i>
-					<i class="material-icons iPArrowInd" id="iPArrowIndRight">keyboard_arrow_right</i>
 
-					<img id="im-image" class="im-image-hidden" onmousedown="this.modal.startDrag(event);" ondblclick="this.modal.setZoom('min', 'min', 'c', 'c');" onwheel="this.modal.zoom(1 - event.deltaY / 500, event.clientX, event.clientY);" />
+					<img id="im-image" class="im-image-hidden" ondblclick="this.modal.setZoom('min', 'min', 'c', 'c');" onwheel="this.modal.zoom(1 - event.deltaY / 500, event.clientX, event.clientY);" />
 				</div>
 			</image-modal>
 
