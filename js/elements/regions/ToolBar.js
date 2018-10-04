@@ -15,30 +15,40 @@ class ToolBar extends ToggleBar {
 		}
 
 		if ($(this).attr("data-type") != tbType || resize) {
+			let menu;
+
 			if (window.innerWidth >= 800) {
 				$("#toolBar-large-container").html("");
+
+				let imageModal = $("image-modal").get(0);
+				imageModal.clearToolbarButtons();
+
 				for (var i = 0; i < buttonList.length; i++) {
-					if (tbType == "stdalbum" || buttonList[i].id != "albumRemButton") this.createButton(buttonList[i]).appendTo("#toolBar-large-container");
-				}
-			} else {
-				let menu = $("#toolBar-menu").get(0);
-				for (var i = 0; i < ToolBar.selButtons.length; i++) {
-					//this.createMenuItem(ToolBar.selButtons[i]).appendTo("#toolBar-menu");
-					menu.addOption(ToolBar.selButtons[i]);
-				}
-				menu.addDivider();
-				for (i = 0; i < buttonList.length; i++) {
 					if (tbType == "stdalbum" || buttonList[i].id != "albumRemButton") {
-						if ("top" in buttonList[i] && "bottom" in buttonList[i]) {
-							//this.createMenuItem(buttonList[i].top).appendTo("#toolBar-menu");
-							//this.createMenuItem(buttonList[i].bottom).appendTo("#toolBar-menu");
-							menu.addOption(buttonList[i].top);
-							menu.addOption(buttonList[i].bottom);
-						} else menu.addOption(buttonList[i]); //this.createMenuItem(buttonList[i]).appendTo("#toolBar-menu");
+						this.createButton(buttonList[i]).appendTo("#toolBar-large-container");
+						imageModal.addToolbarButton(buttonList[i], this);
 					}
 				}
-			}
 
+				imageModal.updateButtonPositions();
+
+				menu = $("#contextMenu").get(0);
+			} else menu = $("#toolBar-menu").get(0);
+
+			$(menu).find(".mdc-menu__items").html("");
+
+			for (var i = 0; i < ToolBar.selButtons.length; i++) {
+				this.addMenuItem(menu, ToolBar.selButtons[i]);
+			}
+			menu.addDivider();
+			for (i = 0; i < buttonList.length; i++) {
+				if (tbType == "stdalbum" || buttonList[i].id != "albumRemButton") {
+					if ("top" in buttonList[i] && "bottom" in buttonList[i]) {
+						this.addMenuItem(menu, buttonList[i].top);
+						this.addMenuItem(menu, buttonList[i].bottom);
+					} else this.addMenuItem(menu, buttonList[i]);
+				}
+			}
 
 			$(this).attr("data-type", tbType);
 		}
@@ -65,25 +75,10 @@ class ToolBar extends ToggleBar {
 
 		button.addClass(type);
 		button.attr("id", layout.id);
-		button.attr("href", layout.modal);
 
-		let _this = this;
-		if (layout.action) {
-			button.get(0).onclick = function () {
-				if (layout.confirmText) {
-					_this.confirmAction(layout.confirmText).then(function () {
-						pageLoader.filesContainer.applyToSelection(layout.action, layout.undoAction);
-					});
-				} else {
-					if (layout.modalSetup) layout.modalSetup();
-
-					pageLoader.filesContainer.applyToSelection(layout.action, layout.undoAction);
-				}
-			};
-		} else button.attr("onclick", layout.onclick);
+		this.setOnClick(button.get(0), layout);
 
 		button.attr("title", layout.title);
-		if (layout.modal) button.get(0).addEventListener("click", function () { $($(this).attr("href")).get(0).open(this); });
 
 		for (var i = 0; i < layout.icon.length; i++) {
 			$("<i class='material-icons'></i>").text(layout.icon[i]).appendTo(button);
@@ -97,26 +92,39 @@ class ToolBar extends ToggleBar {
 		return button;
 	}
 
-	/* // Create a toolbar menu item from a layout object
-	createMenuItem (layout) {
-		var item = $("<option></option>")
-			.attr("id", layout.id)
-			.attr("href", layout.modal)
-			.attr("onclick", layout.onclick)
-			.attr("title", layout.title);
+	setOnClick (button, layout, setSelection) {
+		let _this = this;
+		button.tbLayout = Object.assign({}, layout);
+		if (setSelection) button.tbLayout.setSelection = setSelection.bind(button);
+		button.onclick = function (event) {
+			if (this.tbLayout.action) {
+				if (this.tbLayout.setSelection) this.tbLayout.setSelection();
 
-		if (layout.modal) item.get(0).addEventListener("click", function () { $($(this).attr("href")).get(0).open(this); });
+				if (this.tbLayout.confirmText) {
+					let __this = this;
+					_this.confirmAction(this.tbLayout.confirmText).then(function () {
+						pageLoader.filesContainer.applyToSelection(__this.tbLayout.action, __this.tbLayout.undoAction);
+					});
+				} else {
+					if (this.tbLayout.modalSetup) this.tbLayout.modalSetup();
 
-		for (var i = 0; i < layout.icon.length; i++) {
-			$("<i class='material-icons'></i>").text(layout.icon[i]).appendTo(item);
-		}
+					pageLoader.filesContainer.applyToSelection(this.tbLayout.action, this.tbLayout.undoAction);
+				}
+			}
 
-		if (layout.text) {
-			$("<span></span>").text(layout.text.replace("<br />", " ")).appendTo(item);
-		}
+			if (this.tbLayout.onclick) this.tbLayout.onclick.apply(this, [event]);
 
-		return item;
-	} */
+			if (this.tbLayout.modal) $(this.tbLayout.modal).get(0).open(this);
+		};
+	}
+
+	addMenuItem (menu, layout) {
+		let button = menu.addOption(layout);
+		this.setOnClick(button.get(0), layout, function () {
+			let imageModal = $(this).closest("image-modal");
+			if (imageModal.length) imageModal.get(0).selectCurrentFile();
+		});
+	}
 
 	// Display confirmation modal for simple actions
 	confirmAction (text, options, anchor) {

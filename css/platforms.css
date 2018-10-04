@@ -79,23 +79,6 @@
 		margin-top: 2px;
 		margin-right: 5px;
 	}
-
-	#iPIconsLeft, #iPIconsRight {
-		display: none;
-	}
-
-	#closeImgPopup {
-		left: 10px;
-	}
-
-	#iPOptions {
-		display: block;
-	}
-
-	#iPFileName {
-		margin: 10px 50px;
-		max-width: calc(100vw - 100px);
-	}
 }
 
 @media only screen and (min-width: 800px) {
@@ -168,22 +151,6 @@
 	#sortBar .mdc-icon-toggle {
 		margin-right: 10px;
 		margin-top: 3px;
-	}
-
-	#iPIconsLeft, #iPIconsRight {
-		display: inline-block;
-	}
-
-	#closeImgPopup {
-		right: 10px;
-	}
-
-	#iPOptions {
-		display: none;
-	}
-
-	#iPFileName {
-		margin: 20px;
 	}
 
 	#navigationDrawer > #albums, #navigationDrawer > #people {
