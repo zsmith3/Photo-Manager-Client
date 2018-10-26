@@ -22,7 +22,7 @@ class Facebox extends Filebox {
 		$(this).css({"width": scale * 8 / 15, "height": scale * 2 / 3});
 		$(this).find(".face-alt").css({"font-size": (scale * 8 / 15) + "px", "line-height": (scale * 2 / 3) + "px"});
 		$(this).find(".face-status").css({"font-size": (scale / 5) + "px", "line-height": (scale * 4 / 15) + "px"});
-		$(this).find(".facecheckbox").css("display", pageLoader.config.get("select_mode") == 1 ? "none" : "");
+		$(this).find(".facecheckbox").css("display", app.config.get("select_mode") == 1 ? "none" : "");
 		//$(this).find(".thumbbox").css({"font-size": (scale * 2 / 3) + "px", "line-height": (scale * 2 / 3) + "px"});
 		//$(this).find(".fcbox-cont").css("height", "calc(5% + " + (Math.sqrt(scale) * 1.2 + 6) + "px)");
 		this.checkbox.setSize(Math.sqrt(scale) * 1.5);

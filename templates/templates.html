@@ -55,7 +55,7 @@
 			 onmouseout="$(this).find('.personListCount').css('opacity', 1);">
 				<span class="people-group-name"></span>
 				<span class="personListCount"></span>
-				<hover-icon-button onclick="toolBar.showAddModal('person', $(this).parent().attr('data-id'), null, this).then(function (data) { Person.create(data.parent, data.name); });">add</hover-icon-button>
+				<hover-icon-button onclick="toolBar.showAddModal('person', $(this).parent().attr('data-id'), null, this).then(function (data) { Person.create(data.name, data.parent); });">add</hover-icon-button>
 				<hover-icon-button onclick="let el = this; toolBar.confirmAction('delpgroup', 'delete group ' + $(this).parent().find('.people-group-name').text(), null, this).then(function () { PersonGroup.getById($(el).parent().attr('data-id')).delete(); });">clear</hover-icon-button>
 			</div>
 

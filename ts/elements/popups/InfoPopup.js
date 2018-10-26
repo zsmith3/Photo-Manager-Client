@@ -2,7 +2,7 @@
 class InfoPopup extends HTMLElement {
 	//Setup popup when hover starts
 	setup (item, event) {
-		if (pageLoader.config.platform == "mobile") return;
+		if (app.config.platform == "mobile") return;
 
 		this.item = item;
 		Input.xPos = event.clientX;
@@ -57,7 +57,7 @@ class InfoPopup extends HTMLElement {
 
 	//Hide popup
 	hide (div, event) {
-		if (pageLoader.config && pageLoader.config.platform == "mobile" || $(this).css("transform") == "matrix(0, 0, 0, 0, 0, 0)") return;
+		if (app.config && app.config.platform == "mobile" || $(this).css("transform") == "matrix(0, 0, 0, 0, 0, 0)") return;
 
 		Input.xPos = event.clientX;
 		Input.yPos = event.clientY;

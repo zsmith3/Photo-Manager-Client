@@ -2,7 +2,7 @@
 class ContextMenu extends MDCMenu {
 	//Open on right-click
 	open (fbox, event) {
-		if (pageLoader.config.platform == "mobile") return false;
+		if (app.config.platform == "mobile") return false;
 
 		if (!$(fbox).find("input[type=checkbox]").prop("checked")) fbox.select();
 

@@ -20,7 +20,7 @@ var Input = {
 	keyup: function (event) { Input.keysDown[event.key] = false; },
 
 	// Clear all pressed keys
-	clearKeysDown: function () { for (key in Input.keysDown) Input.keysDown[key] = false; },
+	clearKeysDown: function () { for (var key in Input.keysDown) Input.keysDown[key] = false; },
 
 	// Test if a key is down
 	isDown: function (key) {
@@ -29,22 +29,22 @@ var Input = {
 	},
 
 	onEscape: function () {
-		$("image-modal").get(0).hide();
+		app.els.imageModal.hide();
 	},
 
 	onArrowLeft: function () {
-		if ($("image-modal").get(0).open) $("image-modal").get(0).switchFile(-1);
-		else pageLoader.filesContainer.moveSelection("x", -1);
+		if (app.els.imageModal.open) app.els.imageModal.switchFile(-1);
+		else app.els.filesCont.moveSelection("x", -1);
 	},
 
 	onArrowRight: function () {
-		if ($("image-modal").get(0).open) $("image-modal").get(0).switchFile(1);
-		else pageLoader.filesContainer.moveSelection("x", 1);
+		if (app.els.imageModal.open) app.els.imageModal.switchFile(1);
+		else app.els.filesCont.moveSelection("x", 1);
 	},
 
-	onArrowUp: function () { if (!$("image-modal").get(0).open) pageLoader.filesContainer.moveSelection("y", -1); },
+	onArrowUp: function () { if (!app.els.imageModal.open) app.els.filesCont.moveSelection("y", -1); },
 
-	onArrowDown: function () { if (!$("image-modal").get(0).open) pageLoader.filesContainer.moveSelection("y", 1); },
+	onArrowDown: function () { if (!app.els.imageModal.open) app.els.filesCont.moveSelection("y", 1); },
 
 	// TODO mobile stuff
 
@@ -64,23 +64,15 @@ var Input = {
 		}
 	}, */
 
-	on0: function () { $("image-modal").get(0).setZoom("min", "min", "c", "c"); },
+	on0: function () { app.els.imageModal.setZoom("min", "min", "c", "c"); },
 
-	on1: function () { $("image-modal").get(0).setZoom("max", "max", "c", "c"); },
+	on1: function () { app.els.imageModal.setZoom("max", "max", "c", "c"); },
 
 	mousemove: function (event) {
 		Input.xPos = event.clientX;
 		Input.yPos = event.clientY;
-		// $("image-modal").get(0).drag(event);
+		// app.els.imageModal.drag(event);
 	},
-
-	/* mouseup: function (event) {
-		if ($("image-modal").get(0).dragging.isMoving) {
-			setTimeout(function () { $("image-modal").get(0).dragging.isMoving = false; }, 50);
-
-			event.stopPropagation();
-		}
-	}, */
 
 	touchstart: function (event) {
 		Input.touchesDown++;
@@ -102,9 +94,9 @@ var Input = {
 				if ($(target).hasClass("mdc-tab")) return;
 
 				if ($(target).attr("rel") == "no-refresh") {
-					pageLoader.refreshPage($(target).attr("data-fpp") || null, $(target).attr("data-page") || null);
+					app.refreshPage($(target).attr("data-fpp") || null, $(target).attr("data-page") || null);
 				} else {
-					pageLoader.refreshFilesData(target.pathname, $(target).attr("data-api"), null, $(target).attr("data-rel"));
+					app.refreshFilesData(target.pathname, $(target).attr("data-api"), null, $(target).attr("data-rel"));
 				}
 			}
 		}
@@ -117,7 +109,6 @@ window.onkeyup = Input.keyup;
 window.onblur = Input.clearKeysDown;
 
 window.onmousemove = Input.mousemove;
-window.onmouseup = Input.mouseup;
 
 window.onclick = Input.click;
 

@@ -99,7 +99,7 @@ class NavigationDrawer extends HTMLElement {
 
 		modal.onadd = function () {
 			let item = $(this).parent();
-			Person.create(item.attr("data-group"), item.find("mdc-text").val()).then(function (data) {
+			Person.create(item.find("mdc-text").val(), item.attr("data-group")).then(function (data) {
 				item.val(data.id);
 				item.closest("mdc-modal").val(data.id);
 				item.find("hover-icon-button, .mdc-button").remove();

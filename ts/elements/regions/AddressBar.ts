@@ -1,28 +1,26 @@
-//Address bar class
+/** Address bar element */
 class AddressBar extends HTMLElement {
-	constructor () {
-		super();
+	backUrls: string[]
+	forwardUrls: string[]
 
-		this.backUrls = [];
-		this.forwardUrls = [];
-	}
 
-	//Refresh address bar elements
-	refresh () {
+	/** Refresh all address bar elements */
+	refresh (): void {
 		this.refreshArrows();
 		this.refreshAddress();
 		mdcSetupRipples(this);
 	}
 
-	// Hide search bar on window smaller
-	hideSearch () {
+	/** Hide search bar (for mobile) */
+	hideSearch (): void {
 		$("#search .mdc-text-field").addClass("mdc-text-field--with-leading-icon");
 
-		$("#search .mdc-text-field__icon-after").get(0).onclick = function () {
+		$("#search .mdc-text-field__icon-after").get(0).onclick = () => {
 			$(this).css({"width": "32px", "height": "32px", "font-size": "24px"});
 			mdcSetupRipples(this);
 			if ($("#searchinput").width() > 0) {
-				refreshGetData(addGet({"search": $("#searchinput").val()}));
+				// refreshGetData(addGet({"search": $("#searchinput").val()}));
+				// TODO
 			} else {
 				$("#search").css("transition", "width .4s").css({"width": "calc(100vw - 16px)", "padding": "2px"});
 				$("#search .mdc-text-field__input, #search .mdc-text-field__icon-before").css("transition", "opacity .4s").css("opacity", 1);
@@ -30,7 +28,7 @@ class AddressBar extends HTMLElement {
 			}
 		};
 
-		$("#search .mdc-text-field__icon-before").get(0).onclick = function () {
+		$("#search .mdc-text-field__icon-before").get(0).onclick = () => {
 			$("#search .mdc-text-field__icon-after").css({"width": "", "height": "", "font-size": ""});
 			mdcSetupRipples($("#search .mdc-text-field__icon-after").get(0));
 			$("#search").css("transition", "width .1s").css({"width": "0px", "padding": 0});
@@ -38,30 +36,34 @@ class AddressBar extends HTMLElement {
 		};
 	}
 
-	// Show search bar on window larger
-	showSearch () {
+	/** Show search bar (for desktop) */
+	showSearch (): void {
 		$("#search").removeClass(".mdc-text-field--with-leading-icon");
 		$("#search .mdc-text-field__icon-after").get(0).onclick = null;
 		$("#search .mdc-text-field__icon-before").get(0).onclick = null;
 	}
 
-	// Refresh stored history upon following link
-	refreshUrls (type) {
+	/** Refresh stored history (for forward/back arrows) upon following link */
+	refreshUrls (type: ("back" | "forward" | "initial")): void {
 		let currentUrl = Platform.urls.getCurrentAddress() + Platform.urls.getCurrentQuery();
-		if (type == "back") {
+		switch (type) {
+		case "back":
 			this.backUrls.pop();
 			this.forwardUrls.push(currentUrl);
-		} else if (type == "forward") {
+			break
+		case "forward":
 			this.backUrls.push(currentUrl);
 			this.forwardUrls.pop();
-		} else if (type != "initial") {
+			break
+		case "initial":
 			this.backUrls.push(currentUrl);
 			this.forwardUrls = [];
+			break
 		}
 	}
 
-	// Refresh navigation arrows
-	refreshArrows () {
+	/** Refresh navigation (back, forward, up) arrows */
+	refreshArrows (): void {
 		if (this.backUrls.length) {
 			$("#addressBar-arrow-left")
 				.attr("href", this.backUrls[this.backUrls.length - 1])
@@ -74,33 +76,24 @@ class AddressBar extends HTMLElement {
 				.removeClass("mdc-icon-toggle--disabled");
 		} else $("#addressBar-arrow-right").addClass("mdc-icon-toggle--disabled");
 
-		//let toAdd = folderType.indexOf("file") != -1 ? [] : (folderType.indexOf("album") != -1 ? {"album": album.fullPath} : {"folder": folder.path});
-		//let toDel = ["search", "file"];
-
-		/* if (person !== null) {
-			toAdd = {};
-			toDel = ["search", "file", "person"];
-		} */
-
-		//$("#arrow-up-link").attr("href", addGet(toAdd, toDel));
-		let titleArray = pageLoader.data.address.split("/").filter(function (entry) { return entry.trim() != ""; });
-		$("#addressBar-arrow-up").attr("href", "/" + [pageLoader.data.folderType, titleArray.slice(0, titleArray.length - 1).join("/"), Platform.urls.getCurrentQuery()].filter(function (entry) { return entry.trim() != ""; }).join("/"));
+		let titleArray = app.data.address.split("/").filter((entry) => entry.trim() != "");
+		$("#addressBar-arrow-up").attr("href", "/" + [app.data.folderType, titleArray.slice(0, titleArray.length - 1).join("/"), Platform.urls.getCurrentQuery()].filter((entry) => entry.trim() != "").join("/"));
 	}
 
-	// Refresh folder address
+	/** Refresh folder address */
 	refreshAddress () {
 		let addressPara = $("#addressBar-address");
 		addressPara.text("/");
 
-		let titleArray = pageLoader.data.address.split("/").filter(function (entry) { return entry.trim() != ""; });
+		let titleArray = app.data.address.split("/").filter((entry) => entry.trim() != "");
 
-		for (var i in titleArray) {
+		for (let i = 0; i < titleArray.length; i++) {
 			let pathItem = titleArray[i];
 
 			let newItem;
 			if (i < titleArray.length - 1) {
 				newItem = $("<a class='link'></a>")
-					.attr("href", "/" + [pageLoader.data.folderType, titleArray.slice(0, parseInt(i) + 1).join("/"), Platform.urls.getCurrentQuery()].join("/"))
+					.attr("href", "/" + [app.data.folderType, titleArray.slice(0, i + 1).join("/"), Platform.urls.getCurrentQuery()].join("/"))
 					.attr("title", pathItem);
 			} else {
 				newItem = $("<span></span>")
@@ -112,10 +105,6 @@ class AddressBar extends HTMLElement {
 			newItem.appendTo(addressPara);
 			addressPara.append("/");
 		}
-
-		/* if (folderView == "faces" && person !== null) {
-			$("<span> - " + folderPeople[person].name +"</span>").appendTo(addressPara);
-		} */
 	}
 }
 

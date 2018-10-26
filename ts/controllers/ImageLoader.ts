@@ -1,6 +1,17 @@
 // Class for loading images
 class ImageLoader {
-	constructor (image, object, maxState, onload, manual) {
+	static imgSizes: string[] = ["/thumbnail/", "/300x200/", "/1800x1200/", "/"]
+	static faceSizes: string[] = ["/30/", "/200/", "/300/"]
+
+	image: HTMLImageElement
+	onImageLoad: Function
+	object: { id: any, type: string, file: object}
+	maxStateParam: any
+	minState: number
+	maxState: number
+	currentState: number
+
+	constructor (image: HTMLImageElement, object: object, maxState: any, onload: Function, manual: boolean) {
 		this.image = image;
 
 		this.onImageLoad = onload;
@@ -10,7 +21,7 @@ class ImageLoader {
 	}
 
 	// Update the ImageLoader with a new file
-	update (object, maxState, manual) {
+	update (object: object, maxState: any, manual: boolean): void {
 		this.setObject(object);
 
 		this.setStates(maxState || this.maxStateParam);
@@ -21,7 +32,7 @@ class ImageLoader {
 	}
 
 	// Set the object property
-	setObject (object) {
+	setObject (object): void {
 		switch (object.constructor) {
 		case FileObject:
 			this.object = {id: object.id, type: "file", file: object};
@@ -37,7 +48,7 @@ class ImageLoader {
 	}
 
 	// Set the maxState and minState properties
-	setStates (maxState) {
+	setStates (maxState): void {
 		this.maxStateParam = maxState;
 
 		if (maxState && typeof maxState == "object" && "min" in maxState && "max" in maxState) {
@@ -53,7 +64,7 @@ class ImageLoader {
 	}
 
 	// Load an image
-	loadImage () {
+	loadImage (): void {
 		var _this = this;
 
 		if (this.currentState >= 0 && !(this.currentState in this.object.file.data)) {
@@ -95,7 +106,7 @@ class ImageLoader {
 		}).catch(function () { _this.loadImage(); });
 	}
 
-	getSizes () {
+	getSizes (): string[] {
 		switch (this.object.type) {
 		case "file":
 			return ImageLoader.imgSizes;
@@ -104,6 +115,3 @@ class ImageLoader {
 		}
 	}
 }
-
-ImageLoader.imgSizes = ["/thumbnail/", "/300x200/", "/1800x1200/", "/"];
-ImageLoader.faceSizes = ["/30/", "/200/", "/300/"];

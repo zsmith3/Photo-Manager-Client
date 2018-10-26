@@ -1,16 +1,16 @@
-//Filter bar class
+/** Filter bar element */
 class FilterBar extends ToggleBar {
 	// TODO need this for its relation to searching
 	// TODO then need to add searching to albums/people
 	//	consider prioritising based on which text the queries appear in, not just which queries show up
 
-	//Refresh filter list
+	/** Refresh filter list */
 	refresh () {
 		mdcSetupRipples(this);
 
 		this.sortable = Sortable.create($("#filterBar-list").get(0), {animation: 150, handle: ".filterhandle", draggable: ".draggable"});
 
-		let filters = pageLoader.getQueryParam("filter").split("/");
+		let filters = app.getQueryParam("filter").split("/");
 		for (var i in filters) {
 			let newItem = this.add(true);
 
@@ -29,7 +29,7 @@ class FilterBar extends ToggleBar {
 			newItem.find(".filter-value").val(filters[i].substr(2));
 		}
 
-		$("#filterBar-isf-check").get(0).checked = pageLoader.getQueryParam("isf");
+		$("#filterBar-isf-check").get(0).checked = app.getQueryParam("isf");
 
 		/* if (allData.page_meta.filters == oldData.page_meta.filters) return;
 
@@ -104,7 +104,7 @@ class FilterBar extends ToggleBar {
 			return $(this).find(".filter-action").val() + $(this).find(".filter-aspect").val() + $(this).find(".filter-value").val();
 		}).toArray();
 		let filterStr = filterArray.join("/");
-		pageLoader.refreshFilesData(null, null, {"filter": filterStr, "isf": $("#filterBar-isf-check").get(0).checked});
+		app.refreshFilesData(null, null, {"filter": filterStr, "isf": $("#filterBar-isf-check").get(0).checked});
 	}
 }
 

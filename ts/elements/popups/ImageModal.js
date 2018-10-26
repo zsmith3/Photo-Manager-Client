@@ -12,7 +12,7 @@ class ImageModal extends HTMLElement {
 		setTimeout(function () {
 			_this.hammerApi = new Hammer($(_this).find("#im-image").get(0));
 			_this.hammerApi.on("swipe", function (event) {
-				if (pageLoader.config.platform == "mobile") {
+				if (app.config.platform == "mobile") {
 					let direction = Math.round(-event.deltaX / 100);
 					direction = direction / Math.abs(direction);
 					if (direction) _this.switchFile(direction);
@@ -58,11 +58,11 @@ class ImageModal extends HTMLElement {
 	}
 
 	switchFile (direction) {
-		if (pageLoader.data.objectType == "files") {
-			let nextFile = pageLoader.filesContainer.getAdjacentFile(this.file, direction, "image");
+		if (app.data.objectType == "files") {
+			let nextFile = app.els.filesCont.getAdjacentFile(this.file, direction, "image");
 			if (nextFile) this.openFile(nextFile);
-		} else if (pageLoader.data.objectType == "faces") {
-			let nextFile = pageLoader.filesContainer.getAdjacentFile({id: this.file.parent}, direction).file;
+		} else if (app.data.objectType == "faces") {
+			let nextFile = app.els.filesCont.getAdjacentFile({id: this.file.parent}, direction).file;
 			if (nextFile) this.openFile();
 		}
 	}
@@ -70,20 +70,20 @@ class ImageModal extends HTMLElement {
 	displayArrows () {
 		$(this).find(".im-arrow").css("display", "none");
 
-		if (pageLoader.config.platform == "mobile") return;
+		if (app.config.platform == "mobile") return;
 
-		if (pageLoader.data.objectType == "files") {
-			if (pageLoader.filesContainer.getAdjacentFile(this.file, -1, "image")) {
+		if (app.data.objectType == "files") {
+			if (app.els.filesCont.getAdjacentFile(this.file, -1, "image")) {
 				$(this).find("#im-arrow-left").css("display", "");
 			}
-			if (pageLoader.filesContainer.getAdjacentFile(this.file, 1, "image")) {
+			if (app.els.filesCont.getAdjacentFile(this.file, 1, "image")) {
 				$(this).find("#im-arrow-right").css("display", "");
 			}
-		} else if (pageLoader.data.objectType == "faces") {
-			if (pageLoader.filesContainer.getAdjacentFile({id: this.file.parent}, -1)) {
+		} else if (app.data.objectType == "faces") {
+			if (app.els.filesCont.getAdjacentFile({id: this.file.parent}, -1)) {
 				$(this).find("#im-arrow-left").css("display", "");
 			}
-			if (pageLoader.filesContainer.getAdjacentFile({id: this.file.parent}, 1)) {
+			if (app.els.filesCont.getAdjacentFile({id: this.file.parent}, 1)) {
 				$(this).find("#im-arrow-right").css("display", "");
 			}
 		}
@@ -128,19 +128,19 @@ class ImageModal extends HTMLElement {
 	setZoom (maxW, maxH, xPos, yPos) {
 		if (!this.open) return;
 
-		// TODO need to get pageLoader.config.platform before this will work
+		// TODO need to get app.config.platform before this will work
 
 		// Calculate bounding box
 		maxW = (maxW || this.file.zoom.maxW) || "min";
 		maxH = (maxH || this.file.zoom.maxH) || "min";
 		if (maxW == "max") maxW = this.file.width;
-		else if (maxW == "min") maxW = window.innerWidth - (pageLoader.config.platform == "mobile" ? 0 : 300);
+		else if (maxW == "min") maxW = window.innerWidth - (app.config.platform == "mobile" ? 0 : 300);
 		if (maxH == "max") maxH = this.file.height;
-		else if (maxH == "min") maxH = window.innerHeight - (pageLoader.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight);
+		else if (maxH == "min") maxH = window.innerHeight - (app.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight);
 		// TODO faces support
 
-		//maxW = (maxW || this.file.zoom.maxW) || (window.innerWidth - (pageLoader.config.platform == "mobile" ? 0 : 300));
-		//maxH = (maxH || this.file.zoom.maxH) || (window.innerHeight - (pageLoader.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight)) * (pageLoader.config.platform == "mobile" ? 1 : 0.9);
+		//maxW = (maxW || this.file.zoom.maxW) || (window.innerWidth - (app.config.platform == "mobile" ? 0 : 300));
+		//maxH = (maxH || this.file.zoom.maxH) || (window.innerHeight - (app.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight)) * (app.config.platform == "mobile" ? 1 : 0.9);
 
 
 		// Calculate new size
@@ -162,11 +162,11 @@ class ImageModal extends HTMLElement {
 		xPos = (xPos || this.file.zoom.xPos) || "c";
 		yPos = (yPos || this.file.zoom.yPos) || "c";
 		if (xPos == "c") xPos = (window.innerWidth - newWidth) / 2;
-		if (yPos == "c") yPos = (window.innerHeight - newHeight + (pageLoader.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight)) / 2;
+		if (yPos == "c") yPos = (window.innerHeight - newHeight + (app.config.platform == "mobile" ? 0 : $(this).find("#im-toolbar").get(0).clientHeight)) / 2;
 
 		// TODO faces support
 		//xPos = (xPos || this.file.zoom.xPos) || (window.innerWidth - newWidth) / 2;
-		//yPos = (yPos || this.file.zoom.yPos) || (window.innerHeight - newHeight + (pageLoader.config.platform == "mobile" ? 0 : iPTopBar.clientHeight)) / 2;
+		//yPos = (yPos || this.file.zoom.yPos) || (window.innerHeight - newHeight + (app.config.platform == "mobile" ? 0 : iPTopBar.clientHeight)) / 2;
 
 		$(this).find("#im-image").css({"left": xPos + "px", "top": yPos + "px"});
 
@@ -256,8 +256,8 @@ class ImageModal extends HTMLElement {
 	}
 
 	selectCurrentFile () {
-		pageLoader.filesContainer.selectAll(false);
-		let fbox = pageLoader.filesContainer.getFilebox(this.file.id);
+		app.els.filesCont.selectAll(false);
+		let fbox = app.els.filesCont.getFilebox(this.file.id);
 		fbox.selected = true;
 		fbox.updateSelection();
 	}
@@ -265,7 +265,7 @@ class ImageModal extends HTMLElement {
 	setResetTimeout () {
 		window.clearTimeout(this.dragging.resetTimeout);
 
-		if (pageLoader.config.platform == "mobile") {
+		if (app.config.platform == "mobile") {
 			let _this = this;
 			this.dragging.resetTimeout = window.setTimeout(function () { if (Input.touchesDown == 0) _this.setZoom("min", "min", "c", "c"); }, 100);
 		}

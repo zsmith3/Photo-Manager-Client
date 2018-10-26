@@ -36,16 +36,16 @@ class SortBar extends HTMLElement {
 	refreshSelects () {
 		// TODO
 		//$("#filecount").val(queryString.get("fpp"));
-		this.getSelector("#select-mode").val(pageLoader.config.get("select_mode"));
-		this.getSelector("#filecount").val(pageLoader.config.get("fpp"));
+		this.getSelector("#select-mode").val(app.config.get("select_mode"));
+		this.getSelector("#filecount").val(app.config.get("fpp"));
 	}
 
 	// Refresh the page numbers shown
 	refreshPagination (fileCount) {
 		let div = $("#pageNumbers").html("");
 
-		let page = pageLoader.getQueryParam("page");
-		let maxPage = Math.ceil(fileCount / pageLoader.getQueryParam("fpp"));
+		let page = app.getQueryParam("page");
+		let maxPage = Math.ceil(fileCount / app.getQueryParam("fpp"));
 
 		if (page > 1) {
 			$("<a></a>")
@@ -81,15 +81,15 @@ class SortBar extends HTMLElement {
 	// Refresh the thumbnail scaler
 	refreshThumbscaler () {
 		this.getSelector("#thumbScaler").each(function () {
-			this.min = pageLoader.config.defaults.thumb_scale.min;
-			this.max = pageLoader.config.defaults.thumb_scale.max;
-			$(this).val(pageLoader.config.get("thumb_scale"));
+			this.min = app.config.defaults.thumb_scale.min;
+			this.max = app.config.defaults.thumb_scale.max;
+			$(this).val(app.config.get("thumb_scale"));
 		});
 	}
 
 	// Refresh the view switcher
 	refreshViewSwitcher () {
-		$("#sortbar-viewswitcher").parent().get(0).api.setActiveTabIndex_($("#sortbar-viewswitcher .mdc-tab").map(function () { return $(this).attr("value"); }).toArray().indexOf(pageLoader.data.viewName));
+		$("#sortbar-viewswitcher").parent().get(0).api.setActiveTabIndex_($("#sortbar-viewswitcher .mdc-tab").map(function () { return $(this).attr("value"); }).toArray().indexOf(app.data.viewName));
 	}
 }
 
