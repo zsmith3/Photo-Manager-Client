@@ -1,0 +1,5 @@
+<mat-grid-list cols="4" rowHeight="200px">
+  <mat-grid-tile *ngFor="let file of files">
+    <app-file [file]="file"></app-file>
+  </mat-grid-tile>
+</mat-grid-list>
