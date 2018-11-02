@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FileModel } from '../filemodel'
+import { FileModel } from '../shared/file.model'
 
 @Component({
   selector: 'app-file',

@@ -5,11 +5,10 @@
 
 <mat-sidenav-container>
 	<mat-sidenav #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [opened]="!mobileQuery.matches">
-		Sidenav content
-		<!-- TODO https://material.angular.io/components/list/overview with albums -->
+		<app-album-list></app-album-list>
 	</mat-sidenav>
 	
 	<mat-sidenav-content>
-		<app-files></app-files>
+		<app-file-list></app-file-list>
 	</mat-sidenav-content>
 </mat-sidenav-container>

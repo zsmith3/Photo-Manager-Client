@@ -1,0 +1,12 @@
+<mat-nav-list>
+	<h3 matSubheader>Albums</h3>
+	<mat-list-item *ngFor="let album of albums">
+			<mat-icon mat-list-icon>photo_album</mat-icon>
+			<a matLine href="">{{ album.name }}</a>
+			<p mat-line> {{ album.file_count }} </p>
+			
+			<button mat-icon-button (click)="console.log('hi');">
+				<mat-icon>clear</mat-icon>
+			</button>      
+	</mat-list-item>
+</mat-nav-list>

@@ -3,34 +3,40 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FileComponent } from './file/file.component';
+
+// App component imports
+import { FileComponent } from './files/file/file.component';
+import { FileListComponent } from './files/file-list/file-list.component';
+import { AlbumListComponent } from './albums/album-list/album-list.component';
 
 // Angular Material imports
 import {
   MatIconModule,
   MatButtonModule,
   MatSidenavModule,
+  MatListModule,
   MatToolbarModule,
   MatGridListModule,
   MatCardModule
 } from '@angular/material';
-import { FilesComponent } from './files/files.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     FileComponent,
-    FilesComponent
+    FileListComponent,
+    AlbumListComponent
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
 
     // Angular Material imports
     MatIconModule,
     MatButtonModule,
     MatSidenavModule,
+    MatListModule,
     MatToolbarModule,
     MatGridListModule,
     MatCardModule
