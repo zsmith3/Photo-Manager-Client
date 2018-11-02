@@ -9,6 +9,7 @@ import { FileModel } from '../shared/file.model'
 export class FileComponent implements OnInit {
 
   @Input() file: FileModel
+  @Input() scale: number
 
   constructor() { }
 

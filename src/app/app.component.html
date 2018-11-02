@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-		<button mat-icon-button *ngIf="mobileQuery.matches" (click)="sidenav.toggle()"><mat-icon>menu</mat-icon></button>
+	<button mat-icon-button *ngIf="mobileQuery.matches" (click)="sidenav.toggle()"><mat-icon>menu</mat-icon></button>
     <h1>{{title}}</h1>
 </mat-toolbar>
 
@@ -9,6 +9,7 @@
 	</mat-sidenav>
 	
 	<mat-sidenav-content>
+		<app-address-bar></app-address-bar>
 		<app-file-list></app-file-list>
 	</mat-sidenav-content>
 </mat-sidenav-container>

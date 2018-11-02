@@ -1,5 +1,5 @@
-<mat-grid-list cols="4" rowHeight="200px">
+<mat-grid-list [cols]="cols" rowHeight="{{ 2 / 3 * fileCardWidth + 20 }}" (window:resize)="updateCols()" (window:load)="updateCols()">
   <mat-grid-tile *ngFor="let file of files">
-    <app-file [file]="file"></app-file>
+    <app-file [file]="file" [scale]="fileCardWidth"></app-file>
   </mat-grid-tile>
 </mat-grid-list>

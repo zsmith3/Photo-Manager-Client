@@ -1,4 +1,3 @@
 .file-card {
-    width: 150px;
-    height: 100px;
+    box-sizing: border-box;
 }
