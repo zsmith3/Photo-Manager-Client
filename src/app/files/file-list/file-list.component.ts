@@ -19,7 +19,7 @@ export class FileListComponent implements OnInit {
 	updateCols() {
 		let gridList = this._element.nativeElement.querySelector("mat-grid-list");
 		if (!gridList) return; // TODO raise error
-		this.cols = Math.floor(gridList.offsetWidth / (this.fileCardWidth + 20));
+		this.cols = Math.floor(gridList.offsetWidth / (this.fileCardWidth + 40));
 	}
 
 	files: FileModel[];
