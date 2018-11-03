@@ -1,0 +1,20 @@
+.file-card {
+    box-sizing: border-box;
+}
+
+img.file-thumbnail {
+    margin: -6px;
+    margin-top: 20px;
+}
+
+.file-checkbox {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+}
+
+mat-card-title.file-name {
+    font-size: 100%;
+    text-align: center;
+    margin-top: 8px;
+}

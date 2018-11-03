@@ -1,0 +1,10 @@
+<mat-card class="file-card"
+	[style.width.px]="scale + 20"
+	[style.height.px]="scale + 20"
+	(click)="select()">
+
+	<img mat-card-image class="file-thumbnail" [style.width.px]="scale" [style.height.px]="scale * 2 / 3">
+	<mat-checkbox #checkbox class="file-checkbox" (change)="console.log('hi');"></mat-checkbox>
+
+	<mat-card-title class="file-name">{{file.name}}</mat-card-title>
+</mat-card>

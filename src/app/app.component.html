@@ -1,0 +1,15 @@
+<mat-toolbar color="primary">
+	<button mat-icon-button *ngIf="mobileQuery.matches" (click)="sidenav.toggle()"><mat-icon>menu</mat-icon></button>
+    <h1>{{title}}</h1>
+</mat-toolbar>
+
+<mat-sidenav-container>
+	<mat-sidenav #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [opened]="!mobileQuery.matches">
+		<app-album-list></app-album-list>
+	</mat-sidenav>
+	
+	<mat-sidenav-content>
+		<app-address-bar></app-address-bar>
+		<router-outlet></router-outlet>
+	</mat-sidenav-content>
+</mat-sidenav-container>

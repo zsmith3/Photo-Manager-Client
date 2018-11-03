@@ -1,0 +1,18 @@
+<span #navButtons>
+	<button mat-icon-button (click)="console.log('hi');"><mat-icon>arrow_back</mat-icon></button>
+	
+	<button mat-icon-button (click)="console.log('hi');"><mat-icon>arrow_forward</mat-icon></button>
+
+	<button mat-icon-button (click)="console.log('hi');"><mat-icon>arrow_upward</mat-icon></button>
+	
+	<button mat-icon-button (click)="console.log('hi');"><mat-icon>home</mat-icon></button>
+</span>
+
+<span class="addressSpan mat-primary">
+	<span *ngFor="let folder of address">{{ folder }}/</span>
+</span>
+
+<mat-form-field class="searchField">
+	<input matInput placeholder="Search">
+	<mat-icon matSuffix>search</mat-icon>
+</mat-form-field>

@@ -1,0 +1,19 @@
+:host {
+    display: block;
+    height: 55px;
+    padding: 8px;
+    box-sizing: border-box;
+    background-color: white;
+}
+
+.addressSpan {
+    margin: 5px;
+    padding: 8px;
+    border-radius: 20px;
+    background-color: #e0e0e0;
+}
+
+.searchField {
+    float: right;
+    margin-top: -10px;
+}
