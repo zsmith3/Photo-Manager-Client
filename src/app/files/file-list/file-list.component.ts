@@ -1,9 +1,8 @@
-import { Component, OnInit, ElementRef } from '@angular/core';
-
-import { MatGridList } from '@angular/material';
+import { Component, OnInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
 
 import { FileModel } from '../shared/file.model'
 import { FileService } from '../shared/file.service'
+import { FileComponent } from '../file/file.component'
 
 @Component({
 	selector: 'app-file-list',
@@ -11,7 +10,9 @@ import { FileService } from '../shared/file.service'
 	styleUrls: ['./file-list.component.css']
 })
 export class FileListComponent implements OnInit {
-	
+
+	@ViewChildren("fileBox") fileBoxes: QueryList<FileComponent>
+
 	fileCardWidth = 150
 
 	cols: number
@@ -23,15 +24,19 @@ export class FileListComponent implements OnInit {
 	}
 
 	files: FileModel[];
- 
+
 	constructor(private fileService: FileService, private _element: ElementRef) { }
- 
+
 	ngOnInit() {
 		this.getFiles();
 		this.updateCols();
 	}
- 
+
 	getFiles(): void {
 		this.fileService.getFiles().subscribe(files => this.files = files);
+	}
+
+	selectAll (value: boolean) {
+		this.fileBoxes.forEach((fileBox) => fileBox.select(false));
 	}
 }

@@ -2,6 +2,10 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.0.3.
 
+## Project status
+
+I began attempting to convert the client-side code to Angular, in the hope that it would largely involve refactoring rather than rewriting. Shortly after starting, I decided that most of the code would have to be completely re-written, and that the advantages of Angular were not worth the time/effort of doing this. I have no intention of continuing work on this branch in the near future, but I shall leave it here.
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.

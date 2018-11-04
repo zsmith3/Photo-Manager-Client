@@ -11,15 +11,15 @@ export class FileComponent implements OnInit {
   @Input() file: FileModel
   @Input() scale: number
 
-  @ViewChild('checkbox') checkbox; 
+  @ViewChild('checkbox') checkbox;
 
   constructor() { }
 
   ngOnInit() {
   }
 
-  select () {
-    this.checkbox.checked = true;
+  select (value: boolean) {
+    this.checkbox.checked = value;
   }
 
 }
