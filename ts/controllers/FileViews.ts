@@ -1,6 +1,6 @@
 abstract class View {
 	extractData (data) {
-		if (app.data.objectType == "files") {
+		if (App.app.data.objectType == "files") {
 			if (data.constructor == Array) data = {folders: data};
 			data.folders = data.folders || [];
 			data.files = data.files || [];
@@ -11,7 +11,7 @@ abstract class View {
 
 	getFiles (data) {
 		var files;
-		if (app.data.objectType == "faces") files = {folders: {}, files: data.faces};
+		if (App.app.data.objectType == "faces") files = {folders: {}, files: data.faces};
 		else files = {folders: FileObject.createFromList(data.folders), files: data.files};
 
 		return files;
@@ -20,10 +20,10 @@ abstract class View {
 	refresh (data) {
 		data = this.extractData(data);
 
-		app.refreshMetadata(data);
+		App.app.refreshMetadata(data);
 
-		app.els.toolBar.refresh();
-		app.els.sortBar.refreshPagination(app.data.objectCount);
+		App.app.els.toolBar.refresh();
+		App.app.els.sortBar.refreshPagination(App.app.data.objectCount);
 
 		return this.getFiles(data);
 	}
@@ -44,37 +44,37 @@ class FilesView extends View {
 
 		$("#filesContainer").css("display", "");
 
-		app.els.filesCont.refreshFileListing(files, app.getQueryParam("fpp"), app.getQueryParam("page"));
-		//app.els.filesCont.refreshFiles(files);
+		App.app.els.filesCont.refreshFileListing(files, App.app.getQueryParam("fpp"), App.app.getQueryParam("page"));
+		//App.app.els.filesCont.refreshFiles(files);
 
 		$("#files .mdc-linear-progress").css("display", "none");
 
-		app.fetchPageFiles();
+		App.app.fetchPageFiles();
 	}
 
 	refreshDisplay () {
-		app.els.filesCont.displayFull();
+		App.app.els.filesCont.displayFull();
 	}
 
 	refreshPage (fpp, page) {
-		app.els.sortBar.refreshPagination(app.data.objectCount);
+		App.app.els.sortBar.refreshPagination(App.app.data.objectCount);
 
-		app.els.filesCont.displayInitial(fpp, page);
-		//app.els.filesCont.refreshFiles(null, fpp, page);
+		App.app.els.filesCont.displayInitial(fpp, page);
+		//App.app.els.filesCont.refreshFiles(null, fpp, page);
 
-		app.fetchPageFiles();
+		App.app.fetchPageFiles();
 	}
 
 	addFiles (data) {
 		var files;
-		if (app.data.objectType == "faces") files = Face.createFromList(data);
+		if (App.app.data.objectType == "faces") files = Face.createFromList(data);
 		else files = FileObject.createFromList(data);
 
-		app.els.filesCont.addFiles(files);
+		App.app.els.filesCont.addFiles(files);
 	}
 
 	checkRange (start, end) {
-		return app.els.filesCont.checkRange(start, end);
+		return App.app.els.filesCont.checkRange(start, end);
 	}
 }
 
@@ -98,7 +98,7 @@ class MapView extends View {
 		$("#filesMap").css("display", "");
 
 		// TODO files on map
-		app.els.filesMap.init(files);
+		App.app.els.filesMap.init(files);
 
 		$("#files .mdc-linear-progress").css("display", "none");
 	}

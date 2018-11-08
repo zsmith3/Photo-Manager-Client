@@ -30,7 +30,7 @@ class FilesContainer extends HTMLElement {
 		$(this).html("");
 
 		for (var i in this.currentFiles) {
-			if (app.data.objectType == "faces") $("<face-box data-id='" + this.currentFiles[i] + "'></face-box>").appendTo(this);
+			if (App.app.data.objectType == "faces") $("<face-box data-id='" + this.currentFiles[i] + "'></face-box>").appendTo(this);
 			else $("<file-box data-id='" + this.currentFiles[i] + "'></file-box>").appendTo(this);
 		}
 
@@ -55,7 +55,7 @@ class FilesContainer extends HTMLElement {
 		$(this).html("");
 
 		for (var i in this.currentFiles) {
-			if (app.data.objectType == "faces") $("<face-box data-id='" + this.currentFiles[i] + "'></face-box>").appendTo(this);
+			if (App.app.data.objectType == "faces") $("<face-box data-id='" + this.currentFiles[i] + "'></face-box>").appendTo(this);
 			else $("<file-box data-id='" + this.currentFiles[i] + "'></file-box>").appendTo(this);
 		}
 
@@ -78,8 +78,8 @@ class FilesContainer extends HTMLElement {
 		for (var i in this.groups) {
 			let group = $("<div class='mdc-elevation--z2 files-group'></div>").appendTo(this);
 			$("<h3></h3>").text(this.groups[i].name).appendTo(group);
-			for (var j in this.groups[i][app.data.objectType]) {
-				if (app.data.objectType == "people") $("<person-box data-id='" + this.groups[i][app.data.objectType][j].id + "'></person-box>").appendTo(group);
+			for (var j in this.groups[i][App.app.data.objectType]) {
+				if (App.app.data.objectType == "people") $("<person-box data-id='" + this.groups[i][App.app.data.objectType][j].id + "'></person-box>").appendTo(group);
 			}
 		}
 	}
@@ -110,7 +110,7 @@ class FilesContainer extends HTMLElement {
 	}
 
 	selectAll (value, auto) {
-		$("file-box, face-box").each(function () { app.els.getElement<Filebox>(this, "file-box").selected = value; });
+		$("file-box, face-box").each(function () { App.app.els.getElement<Filebox>(this, "file-box").selected = value; });
 
 		/* var hiddenChecks = document.getElementsByClassName("hiddenfilecheck");
 		for (i = 0; i < hiddenChecks.length; i++) {
@@ -119,10 +119,10 @@ class FilesContainer extends HTMLElement {
 
 		this.updateSelection();
 
-		if (value && app.config.get("select_mode") == 1) {
-			app.config.set("select_mode", 2);
-		} else if (!value && app.config.get("select_mode") == 2) {
-			app.config.set("select_mode", 1);
+		if (value && App.app.config.get("select_mode") == 1) {
+			App.app.config.set("select_mode", 2);
+		} else if (!value && App.app.config.get("select_mode") == 2) {
+			App.app.config.set("select_mode", 1);
 		}
 
 		if (!auto) this.onSelectionChange();
@@ -218,7 +218,7 @@ class FilesContainer extends HTMLElement {
 
 		let _this = this;
 
-		var filesText = selection.length + " " + app.data.objectType;
+		var filesText = selection.length + " " + App.app.data.objectType;
 		if (selection.length == 1) filesText = filesText.substr(0, filesText.length - 1);
 
 		var afterSnackbar;
@@ -226,10 +226,10 @@ class FilesContainer extends HTMLElement {
 		else afterSnackbar = { message: action.afterMessage.replace(/%f/g, filesText) };
 
 		return new Promise(function (resolve, reject) {
-			app.snackbar.show({ message: action.beforeMessage.replace(/%f/g, filesText) });
+			App.app.snackbar.show({ message: action.beforeMessage.replace(/%f/g, filesText) });
 			promiseChain(selection.map(id => _this.getFile(id)), action.callback).then(function () {
-				app.dismissSnackbar();
-				app.snackbar.show(afterSnackbar);
+				App.app.dismissSnackbar();
+				App.app.snackbar.show(afterSnackbar);
 				resolve();
 			}).catch(reject);
 		});
@@ -253,9 +253,9 @@ class FilesContainer extends HTMLElement {
 	getFilebox (id): Filebox {
 		let fboxes = $(this).find("file-box, face-box, person-box").filter("[data-id=" + id + "]");
 		if (fboxes.length > 0) {
-			return app.els.getElement<Filebox>(fboxes.get(0), "file-box");
+			return App.app.els.getElement<Filebox>(fboxes.get(0), "file-box");
 		} else if (this.getFile(id)) {
-			return app.els.getElement<Filebox>($("<file-box data-id='" + id + "'></file-box>").appendTo(this).get(0), "file-box");
+			return App.app.els.getElement<Filebox>($("<file-box data-id='" + id + "'></file-box>").appendTo(this).get(0), "file-box");
 		}
 	}
 
@@ -264,8 +264,8 @@ class FilesContainer extends HTMLElement {
 			var files = {};
 
 			for (var i in this.groups) {
-				for (var j in this.groups[i][app.data.objectType]) {
-					files[this.groups[i][app.data.objectType][j].id] = this.groups[i][app.data.objectType][j];
+				for (var j in this.groups[i][App.app.data.objectType]) {
+					files[this.groups[i][App.app.data.objectType][j].id] = this.groups[i][App.app.data.objectType][j];
 				}
 			}
 

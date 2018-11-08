@@ -76,8 +76,8 @@ class AddressBar extends HTMLElement {
 				.removeClass("mdc-icon-toggle--disabled");
 		} else $("#addressBar-arrow-right").addClass("mdc-icon-toggle--disabled");
 
-		let titleArray = app.data.address.split("/").filter((entry) => entry.trim() != "");
-		$("#addressBar-arrow-up").attr("href", "/" + [app.data.folderType, titleArray.slice(0, titleArray.length - 1).join("/"), Platform.urls.getCurrentQuery()].filter((entry) => entry.trim() != "").join("/"));
+		let titleArray = App.app.data.address.split("/").filter((entry) => entry.trim() != "");
+		$("#addressBar-arrow-up").attr("href", "/" + [App.app.data.folderType, titleArray.slice(0, titleArray.length - 1).join("/"), Platform.urls.getCurrentQuery()].filter((entry) => entry.trim() != "").join("/"));
 	}
 
 	/** Refresh folder address */
@@ -85,7 +85,7 @@ class AddressBar extends HTMLElement {
 		let addressPara = $("#addressBar-address");
 		addressPara.text("/");
 
-		let titleArray = app.data.address.split("/").filter((entry) => entry.trim() != "");
+		let titleArray = App.app.data.address.split("/").filter((entry) => entry.trim() != "");
 
 		for (let i = 0; i < titleArray.length; i++) {
 			let pathItem = titleArray[i];
@@ -93,7 +93,7 @@ class AddressBar extends HTMLElement {
 			let newItem;
 			if (i < titleArray.length - 1) {
 				newItem = $("<a class='link'></a>")
-					.attr("href", "/" + [app.data.folderType, titleArray.slice(0, i + 1).join("/"), Platform.urls.getCurrentQuery()].join("/"))
+					.attr("href", "/" + [App.app.data.folderType, titleArray.slice(0, i + 1).join("/"), Platform.urls.getCurrentQuery()].join("/"))
 					.attr("title", pathItem);
 			} else {
 				newItem = $("<span></span>")

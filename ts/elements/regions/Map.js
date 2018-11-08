@@ -151,12 +151,12 @@ class GMapEdit extends GoogleMap {
 		this.api.locationMarker.setPosition(null);
 
 		// Show existing geotag data
-		if (app.els.filesCont.selection.length > 1) {
+		if (App.app.els.filesCont.selection.length > 1) {
 			$("#modal-geotag-form-location-multiple").css("display", "");
-		} else if (app.els.filesCont.selection.length == 1) {
+		} else if (App.app.els.filesCont.selection.length == 1) {
 			$("#modal-geotag-form-location-single").css("display", "");
 
-			let geotag = app.els.filesCont.getFile(app.els.filesCont.selection[0]).geotag;
+			let geotag = App.app.els.filesCont.getFile(App.app.els.filesCont.selection[0]).geotag;
 			if (geotag != null) {
 				this.placeMarker(new google.maps.LatLng(geotag.latitude, geotag.longitude), null, true, this.api.locationMarker);
 
@@ -167,7 +167,7 @@ class GMapEdit extends GoogleMap {
 				$("#modal-geotag-form-area-lat, #modal-geotag-form-location-lat").val(geotag.latitude);
 				$("#modal-geotag-form-area-lng, #modal-geotag-form-location-lng").val(geotag.longitude);
 			}
-		} else if (app.els.filesCont.selection.length == 0) {
+		} else if (App.app.els.filesCont.selection.length == 0) {
 			$("#modal-geotag-form-location-empty").css("display", "");
 		}
 	}

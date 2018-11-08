@@ -5,13 +5,13 @@ class ToolBar extends ToggleBar {
 		let buttonList = null;
 		let tbType = null;
 
-		if (app.data.objectType == "faces") {
+		if (App.app.data.objectType == "faces") {
 			buttonList = ToolBar.facesTBButtons;
 			tbType = "faces";
 		} else {
 			buttonList = ToolBar.standardTBButtons;
 			tbType = "standard";
-			if (app.data.folderType.indexOf("album") !== -1) tbType = "stdalbum";
+			if (App.app.data.folderType.indexOf("album") !== -1) tbType = "stdalbum";
 		}
 
 		if ($(this).attr("data-type") != tbType || resize) {
@@ -20,16 +20,16 @@ class ToolBar extends ToggleBar {
 			if (window.innerWidth >= 800) {
 				$("#toolBar-large-container").html("");
 
-				app.els.imageModal.clearToolbarButtons();
+				App.app.els.imageModal.clearToolbarButtons();
 
 				for (var i = 0; i < buttonList.length; i++) {
 					if (tbType == "stdalbum" || buttonList[i].id != "albumRemButton") {
 						this.createButton(buttonList[i]).appendTo("#toolBar-large-container");
-						app.els.imageModal.addToolbarButton(buttonList[i], this);
+						App.app.els.imageModal.addToolbarButton(buttonList[i], this);
 					}
 				}
 
-				app.els.imageModal.updateButtonPositions();
+				App.app.els.imageModal.updateButtonPositions();
 
 				menu = $("#contextMenu").get(0);
 			} else menu = $("#toolBar-menu").get(0);
@@ -52,7 +52,7 @@ class ToolBar extends ToggleBar {
 			$(this).attr("data-type", tbType);
 		}
 
-		if (app.data.folderType.indexOf("root") === -1) $(".tool-button").attr("disabled", false);
+		if (App.app.data.folderType.indexOf("root") === -1) $(".tool-button").attr("disabled", false);
 		else $(".tool-button").attr("disabled", true);
 
 		mdcSetupRipples(this);
@@ -102,12 +102,12 @@ class ToolBar extends ToggleBar {
 				if (this.tbLayout.confirmText) {
 					let __this = this;
 					_this.confirmAction(this.tbLayout.confirmText).then(function () {
-						app.els.filesCont.applyToSelection(__this.tbLayout.action, __this.tbLayout.undoAction);
+						App.app.els.filesCont.applyToSelection(__this.tbLayout.action, __this.tbLayout.undoAction);
 					});
 				} else {
 					if (this.tbLayout.modalSetup) this.tbLayout.modalSetup();
 
-					app.els.filesCont.applyToSelection(this.tbLayout.action, this.tbLayout.undoAction);
+					App.app.els.filesCont.applyToSelection(this.tbLayout.action, this.tbLayout.undoAction);
 				}
 			}
 
@@ -128,7 +128,7 @@ class ToolBar extends ToggleBar {
 	// Display confirmation modal for simple actions
 	confirmAction (text, options, anchor) {
 		options = options || [];
-		$("#modal-confirm-warning").html("This operation will " + text.replace("%f", app.els.filesCont.selection.length + " " + app.data.objectType));
+		$("#modal-confirm-warning").html("This operation will " + text.replace("%f", App.app.els.filesCont.selection.length + " " + App.app.data.objectType));
 
 		if (options.length == 0) $("#modal-confirm-options").html("None<br />");
 		else $("#modal-confirm-options").html("");
@@ -183,7 +183,7 @@ ToolBar.standardTBButtons = [
 				afterMessage: "Starred %f."
 			},
 			get undoAction () { return ToolBar.standardTBButtons[0].bottom.action; },
-			// onclick: "toolBar.confirmAction('star %f').then(function () { app.els.filesCont.selection.forEach(function (id) { app.els.filesCont.getFile(id).starred = true; }); });",
+			// onclick: "toolBar.confirmAction('star %f').then(function () { App.app.els.filesCont.selection.forEach(function (id) { App.app.els.filesCont.getFile(id).starred = true; }); });",
 			title: "Star Selection",
 			icon: ["star"],
 			text: "Star file(s)"
@@ -197,7 +197,7 @@ ToolBar.standardTBButtons = [
 				afterMessage: "Removed star(s) from %f."
 			},
 			get undoAction () { return ToolBar.standardTBButtons[0].top.action; },
-			// onclick: "toolBar.confirmAction('remove stars from %f').then(function () { app.els.filesCont.selection.forEach(function (id) { app.els.filesCont.getFile(id).starred = false; }); });",
+			// onclick: "toolBar.confirmAction('remove stars from %f').then(function () { App.app.els.filesCont.selection.forEach(function (id) { App.app.els.filesCont.getFile(id).starred = false; }); });",
 			title: "Remove Stars from Selection (this will only work on files starred by you)",
 			icon: ["star", "clear"],
 			text: "Remove Star(s)"
@@ -213,7 +213,7 @@ ToolBar.standardTBButtons = [
 				afterMessage: "Marked %f for deletion."
 			},
 			get undoAction () { return ToolBar.standardTBButtons[1].bottom.action; },
-			// onclick: "toolBar.confirmAction('mark %f for deletion').then(function () { app.els.filesCont.selection.forEach(function (id) { app.els.filesCont.getFile(id).deleted = true; }); });",
+			// onclick: "toolBar.confirmAction('mark %f for deletion').then(function () { App.app.els.filesCont.selection.forEach(function (id) { App.app.els.filesCont.getFile(id).deleted = true; }); });",
 			title: "Mark Selected for Deletion",
 			icon: ["delete"],
 			text: "Mark for deletion"
@@ -227,7 +227,7 @@ ToolBar.standardTBButtons = [
 				afterMessage: "Removed deletion mark(s) from %f."
 			},
 			get undoAction () { return ToolBar.standardTBButtons[1].top.action; },
-			// onclick: "toolBar.confirmAction('remove deletion marks from %f').then(function () { app.els.filesCont.selection.forEach(function (id) { app.els.filesCont.getFile(id).deleted = false; }); });",
+			// onclick: "toolBar.confirmAction('remove deletion marks from %f').then(function () { App.app.els.filesCont.selection.forEach(function (id) { App.app.els.filesCont.getFile(id).deleted = false; }); });",
 			title: "Remove Deletion Marks from Selected (this will only work on files marked for deletion by you)",
 			icon: ["delete", "clear"],
 			text: "Remove deletion mark(s)"
@@ -305,12 +305,12 @@ ToolBar.standardTBButtons = [
 		modal: "#modal-confirm",
 		confirmText: "remove %f from the current album",
 		action: {
-			callback: function (resolve, reject, file) { app.data.album.removeFile(file).then(resolve).catch(reject); },
+			callback: function (resolve, reject, file) { App.app.data.album.removeFile(file).then(resolve).catch(reject); },
 			beforeMessage: "Removing %f from the current album...",
 			afterMessage: "Removed %f from the current album."
 		},
 		// TODO undoAction
-		// onclick: "toolBar.confirmAction('remove %f from the current album', /* [{'text': 'Remove from parent albums', 'input': 'remAlbParents'}] */).then(function () { app.data.album.removeFiles(app.els.filesCont.selection); });",
+		// onclick: "toolBar.confirmAction('remove %f from the current album', /* [{'text': 'Remove from parent albums', 'input': 'remAlbParents'}] */).then(function () { App.app.data.album.removeFiles(App.app.els.filesCont.selection); });",
 		title: "Remove selection from this album (this will only work on files added to the album by you)",
 		icon: ["photo_album", "clear"],
 		text: "Remove file(s)"
@@ -328,7 +328,7 @@ ToolBar.facesTBButtons = [
 			afterMessage: "Confirmed identification of %f."
 		},
 		// TODO undoAction
-		// onclick: "toolBar.confirmAction('confirm identification of %f').then(function () { app.els.filesCont.selection.forEach(function (id) { Face.getById(id).setStatus(1); }); });",
+		// onclick: "toolBar.confirmAction('confirm identification of %f').then(function () { App.app.els.filesCont.selection.forEach(function (id) { Face.getById(id).setStatus(1); }); });",
 		icon: ["check"],
 		text: "Confirm Person",
 		title: "Confirm that the selected faces have been correctly identified"
@@ -348,7 +348,7 @@ ToolBar.facesTBButtons = [
 			afterMessage: "Ignored %f."
 		},
 		// TODO undoAction
-		// onclick: "toolBar.confirmAction('ignore %f (this indicates that the selected faces are certainly of random strangers)').then(function () { app.els.filesCont.selection.forEach(function (id) { Face.getById(id).setStatus(4); }); });",
+		// onclick: "toolBar.confirmAction('ignore %f (this indicates that the selected faces are certainly of random strangers)').then(function () { App.app.els.filesCont.selection.forEach(function (id) { Face.getById(id).setStatus(4); }); });",
 		icon: ["face", "clear"],
 		text: "Ignore Face(s)",
 		title: "Mark the selected faces as certainly belonging to random strangers"
@@ -362,7 +362,7 @@ ToolBar.facesTBButtons = [
 			afterMessage: "Removed %f."
 		},
 		// TODO undoAction
-		// onclick: "toolBar.confirmAction('remove %f (this indicates that the selected images are not in fact human faces)').then(function () { app.els.filesCont.selection.forEach(function (id) { Face.getById(id).setStatus(5); }); });",
+		// onclick: "toolBar.confirmAction('remove %f (this indicates that the selected images are not in fact human faces)').then(function () { App.app.els.filesCont.selection.forEach(function (id) { Face.getById(id).setStatus(5); }); });",
 		icon: ["person_outline", "clear"],
 		text: "Remove Face(s)",
 		title: "Mark the selected faces as non-human objects"
@@ -371,19 +371,19 @@ ToolBar.facesTBButtons = [
 
 ToolBar.selButtons = [
 	{
-		onclick: "app.els.filesCont.selectAll(true);",
+		onclick: "App.app.els.filesCont.selectAll(true);",
 		icon: ["select_all"],
 		text: "Select All",
 		title: "Select all items on the current page"
 	},
 	{
-		onclick: "app.els.filesCont.selectAll(false);",
+		onclick: "App.app.els.filesCont.selectAll(false);",
 		icon: ["clear"],
 		text: "Select None",
 		title: "Clear the current selection"
 	},
 	{
-		onclick: "app.els.filesCont.invertSelection();",
+		onclick: "App.app.els.filesCont.invertSelection();",
 		icon: ["invert_colors"],
 		text: "Invert Selection",
 		title: "Invert which files are selected"

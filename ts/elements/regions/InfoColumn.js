@@ -12,12 +12,12 @@ class InfoColumn extends ToggleBar {
 
 		if (selection !== null && selection.constructor == Array) {
 			if (selection.length == 0) {
-				this.setInfo(app.data.currentRootObject);
+				this.setInfo(App.app.data.currentRootObject);
 			} else if (selection.length == 1) {
-				this.setInfo(app.els.filesCont.getFile(selection[0]));
+				this.setInfo(App.app.els.filesCont.getFile(selection[0]));
 			} else {
 				// TODO this now
-				let cont = app.els.filesCont;
+				let cont = App.app.els.filesCont;
 				this.setInfo(new FileObject({
 					name: cont.getFile(selection[0]).name + " + " + (selection.length - 1) + " more",
 					type: selection.map(id => cont.getFile(id).type).filter(t => t != cont.getFile(selection[0]).type).length ? "Various" : cont.getFile(selection[0]).type,
@@ -180,7 +180,7 @@ class InfoColumn extends ToggleBar {
 	}
 
 	onshow () {
-		this.setInfo(app.els.filesCont.selection);
+		this.setInfo(App.app.els.filesCont.selection);
 	}
 
 	//Add a detail to the info column TOREM infocol/addInfo

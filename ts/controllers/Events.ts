@@ -6,7 +6,7 @@ declare global {
 
 $(document).ready(function () {
 	app = new App();
-	app.init();
+	App.app.init();
 
 	mdcSetupRipples($(".mdc-toolbar").get(0));
 	$(".mdc-text-field--textarea").each(function () { this.api = new mdc.textField.MDCTextField(this); });
@@ -25,20 +25,20 @@ var Events = {
 		Events.oldWidth = window.innerWidth;
 	},
 	onWindowSmaller: function (): void {
-		app.els.navDrawer.setTemporary();
-		app.els.navDrawer.optionsMenuToDrawer();
-		app.els.sortBar.toNavDrawer();
-		app.els.toolBar.refresh(true);
-		app.els.toolBar.hide(true);
-		app.els.addressBar.hideSearch();
+		App.app.els.navDrawer.setTemporary();
+		App.app.els.navDrawer.optionsMenuToDrawer();
+		App.app.els.sortBar.toNavDrawer();
+		App.app.els.toolBar.refresh(true);
+		App.app.els.toolBar.hide(true);
+		App.app.els.addressBar.hideSearch();
 	},
 	onWindowLarger: function (): void {
-		app.els.navDrawer.setPermanent();
-		app.els.navDrawer.optionsMenuToHeader();
-		app.els.sortBar.fromNavDrawer();
-		app.els.toolBar.refresh(true);
-		app.els.toolBar.show(true);
-		app.els.addressBar.showSearch();
+		App.app.els.navDrawer.setPermanent();
+		App.app.els.navDrawer.optionsMenuToHeader();
+		App.app.els.sortBar.fromNavDrawer();
+		App.app.els.toolBar.refresh(true);
+		App.app.els.toolBar.show(true);
+		App.app.els.addressBar.showSearch();
 	}
 };
 

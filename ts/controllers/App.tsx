@@ -1,16 +1,29 @@
+import * as React from "preact";
+import * as ReactDOM from "preact";
+
 // Class to handle the whole application
-class App {
+export class App extends React.Component {
+	// Singleton instance
+	static app: App;
+
 	// Default values for query string parameters
 	static queryParamDefaults = {
 		toClear: function (param) {
-			if (param == "fpp") return app.config.get("fpp") == app.config.defaults.fpp.default[app.config.platform];
+			if (param == "fpp") return App.app.config.get("fpp") == App.app.config.defaults.fpp.default[App.app.config.platform];
 			else return true;
 		},
 		view: "files",
 		filter: "I*",
 		isf: "false",
 		page: 1,
-		get fpp() { return app.config.get("fpp"); }
+		get fpp() { return App.app.config.get("fpp"); }
+	}
+
+	// Start application
+	static start (rootElement: HTMLElement) {
+		App.app = <App />;
+		ReactDOM.render(App.app, rootElement);
+		App.app.init();
 	}
 
 	config: Config
@@ -69,7 +82,7 @@ class App {
 		},
 		get currentRootObject () { return this.folder || this.album || this.person || {}; },
 
-		get objectCount () { return app.els.filesCont.sortedFiles.length || app.els.filesCont.sortedFiles.length || 0; }
+		get objectCount () { return App.app.els.filesCont.sortedFiles.length || App.app.els.filesCont.sortedFiles.length || 0; }
 	}
 
 	// Page elements
@@ -83,19 +96,26 @@ class App {
 			if (check<T>(el)) return el;
 		},
 
-		get addressBar (): AddressBar { return app.els.getElement<AddressBar>("#addressBar", "address-bar"); },
-		get filesCont (): FilesContainer { return app.els.getElement<FilesContainer>("#filesContainer", "files-container"); },
-		get filesMap (): GMapView { return app.els.getElement<GMapView>("#filesMap", "map-view"); },
-		get filterBar (): FilterBar { return app.els.getElement<FilterBar>("#filterBar", "filter-bar"); },
-		get imageModal (): ImageModal { return app.els.getElement<ImageModal>("#imageModal", "image-modal"); },
-		get navDrawer (): NavigationDrawer { return app.els.getElement<NavigationDrawer>("#navigationDrawer", "nav-drawer"); },
-		get sortBar (): SortBar { return app.els.getElement<SortBar>("#sortBar", "sort-bar"); },
-		get toolBar (): ToolBar { return app.els.getElement<ToolBar>("#toolBar", "tool-bar"); }
+		get addressBar (): AddressBar { return App.app.els.getElement<AddressBar>("#addressBar", "address-bar"); },
+		get filesCont (): FilesContainer { return App.app.els.getElement<FilesContainer>("#filesContainer", "files-container"); },
+		get filesMap (): GMapView { return App.app.els.getElement<GMapView>("#filesMap", "map-view"); },
+		get filterBar (): FilterBar { return App.app.els.getElement<FilterBar>("#filterBar", "filter-bar"); },
+		get imageModal (): ImageModal { return App.app.els.getElement<ImageModal>("#imageModal", "image-modal"); },
+		get navDrawer (): NavigationDrawer { return App.app.els.getElement<NavigationDrawer>("#navigationDrawer", "nav-drawer"); },
+		get sortBar (): SortBar { return App.app.els.getElement<SortBar>("#sortBar", "sort-bar"); },
+		get toolBar (): ToolBar { return App.app.els.getElement<ToolBar>("#toolBar", "tool-bar"); }
 	}
 
-	constructor () {
+	constructor (props) {
+		super(props);
+
 		// Notification snackbar
 		this.snackbar = new mdc.snackbar.MDCSnackbar($("#snackbar").get(0));
+	}
+
+	render () {
+		// TODO
+		return <div></div>;
 	}
 
 	init() {
@@ -246,10 +266,10 @@ class App {
 		let parent = this;
 		if (this.data.view.checkRange(this.getQueryParam("fpp") * (page - 1), this.getQueryParam("fpp") * page)) {
 			let addFiles = function (data) { parent.data.view.addFiles(data); };
-			if (page > 1 && !this.data.view.checkRange(this.getQueryParam("fpp") * (page - 2), this.getQueryParam("fpp") * (page - 1))) apiRequest(getUrl(addToUrl(this.data.apiUrl, app.data.objectType + "/"), true, {page: page - 1})).then(addFiles);
-			if (page < Math.ceil(this.data.objectCount / this.getQueryParam("fpp")) && !this.data.view.checkRange(this.getQueryParam("fpp") * (page + 1), this.getQueryParam("fpp") * (page + 2))) apiRequest(getUrl(addToUrl(this.data.apiUrl, app.data.objectType + "/"), true, {page: page + 1})).then(addFiles);
+			if (page > 1 && !this.data.view.checkRange(this.getQueryParam("fpp") * (page - 2), this.getQueryParam("fpp") * (page - 1))) apiRequest(getUrl(addToUrl(this.data.apiUrl, App.app.data.objectType + "/"), true, {page: page - 1})).then(addFiles);
+			if (page < Math.ceil(this.data.objectCount / this.getQueryParam("fpp")) && !this.data.view.checkRange(this.getQueryParam("fpp") * (page + 1), this.getQueryParam("fpp") * (page + 2))) apiRequest(getUrl(addToUrl(this.data.apiUrl, App.app.data.objectType + "/"), true, {page: page + 1})).then(addFiles);
 		} else {
-			apiRequest(addToUrl(this.data.apiUrl, app.data.objectType + "/")).then(function (data) {
+			apiRequest(addToUrl(this.data.apiUrl, App.app.data.objectType + "/")).then(function (data) {
 				parent.data.view.addFiles(data);
 				parent.data.view.refreshDisplay();
 				parent.fetchPageFiles();

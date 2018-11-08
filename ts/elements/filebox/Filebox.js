@@ -24,7 +24,7 @@ class Filebox extends HTMLElement {
 		this.onclick = function (event) {
 			event.stopPropagation();
 
-			if (app.config.get("select_mode") == 1) {
+			if (App.app.config.get("select_mode") == 1) {
 				this.file.open();
 			} else {
 				this.select($(event.target).is(".mdc-checkbox__native-control"));
@@ -32,7 +32,7 @@ class Filebox extends HTMLElement {
 		};
 
 		this.ondblclick = function () {
-			if (app.config.get("select_mode") == 0) {
+			if (App.app.config.get("select_mode") == 0) {
 				this.file.open();
 			}
 		};
@@ -41,7 +41,7 @@ class Filebox extends HTMLElement {
 		this.hammerApi.parent = this;
 		this.hammerApi.on("press", function (event) {
 			window.navigator.vibrate(100);
-			app.config.set("select_mode", 2);
+			App.app.config.set("select_mode", 2);
 			$(event.target).closest("file-box, face-box").get(0).select();
 		});
 
@@ -83,7 +83,7 @@ class Filebox extends HTMLElement {
 
 	scale (scale) {
 		scale = parseInt(scale || $("#thumbScaler").val());
-		var selMode = app.config.get("select_mode");
+		var selMode = App.app.config.get("select_mode");
 		var boxSize;
 		if (selMode == 0) boxSize = scale + 20;
 		else {
@@ -111,7 +111,7 @@ class Filebox extends HTMLElement {
 	}
 
 	select (checkboxClicked) {
-		if (Input.isDown("Control") || (app.config.get("select_mode") == 2 && !checkboxClicked)) {
+		if (Input.isDown("Control") || (App.app.config.get("select_mode") == 2 && !checkboxClicked)) {
 			this.selected = !this.selected;
 		} else if (Input.isDown("Shift")) {
 			this.container.selectAll(false, true);

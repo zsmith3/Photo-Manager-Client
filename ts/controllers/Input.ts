@@ -29,22 +29,22 @@ var Input = {
 	},
 
 	onEscape: function () {
-		app.els.imageModal.hide();
+		App.app.els.imageModal.hide();
 	},
 
 	onArrowLeft: function () {
-		if (app.els.imageModal.open) app.els.imageModal.switchFile(-1);
-		else app.els.filesCont.moveSelection("x", -1);
+		if (App.app.els.imageModal.open) App.app.els.imageModal.switchFile(-1);
+		else App.app.els.filesCont.moveSelection("x", -1);
 	},
 
 	onArrowRight: function () {
-		if (app.els.imageModal.open) app.els.imageModal.switchFile(1);
-		else app.els.filesCont.moveSelection("x", 1);
+		if (App.app.els.imageModal.open) App.app.els.imageModal.switchFile(1);
+		else App.app.els.filesCont.moveSelection("x", 1);
 	},
 
-	onArrowUp: function () { if (!app.els.imageModal.open) app.els.filesCont.moveSelection("y", -1); },
+	onArrowUp: function () { if (!App.app.els.imageModal.open) App.app.els.filesCont.moveSelection("y", -1); },
 
-	onArrowDown: function () { if (!app.els.imageModal.open) app.els.filesCont.moveSelection("y", 1); },
+	onArrowDown: function () { if (!App.app.els.imageModal.open) App.app.els.filesCont.moveSelection("y", 1); },
 
 	// TODO mobile stuff
 
@@ -64,14 +64,14 @@ var Input = {
 		}
 	}, */
 
-	on0: function () { app.els.imageModal.setZoom("min", "min", "c", "c"); },
+	on0: function () { App.app.els.imageModal.setZoom("min", "min", "c", "c"); },
 
-	on1: function () { app.els.imageModal.setZoom("max", "max", "c", "c"); },
+	on1: function () { App.app.els.imageModal.setZoom("max", "max", "c", "c"); },
 
 	mousemove: function (event) {
 		Input.xPos = event.clientX;
 		Input.yPos = event.clientY;
-		// app.els.imageModal.drag(event);
+		// App.app.els.imageModal.drag(event);
 	},
 
 	touchstart: function (event) {
@@ -94,9 +94,9 @@ var Input = {
 				if ($(target).hasClass("mdc-tab")) return;
 
 				if ($(target).attr("rel") == "no-refresh") {
-					app.refreshPage($(target).attr("data-fpp") || null, $(target).attr("data-page") || null);
+					App.app.refreshPage($(target).attr("data-fpp") || null, $(target).attr("data-page") || null);
 				} else {
-					app.refreshFilesData(target.pathname, $(target).attr("data-api"), null, $(target).attr("data-rel"));
+					App.app.refreshFilesData(target.pathname, $(target).attr("data-api"), null, $(target).attr("data-rel"));
 				}
 			}
 		}
