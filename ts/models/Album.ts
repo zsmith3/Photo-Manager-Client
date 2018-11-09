@@ -1,13 +1,21 @@
-import { Model } from "./Model"
+import { Model } from "./Model";
+import { Database } from "../controllers/Database";
+import App from "../controllers/App";
 
 
 /** Album model */
 export class Album extends Model {
 	/** Local instances of Album */
-	static objects: Album[];
+	static objects: Album[] = []
+
+	static props = ["id", "name", "file_count", "parentID"]
+
+	/** Update handlers for the list of Album models */
+	static listUpdateHandlers: ((models: Album[]) => void)[] = []
 
 	/** List of root-level albums only */
 	static get rootAlbums (): Album[] { return Album.objects.filter(album => album.parent === undefined); }
+
 
 	/**
 	 * Create a new album and add it to the remote database
@@ -28,6 +36,12 @@ export class Album extends Model {
 
 
 	id: number
+
+	/** Name of album */
+	name: string
+
+	/** Number of files in this album (and children) */
+	file_count: number
 
 	/** ID of parent album */
 	private parentID: number
@@ -108,3 +122,10 @@ export class Album extends Model {
 }
 // TODO will need to make some ammends to album api i think
 // 		and certainly to how they're accessed in JS/TS
+
+Album.addObject({
+	id: 1,
+	name: "2012",
+	file_count: 4,
+	parentID: 0
+});

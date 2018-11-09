@@ -1,5 +1,14 @@
+import React from "react";
+import $ from "jquery";
+import TextField from "@material-ui/core/TextField";
+import IconButton from "@material-ui/core/IconButton";
+import Icon from "@material-ui/core/Icon";
+import App from "../../controllers/App";
+import { Platform } from "../../controllers/Platform";
+
+
 /** Address bar element */
-class AddressBar extends HTMLElement {
+export default class AddressBar extends React.Component {
 	backUrls: string[]
 	forwardUrls: string[]
 
@@ -8,7 +17,30 @@ class AddressBar extends HTMLElement {
 	refresh (): void {
 		this.refreshArrows();
 		this.refreshAddress();
-		mdcSetupRipples(this);
+		// mdcSetupRipples(this);
+	}
+
+	render () {
+		return <div>
+			<div id="addressBar-nav-icons">
+
+				<a id="addressBar-arrow-left" title="Back" data-rel="back"><IconButton><Icon>arrow_back</Icon></IconButton></a>
+
+				<a id="addressBar-arrow-right" title="Forward" data-rel="forward"><IconButton><Icon>arrow_forward</Icon></IconButton></a>
+
+				<a id="addressBar-arrow-up" title="Up"><IconButton><Icon>arrow_upward</Icon></IconButton></a>
+
+				<a href="/" title="Return to root folders"><IconButton><Icon>home</Icon></IconButton></a>
+			</div>
+
+			<div id="addressBar-address-box"> {/*  className="mdc-chip" */}
+				<p id="addressBar-address">/</p>
+			</div>
+			<div id="search" onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {if (event.key == 'Enter') App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).find('#searchinput').val().toString() })}}>
+				<TextField id="searchinput" label="Search" title="Search the current view for files" onSubmit={() => App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).val().toString() })}></TextField>
+			</div>
+		</div>;
+		//<MDCText id="searchinput" placeholder="Search" data-icon-after="search" data-icon-before="arrow_back" title="Search the current view for files" onsubmit="App.app.refreshFilesData(null, null, {'search': $(this).val()});"></MDCText>
 	}
 
 	/** Hide search bar (for mobile) */
@@ -17,7 +49,7 @@ class AddressBar extends HTMLElement {
 
 		$("#search .mdc-text-field__icon-after").get(0).onclick = () => {
 			$(this).css({"width": "32px", "height": "32px", "font-size": "24px"});
-			mdcSetupRipples(this);
+			// mdcSetupRipples(this);
 			if ($("#searchinput").width() > 0) {
 				// refreshGetData(addGet({"search": $("#searchinput").val()}));
 				// TODO
@@ -30,7 +62,7 @@ class AddressBar extends HTMLElement {
 
 		$("#search .mdc-text-field__icon-before").get(0).onclick = () => {
 			$("#search .mdc-text-field__icon-after").css({"width": "", "height": "", "font-size": ""});
-			mdcSetupRipples($("#search .mdc-text-field__icon-after").get(0));
+			// mdcSetupRipples($("#search .mdc-text-field__icon-after").get(0));
 			$("#search").css("transition", "width .1s").css({"width": "0px", "padding": 0});
 			$("#search .mdc-text-field__input, #search .mdc-text-field__icon-before").css("transition", "opacity .05s").css("opacity", 0);
 		};
@@ -107,5 +139,3 @@ class AddressBar extends HTMLElement {
 		}
 	}
 }
-
-window.customElements.define("address-bar", AddressBar);

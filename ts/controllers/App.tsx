@@ -1,8 +1,13 @@
-import * as React from "preact";
-import * as ReactDOM from "preact";
+import React from "react";
+import ReactDOM from "react-dom";
+window.React = React;
+import { Platform } from "./Platform";
+import AddressBar from "../elements/regions/AddressBar";
+import NavDrawer from "../elements/NavDrawer/NavDrawer";
+import { CssBaseline } from "@material-ui/core";
 
 // Class to handle the whole application
-export class App extends React.Component {
+export default class App extends React.Component {
 	// Singleton instance
 	static app: App;
 
@@ -21,8 +26,7 @@ export class App extends React.Component {
 
 	// Start application
 	static start (rootElement: HTMLElement) {
-		App.app = <App />;
-		ReactDOM.render(App.app, rootElement);
+		ReactDOM.render(<App />, rootElement);
 		App.app.init();
 	}
 
@@ -31,7 +35,7 @@ export class App extends React.Component {
 	// TODO mdc typings
 
 	// Current page data
-	data = {
+	/*data = {
 		_data: {
 			albumId: -1,
 			personId: -1,
@@ -45,7 +49,7 @@ export class App extends React.Component {
 		},
 
 		viewName: "files",
-		view: new FilesView() as View,
+		//view: new FilesView() as View,
 		queryParams: new URLSearchParams(Platform.urls.getCurrentQuery()),
 
 		get folderType () {
@@ -83,7 +87,7 @@ export class App extends React.Component {
 		get currentRootObject () { return this.folder || this.album || this.person || {}; },
 
 		get objectCount () { return App.app.els.filesCont.sortedFiles.length || App.app.els.filesCont.sortedFiles.length || 0; }
-	}
+	}*/
 
 	// Page elements
 	els = {
@@ -101,7 +105,7 @@ export class App extends React.Component {
 		get filesMap (): GMapView { return App.app.els.getElement<GMapView>("#filesMap", "map-view"); },
 		get filterBar (): FilterBar { return App.app.els.getElement<FilterBar>("#filterBar", "filter-bar"); },
 		get imageModal (): ImageModal { return App.app.els.getElement<ImageModal>("#imageModal", "image-modal"); },
-		get navDrawer (): NavigationDrawer { return App.app.els.getElement<NavigationDrawer>("#navigationDrawer", "nav-drawer"); },
+		get navDrawer (): NavDrawer { return App.app.els.getElement<NavDrawer>("#navigationDrawer", "nav-drawer"); },
 		get sortBar (): SortBar { return App.app.els.getElement<SortBar>("#sortBar", "sort-bar"); },
 		get toolBar (): ToolBar { return App.app.els.getElement<ToolBar>("#toolBar", "tool-bar"); }
 	}
@@ -109,16 +113,27 @@ export class App extends React.Component {
 	constructor (props) {
 		super(props);
 
+		App.app = this;
+
 		// Notification snackbar
-		this.snackbar = new mdc.snackbar.MDCSnackbar($("#snackbar").get(0));
+		//this.snackbar = new mdc.snackbar.MDCSnackbar($("#snackbar").get(0));
 	}
 
 	render () {
 		// TODO
-		return <div></div>;
+		let Fragment = React.Fragment;
+		return <Fragment>
+			<CssBaseline />
+
+			<AddressBar />
+			<NavDrawer />
+		</Fragment>;
 	}
 
 	init() {
+		console.log("app inited");
+		return;
+
 		let loader = this;
 		apiRequest("membership/status/").then(function (data) {
 			if (data.authenticated) {
@@ -199,7 +214,7 @@ export class App extends React.Component {
 	}
 
 	// Refresh the page URL
-	refreshFilesData (displayUrl: string, apiUrl?: string, queryParams?: { removeOld: boolean }, linkType?: string) {
+	refreshFilesData (displayUrl: string, apiUrl?: string, queryParams?: { removeOld?: boolean, "search": string }, linkType?: string) {
 		$("#files .mdc-linear-progress").css("display", "");
 
 		apiUrl = trimUrl(displayUrl ? apiUrl : (this.data.apiUrl || ""));

@@ -1,9 +1,14 @@
 import { Model } from "./Model"
+import { Database } from "../controllers/Database"
+import $ from "jquery";
+import App from "../controllers/App"
 
 
 /** Geotag area model */
 export class GeoTagArea extends Model {
-	static objects: GeoTagArea[]
+	static objects: GeoTagArea[] = []
+
+	static props = ["id", "name", "address", "latitude", "longitude", "radius"]
 
 
 	/**
@@ -21,6 +26,8 @@ export class GeoTagArea extends Model {
 		});
 	};
 
+
+	id: number
 
 	/** Name of the GeoTagArea */
 	name: string
@@ -64,7 +71,9 @@ export class GeoTagArea extends Model {
 
 /** Geotag model */
 export class GeoTag extends Model {
-	static objects: GeoTag[]
+	static objects: GeoTag[] = []
+
+	static props = ["id", "latitude", "longitude", "areaID"]
 
 	static specialProps = {
 		"area": (geotag: GeoTag, prop: number) => { geotag.areaID = prop; }

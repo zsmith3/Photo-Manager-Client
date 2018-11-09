@@ -32,4 +32,4 @@ abstract class BasePlatform {
 	abstract notify (data: { id: number, title: string, text: string, progress?: number}): void
 }
 
-var Platform: BasePlatform;
+export var Platform: BasePlatform;

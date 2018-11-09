@@ -1,17 +1,46 @@
-//Navigation drawer class
-class NavigationDrawer extends HTMLElement {
+import React from "react";
+import $ from "jquery";
+import Drawer from "@material-ui/core/Drawer";
+import Divider from "@material-ui/core/Divider";
+import AlbumList from "./AlbumList";
+import { Album } from "../../models/all_models";
+import PersonGroupList from "./PersonGroupList";
+import "../../styles/NavDrawer.css";
+
+
+window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true;
+
+// Navigation drawer class
+export default class NavDrawer extends React.Component {
+	state = {
+		open: true
+	}
+
+	render () {
+		return <Drawer open={this.state.open} onClose={() => this.setState({open: false})}>
+			<div tabIndex={0} role="button" /* onClick={() => this.setState({open: false})} */ onKeyDown={() => this.setState({open: false})}>
+				<AlbumList />
+				<Divider />
+				<PersonGroupList />
+				{/* TODO people list here */}
+			</div>
+			</Drawer>;
+		// TODO 1) populate this list correctly
+		// 2) make permanent on desktop
+	}
+
 	// Convert a permanent drawer to a temporary drawer
 	setTemporary () {
 		let aside = $("<aside></aside>").addClass("mdc-drawer mdc-drawer--temporary").insertBefore(this);
 		$(this).removeClass("mdc-drawer mdc-drawer--permanent mdc-elevation--z6").addClass("mdc-drawer__drawer").appendTo(aside);
 		this.api = new mdc.drawer.MDCTemporaryDrawer($(this).parent().get(0));
-		this.api.listen("MDCTemporaryDrawer:open", NavigationDrawer.onOpen);
+		this.api.listen("MDCTemporaryDrawer:open", NavDrawer.onOpen);
 	}
 
 	// Convert a temporary drawer to a permanent drawer
 	setPermanent () {
 		if (this.api) {
-			this.api.unlisten("MDCTemporaryDrawer:open", NavigationDrawer.onOpen);
+			this.api.unlisten("MDCTemporaryDrawer:open", NavDrawer.onOpen);
 			this.api.destroy();
 		}
 		let aside = $(this).parent();
@@ -218,8 +247,8 @@ class NavigationDrawer extends HTMLElement {
 	}
 }
 
-NavigationDrawer.onOpen = function () {
+NavDrawer.onOpen = function () {
 	$(this).find("mdc-slider").each(function () { let slider = this; setTimeout(function () { slider.resetAPI(); }, 200); });
 };
 
-window.customElements.define("nav-drawer", NavigationDrawer);
+window.customElements.define("nav-drawer", NavDrawer);

@@ -37,4 +37,4 @@ abstract class BaseDatabase {
 	abstract delete (table: dbTableType, id: (number | string)): Promise<never>
 };
 
-var Database: BaseDatabase;
+export var Database: BaseDatabase;

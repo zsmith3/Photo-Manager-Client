@@ -1,9 +1,15 @@
 import { Model } from "./Model"
+import { Database } from "../controllers/Database"
+import { Person, FileObject } from "./all_models"
+import App from "../controllers/App"
+
 
 /** Face model */
 export class Face extends Model {
 	/** Local instances of Face */
-	static objects: Face[];
+	static objects: Face[] = []
+
+	static props = ["id", "rect_x", "rect_y", "rect_w", "rect_h", "file", "status", "personID"]
 
 	static specialProps = {
 		"person": (face: Face, prop: number) => { face.personID = prop; }

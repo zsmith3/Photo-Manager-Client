@@ -1,9 +1,17 @@
 import { Model } from "./Model"
+import { Database } from "../controllers/Database"
+import { GeoTag } from "./all_models"
+import App from "../controllers/App"
+import { Platform } from "../controllers/Platform"
+import { ImageLoader } from "../controllers/ImageLoader"
+
 
 /** File model */
 export class FileObject extends Model {
 	/** Local instances of File */
-	static objects: FileObject[];
+	static objects: FileObject[] = []
+
+	static props = ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"]
 
 	static specialProps = {
 		"geotag": (file: FileObject, prop: object) => { file.geotagID = GeoTag.addObject(prop).id; }

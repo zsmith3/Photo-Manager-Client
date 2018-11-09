@@ -2,10 +2,15 @@
 export class Model {
 	/** Base Model objects array, to store local instances of Model */
 	static objects: Model[]
+	static props: string[]
 	static specialProps: {
 		[key: string]: (instance: Model, prop: any) => any
 	}
-	"constructor": { objects: Model[], specialProps: { [key: string]: (instance: Model, prop: any) => any } };
+	"constructor": { objects: Model[], specialProps: { [key: string]: (instance: Model, prop: any) => any }, props: string[] };
+
+	/** Update handlers for the list of models */
+	static listUpdateHandlers: ((models: Model[]) => void)[]
+
 
 	/**
 	 * Add a new model instance to the local list (from the API)
@@ -13,9 +18,11 @@ export class Model {
 	 * @param obj Data representing new instance of model
 	 * @returns Created instance of model
 	 */
-	static addObject<M extends Model> (this: { new (...args: any[]): M, objects: M[] }, obj: object): M {
+	static addObject<M extends Model> (this: { new (...args: any[]): M, objects: M[], handleListUpdate(): void }, obj: object, handleUpdate=false): M {
 		let object = new this(obj);
-		this.objects.push(object);
+
+		if (handleUpdate) this.handleListUpdate();
+
 		return object;
 	}
 
@@ -24,10 +31,12 @@ export class Model {
 	 * @param this Subclass of Model
 	 * @param list List of objects representing new instances of model
 	 */
-	static addObjects<M extends Model> (this: { new (...args: any[]): M, objects: M[], addObject (obj: object): void }, list: object[]): void {
+	static addObjects<M extends Model> (this: { new (...args: any[]): M, objects: M[], addObject (obj: object, handleUpdate: boolean): void, handleListUpdate (): void }, list: object[]): void {
 		for (let i in list) {
-			this.addObject(list[i]);
+			this.addObject(list[i], false);
 		}
+
+		this.handleListUpdate();
 	}
 
 	/**
@@ -73,14 +82,36 @@ export class Model {
 	 * @param this Subclass of Model
 	 * @param id ID of model instance to delete
 	 */
-	static deleteById<M extends Model> (this: { new (...args: any[]): M, objects: M[] }, id: (number | string)): void {
+	static deleteById<M extends Model> (this: { new (...args: any[]): M, objects: M[], handleListUpdate(): void }, id: (number | string)): void {
 		for (let i in this.objects) {
 			if (this.objects[i].id == id) delete this.objects[i];
 		}
+
+		this.handleListUpdate();
 	}
+
+	/**
+	 * Register handler function to be executed when model list is updated
+	 * @param callback Handler function, taking the model list as an argument
+	 */
+	static registerUpdateHandler<M extends Model> (this: { new (...args: any[]): M, objects: M[], listUpdateHandlers: ((models: M[]) => void)[] }, callback: (models: M[]) => void): void {
+		this.listUpdateHandlers.push(callback);
+	}
+
+	/**
+	 * Execute update handler functions on model list (to be run whenever model list updated)
+	 */
+	static handleListUpdate<M extends Model> (this: { new (...args: any[]): M, objects: M[], listUpdateHandlers: ((models: M[]) => void)[] }) {
+		this.listUpdateHandlers.forEach((callback: (models: M[]) => void) => callback(this.objects));
+	}
+
 
 	/** ID property for all models */
 	id: (number | string)
+
+	/** Handler functions for model update */
+	private updateHandlers: ((model: Model) => void)[] = []
+
 
 	/**
 	 * Construct a new Model instance (overridden)
@@ -98,11 +129,21 @@ export class Model {
 	 */
 	update (obj: object): void {
 		for (let property in obj) {
-			if (property in this.constructor.specialProps) {
+			if (this.constructor.specialProps !== undefined && property in this.constructor.specialProps) {
 				this.constructor.specialProps[property](this, obj[property]);
-			} else if (property in this) {
+			} else if (this.constructor.props.indexOf(property) !== -1) {
 				this[property] = obj[property];
 			}
 		}
+
+		this.updateHandlers.forEach((callback: (model: Model) => void) => callback(this));
+	}
+
+	/**
+	 * Register handler function to be executed when this model instance is updated
+	 * @param callback Handler function, taking the model as an argument
+	 */
+	registerUpdateHandler<M extends Model> (this: M, callback: (model: M) => void) {
+		this.updateHandlers.push(callback);
 	}
 }

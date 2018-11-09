@@ -1,5 +1,5 @@
 // Class for loading images
-class ImageLoader {
+export class ImageLoader {
 	static imgSizes: string[] = ["/thumbnail/", "/300x200/", "/1800x1200/", "/"]
 	static faceSizes: string[] = ["/30/", "/200/", "/300/"]
 

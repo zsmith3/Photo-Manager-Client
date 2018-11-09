@@ -1,9 +1,5 @@
 import $ from "jquery";
 
-declare global {
-	var app: App;
-}
-
 $(document).ready(function () {
 	app = new App();
 	App.app.init();

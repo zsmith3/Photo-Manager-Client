@@ -1,10 +1,17 @@
 import { Model } from "./Model"
+import { Database } from "../controllers/Database"
+import App from "../controllers/App"
 
 
 /** Person Group model */
 export class PersonGroup extends Model {
 	/** Local instances of Person Group */
-	static objects: PersonGroup[];
+	static objects: PersonGroup[] = []
+
+	static props = ["id", "name"]
+
+	/** Update handlers for the list of Person Group models */
+	static listUpdateHandlers: ((models: PersonGroup[]) => void)[] = []
 
 
 	/**
@@ -54,7 +61,9 @@ export class PersonGroup extends Model {
 /** Person model */
 export class Person extends Model {
 	/** Local instances of Person */
-	static objects: Person[];
+	static objects: Person[] = []
+
+	static props = ["id", "name", "face_count", "groupID"]
 
 	static specialProps = {
 		"group": (person: Person, prop: number) => { person.groupID = prop; }
@@ -82,6 +91,12 @@ export class Person extends Model {
 
 	id: number
 
+	/** Full name of the person */
+	name: string
+
+	/** Number of faces identified as this person */
+	face_count: number
+
 	/** ID of group to which person belongs */
 	private groupID: number
 
@@ -108,3 +123,15 @@ export class Person extends Model {
 	// 2) ordering (of both people and groups)
 	// 3) people pages
 }
+
+PersonGroup.addObject({
+	id: 1,
+	name: "Family"
+});
+
+Person.addObject({
+	id: 1,
+	name: "Zak Smith",
+	face_count: 4,
+	groupID: 1
+});
