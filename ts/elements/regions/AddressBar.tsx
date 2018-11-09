@@ -1,8 +1,6 @@
 import React from "react";
 import $ from "jquery";
-import TextField from "@material-ui/core/TextField";
-import IconButton from "@material-ui/core/IconButton";
-import Icon from "@material-ui/core/Icon";
+import { TextField, IconButton, Icon } from "@material-ui/core"
 import App from "../../controllers/App";
 import { Platform } from "../../controllers/Platform";
 

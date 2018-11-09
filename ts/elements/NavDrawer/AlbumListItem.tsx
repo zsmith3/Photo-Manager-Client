@@ -1,9 +1,6 @@
 import React from "react";
 import $ from "jquery";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Icon from "@material-ui/core/Icon";
-import IconButton from "@material-ui/core/IconButton";
+import { ListItem, ListItemText, Icon, IconButton } from "@material-ui/core";
 import App from "../../controllers/App";
 import { Album } from "../../models/all_models";
 

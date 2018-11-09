@@ -1,7 +1,6 @@
 import React from "react";
 import $ from "jquery";
-import Drawer from "@material-ui/core/Drawer";
-import Divider from "@material-ui/core/Divider";
+import { Drawer, Divider } from "@material-ui/core";
 import AlbumList from "./AlbumList";
 import { Album } from "../../models/all_models";
 import PersonGroupList from "./PersonGroupList";

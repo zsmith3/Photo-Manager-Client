@@ -1,10 +1,8 @@
 import React from "react";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Icon from "@material-ui/core/Icon";
+import { ListItem, ListItemText, Icon, Collapse } from "@material-ui/core";
 import PersonList from "./PersonList";
 import { Person, PersonGroup } from "../../models/Person";
-import Collapse from "@material-ui/core/Collapse"
+
 
 export default class PersonGroupListItem extends React.Component<{ groupId: number }> {
 	state: {
