@@ -1,12 +1,14 @@
 import { Model } from "./Model"
-import { Database } from "../controllers/Database"
-import App from "../controllers/App"
+import { Database, DBTables } from "../controllers/Database"
+import App from "../components/App"
 
 
 /** Person Group model */
 export class PersonGroup extends Model {
 	/** Local instances of Person Group */
 	static objects: PersonGroup[] = []
+
+	static modelName = DBTables.PersonGroup
 
 	static props = ["id", "name"]
 
@@ -62,6 +64,8 @@ export class PersonGroup extends Model {
 export class Person extends Model {
 	/** Local instances of Person */
 	static objects: Person[] = []
+
+	static modelName = DBTables.Person
 
 	static props = ["id", "name", "face_count", "groupID"]
 

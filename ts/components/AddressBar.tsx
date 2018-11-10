@@ -1,12 +1,29 @@
 import React from "react";
 import $ from "jquery";
-import { TextField, IconButton, Icon } from "@material-ui/core"
-import App from "../../controllers/App";
-import { Platform } from "../../controllers/Platform";
+import { TextField, IconButton, Icon, withStyles, Theme } from "@material-ui/core"
+import { CSSProperties } from "@material-ui/core/styles/withStyles";
+import App from "./App";
+import { Platform } from "../controllers/Platform";
+
+
+interface AddressBarStyles {
+	addressBar,
+	address
+}
 
 
 /** Address bar element */
-export default class AddressBar extends React.Component {
+class AddressBar extends React.Component<{ classes: AddressBarStyles }> {
+	static styles: ((theme: Theme) => AddressBarStyles) = (theme: Theme) => ({
+		addressBar: {
+			backgroundColor: theme.palette.background.paper
+		},
+		address: {
+			display: "inline"
+		}
+	});
+
+
 	backUrls: string[]
 	forwardUrls: string[]
 
@@ -19,9 +36,8 @@ export default class AddressBar extends React.Component {
 	}
 
 	render () {
-		return <div>
-			<div id="addressBar-nav-icons">
-
+		return <div className={this.props.classes.addressBar}>
+			<span id="addressBar-nav-icons">
 				<a id="addressBar-arrow-left" title="Back" data-rel="back"><IconButton><Icon>arrow_back</Icon></IconButton></a>
 
 				<a id="addressBar-arrow-right" title="Forward" data-rel="forward"><IconButton><Icon>arrow_forward</Icon></IconButton></a>
@@ -29,14 +45,14 @@ export default class AddressBar extends React.Component {
 				<a id="addressBar-arrow-up" title="Up"><IconButton><Icon>arrow_upward</Icon></IconButton></a>
 
 				<a href="/" title="Return to root folders"><IconButton><Icon>home</Icon></IconButton></a>
-			</div>
+			</span>
 
-			<div id="addressBar-address-box"> {/*  className="mdc-chip" */}
-				<p id="addressBar-address">/</p>
-			</div>
-			<div id="search" onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {if (event.key == 'Enter') App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).find('#searchinput').val().toString() })}}>
+			<span id="addressBar-address-box"> {/*  className="mdc-chip" */}
+				<p className={this.props.classes.address}>/</p>
+			</span>
+			<span id="search" onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {if (event.key == 'Enter') App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).find('#searchinput').val().toString() })}}>
 				<TextField id="searchinput" label="Search" title="Search the current view for files" onSubmit={() => App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).val().toString() })}></TextField>
-			</div>
+			</span>
 		</div>;
 		//<MDCText id="searchinput" placeholder="Search" data-icon-after="search" data-icon-before="arrow_back" title="Search the current view for files" onsubmit="App.app.refreshFilesData(null, null, {'search': $(this).val()});"></MDCText>
 	}
@@ -137,3 +153,5 @@ export default class AddressBar extends React.Component {
 		}
 	}
 }
+
+export default withStyles(AddressBar.styles)(AddressBar);

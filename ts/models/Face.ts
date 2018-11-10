@@ -1,13 +1,15 @@
 import { Model } from "./Model"
-import { Database } from "../controllers/Database"
+import { Database, DBTables } from "../controllers/Database"
 import { Person, FileObject } from "./all_models"
-import App from "../controllers/App"
+import App from "../components/App"
 
 
 /** Face model */
 export class Face extends Model {
 	/** Local instances of Face */
 	static objects: Face[] = []
+
+	static modelName = DBTables.Face
 
 	static props = ["id", "rect_x", "rect_y", "rect_w", "rect_h", "file", "status", "personID"]
 

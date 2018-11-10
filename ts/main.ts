@@ -1,3 +1,3 @@
-import App from "./controllers/App";
+import App from "./components/App";
 
 App.start(document.getElementById("app"));

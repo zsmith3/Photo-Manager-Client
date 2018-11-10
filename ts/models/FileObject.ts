@@ -1,7 +1,7 @@
 import { Model } from "./Model"
-import { Database } from "../controllers/Database"
+import { Database, DBTables } from "../controllers/Database"
 import { GeoTag } from "./all_models"
-import App from "../controllers/App"
+import App from "../components/App"
 import { Platform } from "../controllers/Platform"
 import { ImageLoader } from "../controllers/ImageLoader"
 
@@ -10,6 +10,8 @@ import { ImageLoader } from "../controllers/ImageLoader"
 export class FileObject extends Model {
 	/** Local instances of File */
 	static objects: FileObject[] = []
+
+	static modelName = DBTables.File
 
 	static props = ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"]
 

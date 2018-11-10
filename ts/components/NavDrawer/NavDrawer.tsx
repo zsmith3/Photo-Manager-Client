@@ -1,31 +1,68 @@
 import React from "react";
 import $ from "jquery";
-import { Drawer, Divider } from "@material-ui/core";
+import { Drawer, Divider, Hidden, withStyles, Theme } from "@material-ui/core";
 import AlbumList from "./AlbumList";
 import { Album } from "../../models/all_models";
 import PersonGroupList from "./PersonGroupList";
-import "../../styles/NavDrawer.css";
 
 
 window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true;
 
+
+interface NavDrawerStyles {
+	toolbar
+	drawer
+}
+
+
 // Navigation drawer class
-export default class NavDrawer extends React.Component {
+class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
+	static drawerWidth = 240;
+
+	static styles: ((theme: Theme) => NavDrawerStyles) = (theme: Theme) => ({
+		toolbar: theme.mixins.toolbar,
+		drawer: {
+			width: NavDrawer.drawerWidth
+		}
+	});
+
 	state = {
-		open: true
+		mobileOpen: false
+	}
+
+	constructor (props) {
+		super(props);
+
+		navDrawerInstance = this;
 	}
 
 	render () {
-		return <Drawer open={this.state.open} onClose={() => this.setState({open: false})}>
-			<div tabIndex={0} role="button" /* onClick={() => this.setState({open: false})} */ onKeyDown={() => this.setState({open: false})}>
-				<AlbumList />
+		let Fragment = React.Fragment;
+
+		const drawer = <div className={this.props.classes.drawer} tabIndex={0} role="button" onClick={() => this.setState({mobileOpen: false})} onKeyDown={() => this.setState({mobileOpen: false})}>
+				<div className={this.props.classes.toolbar} />
+
 				<Divider />
+
+				<AlbumList />
+
+				<Divider />
+
 				<PersonGroupList />
-				{/* TODO people list here */}
-			</div>
-			</Drawer>;
-		// TODO 1) populate this list correctly
-		// 2) make permanent on desktop
+			</div>;
+
+		return <Fragment>
+				<Hidden smUp implementation="css">
+					<Drawer variant="temporary" open={this.state.mobileOpen} onClose={() => this.setState({mobileOpen: false})} ModalProps={ { keepMounted: true } }>
+					{drawer}
+					</Drawer>
+				</Hidden>
+				<Hidden xsDown implementation="css">
+					<Drawer variant="permanent" open>
+					{drawer}
+					</Drawer>
+				</Hidden>
+			</Fragment>;
 	}
 
 	// Convert a permanent drawer to a temporary drawer
@@ -250,4 +287,8 @@ NavDrawer.onOpen = function () {
 	$(this).find("mdc-slider").each(function () { let slider = this; setTimeout(function () { slider.resetAPI(); }, 200); });
 };
 
-window.customElements.define("nav-drawer", NavDrawer);
+export default withStyles(NavDrawer.styles)(NavDrawer);
+
+export const navDrawerWidth = NavDrawer.drawerWidth;
+
+export var navDrawerInstance: NavDrawer;

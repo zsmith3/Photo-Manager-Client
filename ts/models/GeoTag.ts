@@ -1,12 +1,14 @@
 import { Model } from "./Model"
-import { Database } from "../controllers/Database"
+import { Database, DBTables } from "../controllers/Database"
 import $ from "jquery";
-import App from "../controllers/App"
+import App from "../components/App"
 
 
 /** Geotag area model */
 export class GeoTagArea extends Model {
 	static objects: GeoTagArea[] = []
+
+	static modelName = DBTables.GeoTagArea
 
 	static props = ["id", "name", "address", "latitude", "longitude", "radius"]
 
@@ -72,6 +74,8 @@ export class GeoTagArea extends Model {
 /** Geotag model */
 export class GeoTag extends Model {
 	static objects: GeoTag[] = []
+
+	static modelName = DBTables.GeoTag
 
 	static props = ["id", "latitude", "longitude", "areaID"]
 

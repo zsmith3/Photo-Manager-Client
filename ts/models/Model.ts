@@ -1,12 +1,15 @@
+import { Database, DBTables } from "../controllers/Database";
+
 /** Base Model class */
 export class Model {
 	/** Base Model objects array, to store local instances of Model */
 	static objects: Model[]
+	static modelName : DBTables
 	static props: string[]
 	static specialProps: {
 		[key: string]: (instance: Model, prop: any) => any
 	}
-	"constructor": { objects: Model[], specialProps: { [key: string]: (instance: Model, prop: any) => any }, props: string[] };
+	"constructor": { objects: Model[], specialProps: { [key: string]: (instance: Model, prop: any) => any }, modelName: DBTables, props: string[] };
 
 	/** Update handlers for the list of models */
 	static listUpdateHandlers: ((models: Model[]) => void)[]
@@ -94,8 +97,21 @@ export class Model {
 	 * Register handler function to be executed when model list is updated
 	 * @param callback Handler function, taking the model list as an argument
 	 */
-	static registerUpdateHandler<M extends Model> (this: { new (...args: any[]): M, objects: M[], listUpdateHandlers: ((models: M[]) => void)[] }, callback: (models: M[]) => void): void {
+	static registerUpdateHandler<M extends Model> (this: { new (...args: any[]): M, objects: M[], loadAll (): void, listUpdateHandlers: ((models: M[]) => void)[] }, callback: (models: M[]) => void): void {
 		this.listUpdateHandlers.push(callback);
+
+		this.loadAll();
+	}
+
+	/**
+	 * Load all instances of this Model type
+	 */
+	static loadAll<M extends Model> (this: { new (...args: any[]): M, objects: M[], modelName: DBTables, setObjects (list: object[]): M[] }) {
+		return new Promise((resolve, reject) => {
+			Database.get(this.modelName).then((data) => {
+				resolve(this.setObjects(data));
+			}).catch(reject);
+		});
 	}
 
 	/**

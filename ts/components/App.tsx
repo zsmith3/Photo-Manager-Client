@@ -1,15 +1,33 @@
 import React from "react";
 import ReactDOM from "react-dom";
 window.React = React;
-import { Platform } from "./Platform";
-import AddressBar from "../elements/regions/AddressBar";
-import NavDrawer from "../elements/NavDrawer/NavDrawer";
-import { CssBaseline } from "@material-ui/core";
+import { Platform } from "../controllers/Platform";
+import AddressBar from "./AddressBar";
+import NavDrawer, { navDrawerWidth } from "./NavDrawer/NavDrawer";
+import AppBar from "./AppBar";
+import { CssBaseline, Theme, withStyles } from "@material-ui/core";
+import "../styles/App.css";
+
+
+interface AppStyles {
+	rightOfNavDrawer
+	toolbar
+}
+
 
 // Class to handle the whole application
-export default class App extends React.Component {
+export default class App extends React.Component<{ classes: AppStyles }> {
 	// Singleton instance
 	static app: App;
+
+	static styles: ((theme: Theme) => AppStyles) = (theme: Theme) => ({
+		rightOfNavDrawer: {
+			[theme.breakpoints.up("sm")]: {
+				marginLeft: navDrawerWidth
+			}
+		},
+		toolbar: theme.mixins.toolbar
+	}) ;
 
 	// Default values for query string parameters
 	static queryParamDefaults = {
@@ -21,12 +39,12 @@ export default class App extends React.Component {
 		filter: "I*",
 		isf: "false",
 		page: 1,
-		get fpp() { return App.app.config.get("fpp"); }
+		get fpp () { return App.app.config.get("fpp"); }
 	}
 
 	// Start application
 	static start (rootElement: HTMLElement) {
-		ReactDOM.render(<App />, rootElement);
+		ReactDOM.render(<AppStyled />, rootElement);
 		App.app.init();
 	}
 
@@ -90,7 +108,7 @@ export default class App extends React.Component {
 	}*/
 
 	// Page elements
-	els = {
+	/* els = {
 		getElement<T extends HTMLElement> (selector: (string | HTMLElement), tagName: string): T {
 			function check<U extends HTMLElement> (el: HTMLElement): el is U {
 				return el.tagName == tagName;
@@ -108,7 +126,7 @@ export default class App extends React.Component {
 		get navDrawer (): NavDrawer { return App.app.els.getElement<NavDrawer>("#navigationDrawer", "nav-drawer"); },
 		get sortBar (): SortBar { return App.app.els.getElement<SortBar>("#sortBar", "sort-bar"); },
 		get toolBar (): ToolBar { return App.app.els.getElement<ToolBar>("#toolBar", "tool-bar"); }
-	}
+	} */
 
 	constructor (props) {
 		super(props);
@@ -120,17 +138,25 @@ export default class App extends React.Component {
 	}
 
 	render () {
-		// TODO
 		let Fragment = React.Fragment;
 		return <Fragment>
 			<CssBaseline />
 
-			<AddressBar />
 			<NavDrawer />
+
+			<div className={this.props.classes.rightOfNavDrawer}>
+				<AppBar />
+
+				<div>
+					<div className={this.props.classes.toolbar} />
+
+					<AddressBar />
+				</div>
+			</div>
 		</Fragment>;
 	}
 
-	init() {
+	init () {
 		console.log("app inited");
 		return;
 
@@ -281,8 +307,8 @@ export default class App extends React.Component {
 		let parent = this;
 		if (this.data.view.checkRange(this.getQueryParam("fpp") * (page - 1), this.getQueryParam("fpp") * page)) {
 			let addFiles = function (data) { parent.data.view.addFiles(data); };
-			if (page > 1 && !this.data.view.checkRange(this.getQueryParam("fpp") * (page - 2), this.getQueryParam("fpp") * (page - 1))) apiRequest(getUrl(addToUrl(this.data.apiUrl, App.app.data.objectType + "/"), true, {page: page - 1})).then(addFiles);
-			if (page < Math.ceil(this.data.objectCount / this.getQueryParam("fpp")) && !this.data.view.checkRange(this.getQueryParam("fpp") * (page + 1), this.getQueryParam("fpp") * (page + 2))) apiRequest(getUrl(addToUrl(this.data.apiUrl, App.app.data.objectType + "/"), true, {page: page + 1})).then(addFiles);
+			if (page > 1 && !this.data.view.checkRange(this.getQueryParam("fpp") * (page - 2), this.getQueryParam("fpp") * (page - 1))) apiRequest(getUrl(addToUrl(this.data.apiUrl, App.app.data.objectType + "/"), true, { page: page - 1 })).then(addFiles);
+			if (page < Math.ceil(this.data.objectCount / this.getQueryParam("fpp")) && !this.data.view.checkRange(this.getQueryParam("fpp") * (page + 1), this.getQueryParam("fpp") * (page + 2))) apiRequest(getUrl(addToUrl(this.data.apiUrl, App.app.data.objectType + "/"), true, { page: page + 1 })).then(addFiles);
 		} else {
 			apiRequest(addToUrl(this.data.apiUrl, App.app.data.objectType + "/")).then(function (data) {
 				parent.data.view.addFiles(data);
@@ -346,3 +372,5 @@ export default class App extends React.Component {
 		$(this.snackbar.root_).removeClass("mdc-snackbar--active");
 	}
 }
+
+const AppStyled = withStyles(App.styles)(App);

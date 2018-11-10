@@ -1,12 +1,14 @@
 import { Model } from "./Model";
-import { Database } from "../controllers/Database";
-import App from "../controllers/App";
+import { Database, DBTables } from "../controllers/Database";
+import App from "../components/App";
 
 
 /** Album model */
 export class Album extends Model {
 	/** Local instances of Album */
 	static objects: Album[] = []
+
+	static modelName = DBTables.Album
 
 	static props = ["id", "name", "file_count", "parentID"]
 

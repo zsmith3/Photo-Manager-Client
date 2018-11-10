@@ -1,7 +1,7 @@
 import React from "react";
 import $ from "jquery";
 import { ListItem, ListItemText, Icon, IconButton, ListItemAvatar, Avatar } from "@material-ui/core";
-import App from "../../controllers/App";
+import App from "../App";
 import { Person } from "../../models/all_models";
 
 

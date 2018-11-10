@@ -1,7 +1,7 @@
 import React from "react";
 import $ from "jquery";
 import { ListItem, ListItemText, Icon, IconButton } from "@material-ui/core";
-import App from "../../controllers/App";
+import App from "../App";
 import { Album } from "../../models/all_models";
 
 
@@ -18,7 +18,6 @@ export default class AlbumListItem extends React.Component<{albumId: number}> {
 	}
 
 	render () {
-		console.log(this.state.album);
 		return <ListItem button>
 				<a href=""> {/* TODO href */}
 					<ListItemText primary={ this.state.album.name } secondary={ this.state.album.file_count + " files" } />
