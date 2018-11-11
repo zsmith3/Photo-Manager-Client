@@ -1,7 +1,7 @@
 import React from "react";
 import { ListItem, ListItemText, Icon, Collapse } from "@material-ui/core";
 import PersonList from "./PersonList";
-import { Person, PersonGroup } from "../../models/Person";
+import { Person, PersonGroup } from "../../../models/Person";
 
 
 export default class PersonGroupListItem extends React.Component<{ groupId: number }> {

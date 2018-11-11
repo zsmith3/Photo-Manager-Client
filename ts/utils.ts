@@ -1,5 +1,8 @@
+import { Platform } from "./controllers/Platform";
+import msgpack from "msgpack-lite";
+
 // Type definitions for httpRequest parameters
-type httpMethodTypes = ("GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH");
+export type httpMethodTypes = ("GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH");
 type xhrResponseTypes = ("" | "arraybuffer" | "blob" | "document" | "json" | "text");
 type fileReaderTypes = ("readAsArrayBuffer" | "readAsBinaryString" | "readAsDataURL" | "readAsText");
 
@@ -61,7 +64,7 @@ function httpRequest (url: string, type: httpMethodTypes, data: any, headers: ob
  * @param data HTTP request body data
  * @returns Promise object representing API response
  */
-function apiRequest (url: string, type?: string, data?: any): Promise<any> {
+export function apiRequest (url: string, type?: httpMethodTypes, data?: any): Promise<any> {
 	var encData: Blob;
 	if (data) encData = new Blob([msgpack.encode(data)]);
 	else encData = null;
@@ -101,41 +104,43 @@ function apiRequest (url: string, type?: string, data?: any): Promise<any> {
  * Base64 data url requests function
  * @param url Request URL (relative to server root)
  */
-function mediaRequest (url: string): Promise<string> {
+export function mediaRequest (url: string): Promise<string> {
 	return httpRequest(Platform.urls.serverUrl + url, "GET", null, null, "blob", "readAsDataURL");
 }
 
 
 // Modifications to the Promise prototype to add progress-tracking (for chain promises)
 
-interface Promise<T> {
-	/**
-	 * Progress report run before starting each item
-	 * @param data Data about current progress
-	 * @param data.item Item about to be completed
-	 * @param data.result Current result of chain operation
-	 * @param data.doneCount Number of items completed
-	 * @param data.totalCount Number of items remaining
-	 */
-	onbeforeprogress: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void
+declare global {
+	interface Promise<T> {
+		/**
+		 * Progress report run before starting each item
+		 * @param data Data about current progress
+		 * @param data.item Item about to be completed
+		 * @param data.result Current result of chain operation
+		 * @param data.doneCount Number of items completed
+		 * @param data.totalCount Number of items remaining
+		 */
+		onbeforeprogress: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void
 
-	/**
-	 * Progress report run after completing each item
-	 * @param data Data about current progress
-	 * @param data.item Item about to be completed
-	 * @param data.result Current result of chain operation
-	 * @param data.doneCount Number of items completed
-	 * @param data.totalCount Number of items remaining
-	 */
-	onafterprogress: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void
+		/**
+		 * Progress report run after completing each item
+		 * @param data Data about current progress
+		 * @param data.item Item about to be completed
+		 * @param data.result Current result of chain operation
+		 * @param data.doneCount Number of items completed
+		 * @param data.totalCount Number of items remaining
+		 */
+		onafterprogress: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void
 
-	/**
-	 * Register a callback to be run upon progress events - NOTE .progress() must come before .then()
-	 * @param callback Function to be run on each progress event
-	 * @param before If true, the callback will be run before each item is started. If false, it will be run after each item is completed.
-	 * @returns Promise object representing the main chain promise
-	 */
-	progress: (callback: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void, before: boolean) => Promise<T>
+		/**
+		 * Register a callback to be run upon progress events - NOTE .progress() must come before .then()
+		 * @param callback Function to be run on each progress event
+		 * @param before If true, the callback will be run before each item is started. If false, it will be run after each item is completed.
+		 * @returns Promise object representing the main chain promise
+		 */
+		progress: (callback: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void, before: boolean) => Promise<T>
+	}
 };
 
 Promise.prototype.progress = function (callback, before) {

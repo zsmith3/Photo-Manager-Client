@@ -1,7 +1,7 @@
 import React from "react";
 import { List, ListSubheader }  from "@material-ui/core";
 import AlbumListItem from "./AlbumListItem";
-import { Album } from "../../models/all_models";
+import { Album } from "../../../models/all_models";
 
 export default class AlbumList extends React.Component {
 	state = {

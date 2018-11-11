@@ -2,7 +2,7 @@ import React from "react";
 import $ from "jquery";
 import { Drawer, Divider, Hidden, withStyles, Theme } from "@material-ui/core";
 import AlbumList from "./AlbumList";
-import { Album } from "../../models/all_models";
+import { Album } from "../../../models/all_models";
 import PersonGroupList from "./PersonGroupList";
 
 

@@ -1,9 +1,12 @@
+import { apiRequest, httpMethodTypes } from "../utils";
+import { LocationManager } from "../components/App";
+
 export enum DBTables {
 	File = "files",
 	Face = "faces",
 	Album = "albums",
 	Person = "people",
-	PersonGroup = "person-groups",
+	PersonGroup = "people-groups",
 	GeoTagArea = "geotag-areas",
 	GeoTag = "geotags"
 }
@@ -42,12 +45,97 @@ abstract class BaseDatabase {
 	 * @param id ID of model instance to delete
 	 * @returns Promise object representing completion
 	 */
-	abstract delete (table: DBTables, id: (number | string)): Promise<never>
+	abstract delete (table: DBTables, id: (number | string)): Promise<any>
+
+
+	/** Authorisation-related functions */
+	auth: {
+		/**
+		 * Determine whether the user is authorised to access the database
+		 * @returns Promise object representing whether or not user is authorised
+		 */
+		checkAuth (): Promise<boolean>
+
+		/** Log the user in (using localStorage) */
+		logIn (username: string, password: string, remain_in: boolean): Promise<never>
+
+		/** Log the user out */
+		logOut (): void
+	}
 };
 
-export var Database: BaseDatabase;
 
-// TODO make actual temporary database class for testing now
-// (can later move to web-only)
-// then look at loading stuff from API properly (and ofc reform api as needed)
-// then add filescontainer type thing, etc.
+/** Database interface for web application */
+class WebDatabase extends BaseDatabase {
+	/**
+	 * Generic API request method
+	 * @param type HTTP Method type for request
+	 * @param table Database table (URL) to request from
+	 * @param id ID of object
+	 * @param data HTTP request body data
+	 */
+	private request (type: httpMethodTypes, table: string, id?: (number | string), data?: any) {
+		let path = table + "/" + (id ? (id + "/") : "");
+
+		return apiRequest(path, type, data);
+	}
+
+	// Interfaces to specific request methods
+
+	get (table: DBTables, id?: (number | string)): Promise<any> {
+		return this.request("GET", table, id);
+	}
+
+	create (table: DBTables, data: any): Promise<any> {
+		return this.request("POST", table, null, data);
+	}
+
+	update (table: DBTables, id: (number | string), data: any): Promise<any> {
+		return this.request("PATCH", table, id, data);
+	}
+
+	delete (table: DBTables, id: (number | string)): Promise<any> {
+		return this.request("DELETE", table, id);
+	}
+
+	auth = {
+		checkAuth (): Promise<boolean> {
+			return new Promise((resolve) => {
+				apiRequest("membership/status/").then((data) => {
+					if (data.authenticated) {
+						// TODO use data.user.full_name;
+
+						window.sessionStorage.setItem("csrf_token", data.csrf_token);
+
+						resolve(true);
+					} else {
+						Database.auth.logOut();
+						resolve(false);
+					}
+				}).catch(() => {
+					Database.auth.logOut();
+					resolve(false);
+				});
+			});
+		},
+
+		logIn (username: string, password: string, remain_in: boolean): Promise<never> {
+			return new Promise((resolve, reject) => {
+				apiRequest("membership/login/", "POST", { username: username, password: password }).then((data) => {
+					if (remain_in) window.localStorage.setItem("jwtToken", data.token);
+					else window.sessionStorage.setItem("jwtToken", data.token);
+
+					resolve();
+				}).catch(reject);
+			});
+		},
+
+		logOut (): void {
+			window.sessionStorage.removeItem("jwtToken");
+			window.localStorage.removeItem("jwtToken");
+			LocationManager.updateLocation("/login");
+		}
+	}
+};
+
+export const Database = new WebDatabase();

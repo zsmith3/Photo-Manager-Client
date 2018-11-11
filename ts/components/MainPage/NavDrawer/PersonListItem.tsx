@@ -1,8 +1,8 @@
 import React from "react";
 import $ from "jquery";
 import { ListItem, ListItemText, Icon, IconButton, ListItemAvatar, Avatar } from "@material-ui/core";
-import App from "../App";
-import { Person } from "../../models/all_models";
+import App from "../../App";
+import { Person } from "../../../models/all_models";
 
 
 export default class PersonListItem extends React.Component<{personId: number}> {

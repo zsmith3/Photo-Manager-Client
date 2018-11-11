@@ -1,9 +1,8 @@
 import React from "react";
 import $ from "jquery";
 import { TextField, IconButton, Icon, withStyles, Theme } from "@material-ui/core"
-import { CSSProperties } from "@material-ui/core/styles/withStyles";
-import App from "./App";
-import { Platform } from "../controllers/Platform";
+import App from "../App";
+import { Platform } from "../../controllers/Platform";
 
 
 interface AddressBarStyles {
@@ -51,7 +50,7 @@ class AddressBar extends React.Component<{ classes: AddressBarStyles }> {
 				<p className={this.props.classes.address}>/</p>
 			</span>
 			<span id="search" onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {if (event.key == 'Enter') App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).find('#searchinput').val().toString() })}}>
-				<TextField id="searchinput" label="Search" title="Search the current view for files" onSubmit={() => App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).val().toString() })}></TextField>
+				<TextField id="searchinput" label="Search" title="Search the current view for files" onSubmit={() => App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).val().toString() })} />
 			</span>
 		</div>;
 		//<MDCText id="searchinput" placeholder="Search" data-icon-after="search" data-icon-before="arrow_back" title="Search the current view for files" onsubmit="App.app.refreshFilesData(null, null, {'search': $(this).val()});"></MDCText>

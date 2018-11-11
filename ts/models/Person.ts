@@ -127,15 +127,3 @@ export class Person extends Model {
 	// 2) ordering (of both people and groups)
 	// 3) people pages
 }
-
-PersonGroup.addObject({
-	id: 1,
-	name: "Family"
-});
-
-Person.addObject({
-	id: 1,
-	name: "Zak Smith",
-	face_count: 4,
-	groupID: 1
-});

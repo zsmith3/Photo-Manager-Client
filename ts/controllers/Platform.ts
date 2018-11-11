@@ -1,3 +1,6 @@
+import { mediaRequest } from "../utils";
+
+
 abstract class BasePlatform {
 	urls: {
 		serverUrl: string
@@ -32,4 +35,42 @@ abstract class BasePlatform {
 	abstract notify (data: { id: number, title: string, text: string, progress?: number}): void
 }
 
-export var Platform: BasePlatform;
+
+// Platform-specific versions of functions
+class WebPlatform extends BasePlatform {
+	urls = {
+		serverUrl: "http://localhost/fileserver/",
+
+		getPageUrl (page, query) {
+			if (page == "index") page = "";
+			return Platform.urls.serverUrl + page + (query ? ("?" + query) : "");
+		},
+
+		getCurrentAddress () {
+			return window.location.pathname.substr(11);
+		},
+
+		getCurrentQuery () {
+			return window.location.search;
+		},
+
+		getDisplayUrl (url) {
+			return Platform.urls.serverUrl + url;
+		}
+	}
+
+	getImgSrc (object: any, size: string): Promise<string> {
+		switch (object.type) {
+		case "file":
+			return mediaRequest("api/images/" + object.id + size);
+		case "face":
+			return mediaRequest("api/images/faces/" + object.id + size);
+		}
+	}
+
+	notify (data: { id: number, title: string, text: string, progress?: number}): void {
+		// TODO
+	}
+}
+
+export const Platform = new WebPlatform();

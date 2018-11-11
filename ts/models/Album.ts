@@ -124,10 +124,3 @@ export class Album extends Model {
 }
 // TODO will need to make some ammends to album api i think
 // 		and certainly to how they're accessed in JS/TS
-
-Album.addObject({
-	id: 1,
-	name: "2012",
-	file_count: 4,
-	parentID: 0
-});

@@ -1,8 +1,8 @@
 import React from "react";
 import $ from "jquery";
 import { ListItem, ListItemText, Icon, IconButton } from "@material-ui/core";
-import App from "../App";
-import { Album } from "../../models/all_models";
+import App from "../../App";
+import { Album } from "../../../models/all_models";
 
 
 export default class AlbumListItem extends React.Component<{albumId: number}> {

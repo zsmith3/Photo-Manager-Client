@@ -1,7 +1,7 @@
 import React from "react";
 import { List, ListSubheader } from "@material-ui/core";
 import PersonGroupListItem from "./PersonGroupListItem";
-import { PersonGroup } from "../../models/all_models";
+import { PersonGroup } from "../../../models/all_models";
 
 export default class PersonGroupList extends React.Component {
 	state = {

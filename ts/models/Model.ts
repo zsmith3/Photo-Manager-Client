@@ -71,10 +71,10 @@ export class Model {
 	 * @param id ID of requested model instance
 	 * @returns Model instance with specified ID
 	 */
-	static getById<M extends Model> (this: { new (...args: any[]): M, objects: M[] }, id: (number | string)): M {
+	static getById<M extends Model> (this: { new (...args: any[]): M, objects: M[], modelName: string }, id: (number | string)): M {
 		let item = this.objects.find(obj => obj.id == id);
 		if (item === undefined) {
-			console.log("error");
+			console.error(`Model not found: ${this.modelName} ${id}`);
 		} else {
 			return item;
 		}
@@ -97,16 +97,16 @@ export class Model {
 	 * Register handler function to be executed when model list is updated
 	 * @param callback Handler function, taking the model list as an argument
 	 */
-	static registerUpdateHandler<M extends Model> (this: { new (...args: any[]): M, objects: M[], loadAll (): void, listUpdateHandlers: ((models: M[]) => void)[] }, callback: (models: M[]) => void): void {
+	static registerUpdateHandler<M extends Model> (this: { new (...args: any[]): M, objects: M[], loadAll (): Promise<any>, listUpdateHandlers: ((models: M[]) => void)[] }, callback: (models: M[]) => void): Promise<any> {
 		this.listUpdateHandlers.push(callback);
 
-		this.loadAll();
+		return this.loadAll();
 	}
 
 	/**
 	 * Load all instances of this Model type
 	 */
-	static loadAll<M extends Model> (this: { new (...args: any[]): M, objects: M[], modelName: DBTables, setObjects (list: object[]): M[] }) {
+	static loadAll<M extends Model> (this: { new (...args: any[]): M, objects: M[], modelName: DBTables, setObjects (list: object[]): M[] }): Promise<any> {
 		return new Promise((resolve, reject) => {
 			Database.get(this.modelName).then((data) => {
 				resolve(this.setObjects(data));
@@ -151,6 +151,11 @@ export class Model {
 				this[property] = obj[property];
 			}
 		}
+
+		let missedProps = this.constructor.props.filter((prop) => !(prop in obj));
+		let extraProps = Object.keys(obj).filter((prop) => this.constructor.props.indexOf(prop) === -1);
+		if (missedProps.length > 0) console.warn(`Missed properties on data for ${this.constructor.modelName} ${this.id}: ${missedProps.join(", ")}`);
+		if (extraProps.length > 0) console.warn(`Extra properties on data for ${this.constructor.modelName} ${this.id}: ${extraProps.join(", ")}`);
 
 		this.updateHandlers.forEach((callback: (model: Model) => void) => callback(this));
 	}

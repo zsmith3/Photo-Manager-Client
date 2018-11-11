@@ -1,33 +1,58 @@
 import React from "react";
 import ReactDOM from "react-dom";
 window.React = React;
-import { Platform } from "../controllers/Platform";
-import AddressBar from "./AddressBar";
-import NavDrawer, { navDrawerWidth } from "./NavDrawer/NavDrawer";
-import AppBar from "./AppBar";
-import { CssBaseline, Theme, withStyles } from "@material-ui/core";
+import { BrowserRouter, Route } from "react-router-dom";
+import { CssBaseline } from "@material-ui/core";
 import "../styles/App.css";
+import { Database } from "../controllers/Database";
+import LoginPage from "./LoginPage";
+import MainPage from "./MainPage";
 
 
-interface AppStyles {
-	rightOfNavDrawer
-	toolbar
+export class LocationManager extends React.Component<{ history: any }> {
+	static instance: LocationManager
+
+	private static nextLocation: string = null
+
+	static updateLocation (url: string) {
+		if (LocationManager.instance) LocationManager.instance.props.history.push(url);
+		else LocationManager.nextLocation = url;
+	}
+
+	constructor (props) {
+		super(props);
+
+		LocationManager.instance = this;
+
+		if (LocationManager.nextLocation !== null) {
+			LocationManager.updateLocation(LocationManager.nextLocation);
+		}
+	}
+
+	render () {
+		let Fragment = React.Fragment;
+
+		if (LocationManager.nextLocation === null) {
+			return <Fragment>
+				{ this.props.children }
+			</Fragment>
+		} else {
+			LocationManager.nextLocation = null;
+			return <Fragment />;
+		}
+	}
 }
 
 
 // Class to handle the whole application
-export default class App extends React.Component<{ classes: AppStyles }> {
+export default class App extends React.Component {
 	// Singleton instance
 	static app: App;
 
-	static styles: ((theme: Theme) => AppStyles) = (theme: Theme) => ({
-		rightOfNavDrawer: {
-			[theme.breakpoints.up("sm")]: {
-				marginLeft: navDrawerWidth
-			}
-		},
-		toolbar: theme.mixins.toolbar
-	}) ;
+	static authCheckInterval: number
+
+	static toLocation: string = null
+
 
 	// Default values for query string parameters
 	static queryParamDefaults = {
@@ -44,9 +69,18 @@ export default class App extends React.Component<{ classes: AppStyles }> {
 
 	// Start application
 	static start (rootElement: HTMLElement) {
-		ReactDOM.render(<AppStyled />, rootElement);
-		App.app.init();
+		Database.auth.checkAuth().then((result) => {
+			if (result) {
+				// App.app.init();
+
+				if (App.authCheckInterval) window.clearInterval(App.authCheckInterval);
+				App.authCheckInterval = window.setInterval(Database.auth.checkAuth, 60 * 1000);
+			}
+
+			ReactDOM.render(<App />, rootElement);
+		});
 	}
+
 
 	config: Config
 	snackbar: any
@@ -139,24 +173,22 @@ export default class App extends React.Component<{ classes: AppStyles }> {
 
 	render () {
 		let Fragment = React.Fragment;
-		return <Fragment>
-			<CssBaseline />
+		return <BrowserRouter>
+			<Fragment>
+				<CssBaseline />
 
-			<NavDrawer />
+				<Route path="/" render={(props) => (
+					<LocationManager history={props.history}>
+						<Route path="/login" component={LoginPage} />
 
-			<div className={this.props.classes.rightOfNavDrawer}>
-				<AppBar />
-
-				<div>
-					<div className={this.props.classes.toolbar} />
-
-					<AddressBar />
-				</div>
-			</div>
-		</Fragment>;
+						<Route path="/folders/" component={MainPage}></Route>
+					</LocationManager>
+				)} />
+			</Fragment>
+		</BrowserRouter>;
 	}
 
-	init () {
+	/*init () {
 		console.log("app inited");
 		return;
 
@@ -370,7 +402,5 @@ export default class App extends React.Component<{ classes: AppStyles }> {
 		this.snackbar.foundation_.active_ = false;
 		this.snackbar.foundation_.queue_ = [];
 		$(this.snackbar.root_).removeClass("mdc-snackbar--active");
-	}
+	}*/
 }
-
-const AppStyled = withStyles(App.styles)(App);

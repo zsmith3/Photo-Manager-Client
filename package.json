@@ -5,8 +5,13 @@
   "dependencies": {
     "@material-ui/core": "^3.4.0",
     "@types/jquery": "^3.3.22",
+    "@types/msgpack-lite": "^0.1.6",
+    "@types/react-dom": "^16.0.9",
+    "@types/react-router-dom": "^4.3.1",
     "jquery": "^3.3.1",
+    "msgpack-lite": "^0.1.26",
     "react": "^16.6.1",
-    "react-dom": "^16.6.1"
+    "react-dom": "^16.6.1",
+    "react-router-dom": "^4.3.1"
   }
 }
