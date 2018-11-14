@@ -1,6 +1,6 @@
-import { Model } from "./Model"
+import { Model, ModelMeta } from "./Model"
 import { Database, DBTables } from "../controllers/Database"
-import { GeoTag } from "./all_models"
+import { GeoTag } from "."
 import App from "../components/App"
 import { Platform } from "../controllers/Platform"
 import { ImageLoader } from "../controllers/ImageLoader"
@@ -8,16 +8,13 @@ import { ImageLoader } from "../controllers/ImageLoader"
 
 /** File model */
 export class FileObject extends Model {
-	/** Local instances of File */
-	static objects: FileObject[] = []
-
-	static modelName = DBTables.File
-
-	static props = ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"]
-
-	static specialProps = {
-		"geotag": (file: FileObject, prop: object) => { file.geotagID = GeoTag.addObject(prop).id; }
-	}
+	/** File model metadata */
+	static meta = new ModelMeta<FileObject>({
+		modelName: DBTables.File,
+		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"],
+		specialProps: { "geotag": { deserialize: (file: FileObject, prop: object) => file.geotagID = GeoTag.addObject(prop).id } }
+		// TODO serialize for this
+	})
 
 
 	id: string

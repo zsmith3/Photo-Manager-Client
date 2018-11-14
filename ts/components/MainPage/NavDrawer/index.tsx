@@ -1,8 +1,8 @@
-import React from "react";
+import { Divider, Drawer, Hidden, Theme, withStyles } from "@material-ui/core";
 import $ from "jquery";
-import { Drawer, Divider, Hidden, withStyles, Theme } from "@material-ui/core";
+import React from "react";
+import { Album } from "../../../models";
 import AlbumList from "./AlbumList";
-import { Album } from "../../../models/all_models";
 import PersonGroupList from "./PersonGroupList";
 
 
@@ -22,7 +22,9 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 	static styles: ((theme: Theme) => NavDrawerStyles) = (theme: Theme) => ({
 		toolbar: theme.mixins.toolbar,
 		drawer: {
-			width: NavDrawer.drawerWidth
+			width: NavDrawer.drawerWidth,
+			maxHeight: "100vh",
+			overflowY: "auto"
 		}
 	});
 
@@ -39,6 +41,7 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 	render () {
 		let Fragment = React.Fragment;
 
+		// TODO look into applying this class properly to avoid scroll bar issue
 		const drawer = <div className={this.props.classes.drawer} tabIndex={0} role="button" onClick={() => this.setState({mobileOpen: false})} onKeyDown={() => this.setState({mobileOpen: false})}>
 				<div className={this.props.classes.toolbar} />
 

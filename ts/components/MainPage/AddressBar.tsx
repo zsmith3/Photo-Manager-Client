@@ -1,8 +1,8 @@
-import React from "react";
+import { Icon, IconButton, TextField, Theme, withStyles } from "@material-ui/core";
 import $ from "jquery";
-import { TextField, IconButton, Icon, withStyles, Theme } from "@material-ui/core"
-import App from "../App";
+import React from "react";
 import { Platform } from "../../controllers/Platform";
+import App from "../App";
 
 
 interface AddressBarStyles {

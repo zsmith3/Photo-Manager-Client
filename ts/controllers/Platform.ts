@@ -59,7 +59,7 @@ class WebPlatform extends BasePlatform {
 		}
 	}
 
-	getImgSrc (object: any, size: string): Promise<string> {
+	getImgSrc (object: { type: ("file" | "face"), id: (number | string) }, size: string): Promise<string> {
 		switch (object.type) {
 		case "file":
 			return mediaRequest("api/images/" + object.id + size);

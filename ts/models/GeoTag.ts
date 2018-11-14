@@ -1,16 +1,17 @@
-import { Model } from "./Model"
+import { Model, ModelMeta } from "./Model"
 import { Database, DBTables } from "../controllers/Database"
 import $ from "jquery";
 import App from "../components/App"
+import { FileObject } from ".";
 
 
 /** Geotag area model */
 export class GeoTagArea extends Model {
-	static objects: GeoTagArea[] = []
-
-	static modelName = DBTables.GeoTagArea
-
-	static props = ["id", "name", "address", "latitude", "longitude", "radius"]
+	/** Geotag area model metadata */
+	static meta = new ModelMeta<GeoTagArea>({
+		modelName: DBTables.GeoTagArea,
+		props: ["id", "name", "address", "latitude", "longitude", "radius"]
+	});
 
 
 	/**
@@ -20,7 +21,7 @@ export class GeoTagArea extends Model {
 	 */
 	static create (dataObj: { name: string }): Promise<GeoTagArea> {
 		return new Promise((resolve, reject) => {
-			Database.create("geotag-areas", dataObj).then((data) => {
+			Database.create(GeoTagArea.meta.modelName, dataObj).then((data) => {
 				let newArea = GeoTagArea.addObject(data);
 				$("<option></option>").val(newArea.id).text(newArea.name).appendTo("#modal-geotag-form-area-title");
 				resolve(newArea);
@@ -62,7 +63,7 @@ export class GeoTagArea extends Model {
 	 */
 	save () {
 		return new Promise((resolve, reject) => {
-			Database.update("geotag-areas", this.id, { name: this.name, address: this.address }).then((data) => {
+			Database.update(GeoTagArea.meta.modelName, this.id, { name: this.name, address: this.address }).then((data) => {
 				this.update(data);
 				resolve(this);
 			});
@@ -73,15 +74,12 @@ export class GeoTagArea extends Model {
 
 /** Geotag model */
 export class GeoTag extends Model {
-	static objects: GeoTag[] = []
-
-	static modelName = DBTables.GeoTag
-
-	static props = ["id", "latitude", "longitude", "areaID"]
-
-	static specialProps = {
-		"area": (geotag: GeoTag, prop: number) => { geotag.areaID = prop; }
-	}
+	/** Geotag model metadata */
+	static meta = new ModelMeta<GeoTag>({
+		modelName: DBTables.GeoTag,
+		props: ["id", "latitude", "longitude", "areaID"],
+		specialProps: { "area": "areaID" }
+	})
 
 
 	/**
@@ -93,7 +91,7 @@ export class GeoTag extends Model {
 	static create (newGeotag: object, fileID: string): Promise<GeoTag> {
 		return new Promise((resolve, reject) => {
 			// TODO should create geotag then assign to file
-			Database.update("files", fileID, { "geotag": newGeotag }).then((data) => {
+			Database.update(FileObject.meta.modelName, fileID, { "geotag": newGeotag }).then((data) => {
 				let newGeotag = GeoTag.addObject(data.geotag);
 				// TODO ^^ not sure about data format
 				App.app.els.filesCont.getFile(fileID).geotagID = data.geotag.id;

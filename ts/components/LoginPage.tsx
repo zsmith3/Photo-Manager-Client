@@ -1,8 +1,8 @@
+import { Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Theme, Typography, withStyles, withWidth } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
+import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import { Database } from "../controllers/Database";
-import { Paper, Typography, TextField, Theme, withStyles, Grid, Button, withWidth, FormControlLabel, Checkbox } from "@material-ui/core";
-import { isWidthUp } from "@material-ui/core/withWidth";
-import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 
 interface LoginStyles {
 	center

@@ -1,22 +1,19 @@
-import { Model } from "./Model";
-import { Database, DBTables } from "../controllers/Database";
 import App from "../components/App";
+import { Database, DBTables } from "../controllers/Database";
+import { Model, ModelMeta } from "./Model";
 
 
 /** Album model */
 export class Album extends Model {
-	/** Local instances of Album */
-	static objects: Album[] = []
-
-	static modelName = DBTables.Album
-
-	static props = ["id", "name", "file_count", "parentID"]
-
-	/** Update handlers for the list of Album models */
-	static listUpdateHandlers: ((models: Album[]) => void)[] = []
+	/** Album model metadata */
+	static meta = new ModelMeta<Album>({
+		modelName: DBTables.Album,
+		props: ["id", "name", "file_count"],
+		specialProps: { "parent": "parentID" }
+	});
 
 	/** List of root-level albums only */
-	static get rootAlbums (): Album[] { return Album.objects.filter(album => album.parent === undefined); }
+	static get rootAlbums (): Album[] { return Album.meta.objects.filter(album => album.parent === undefined); }
 
 
 	/**
@@ -27,12 +24,12 @@ export class Album extends Model {
 	 */
 	static create (parentId: number, name: string): Promise<Album> {
 		return new Promise((resolve, reject) => {
-			Database.create("albums", { parent: parentId, name: name }).then((data) => {
+			Database.create(Album.meta.modelName, { parent: parentId, name: name }).then((data) => {
 				let album = Album.addObject(data);
 
-				App.app.els.navDrawer.refreshAlbums();
+				// App.app.els.navDrawer.refreshAlbums();
 				resolve(album);
-			});
+			}).catch(reject);
 		});
 	}
 
@@ -49,10 +46,13 @@ export class Album extends Model {
 	private parentID: number
 
 	/** Parent album (undefined if root-level) */
-	get parent (): Album { return Album.getById(this.parentID); }
+	get parent (): Album { return this.parentID === null ? null : Album.getById(this.parentID); }
 
 	/** Child albums */
-	get children (): Album[] { return Album.objects.filter(album => album.parent.id == this.id ); }
+	get children (): Album[] { return Album.meta.objects.filter(album => album.parent !== null && album.parent.id == this.id ); }
+
+	/** Full path of the album */
+	get path (): string { return (this.parent ? this.parent.path + "/" : "") + this.name}
 
 
 	/**
@@ -111,11 +111,11 @@ export class Album extends Model {
 	 * Delete album from remote database
 	 * @returns Empty Promise object representing completion
 	 */
-	delete (): Promise<never> {
+	delete (): Promise<void> {
 		return new Promise((resolve, reject) => {
-			Database.delete("albums", this.id).then(() => {
+			Database.delete(Album.meta.modelName, this.id).then(() => {
 				Album.deleteById(this.id);
-				App.app.els.navDrawer.refreshAlbums();
+				// App.app.els.navDrawer.refreshAlbums();
 				resolve();
 			}).catch(reject);
 		});

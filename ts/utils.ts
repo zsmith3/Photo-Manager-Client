@@ -1,5 +1,5 @@
-import { Platform } from "./controllers/Platform";
 import msgpack from "msgpack-lite";
+import { Platform } from "./controllers/Platform";
 
 // Type definitions for httpRequest parameters
 export type httpMethodTypes = ("GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH");

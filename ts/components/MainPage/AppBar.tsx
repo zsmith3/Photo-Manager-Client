@@ -1,6 +1,6 @@
+import { AppBar, Hidden, Icon, IconButton, Toolbar, Typography, withStyles } from "@material-ui/core";
 import React from "react";
-import { AppBar, Toolbar, Icon, IconButton, Typography, Hidden, withStyles } from "@material-ui/core";
-import { navDrawerWidth, navDrawerInstance } from "./NavDrawer/NavDrawer";
+import { navDrawerInstance, navDrawerWidth } from "./NavDrawer";
 
 
 class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: any } }> {

@@ -1,11 +1,11 @@
-import React from "react";
 import { List, ListSubheader } from "@material-ui/core";
+import React from "react";
+import { PersonGroup } from "../../../models";
 import PersonGroupListItem from "./PersonGroupListItem";
-import { PersonGroup } from "../../../models/all_models";
 
 export default class PersonGroupList extends React.Component {
 	state = {
-		groupIds: PersonGroup.objects.map(group => group.id)
+		groupIds: PersonGroup.meta.objects.map(group => group.id)
     }
 
     constructor (props) {

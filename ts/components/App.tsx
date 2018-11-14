@@ -1,18 +1,32 @@
+import { createMuiTheme, CssBaseline, MuiThemeProvider } from "@material-ui/core";
 import React from "react";
 import ReactDOM from "react-dom";
-window.React = React;
 import { BrowserRouter, Route } from "react-router-dom";
-import { CssBaseline } from "@material-ui/core";
-import "../styles/App.css";
 import { Database } from "../controllers/Database";
+import "../styles/App.css";
 import LoginPage from "./LoginPage";
 import MainPage from "./MainPage";
+
+
+// Hack to fix a bug
+declare global {
+	interface Window {
+		React: any
+	}
+}
+window.React = React;
 
 
 export class LocationManager extends React.Component<{ history: any }> {
 	static instance: LocationManager
 
 	private static nextLocation: string = null
+
+	static get currentLocation () {
+		// TODO may need to add search to this
+		if (this.nextLocation === null) return window.location.pathname;
+		else return this.nextLocation;
+	}
 
 	static updateLocation (url: string) {
 		if (LocationManager.instance) LocationManager.instance.props.history.push(url);
@@ -53,6 +67,16 @@ export default class App extends React.Component {
 
 	static toLocation: string = null
 
+	static theme = createMuiTheme({
+		overrides: {
+			MuiIconButton: {
+				root: {
+					padding: 6
+				}
+			}
+		}
+	});
+
 
 	// Default values for query string parameters
 	static queryParamDefaults = {
@@ -73,12 +97,20 @@ export default class App extends React.Component {
 			if (result) {
 				// App.app.init();
 
-				if (App.authCheckInterval) window.clearInterval(App.authCheckInterval);
-				App.authCheckInterval = window.setInterval(Database.auth.checkAuth, 60 * 1000);
+				if (this.authCheckInterval) window.clearInterval(this.authCheckInterval);
+				this.authCheckInterval = window.setInterval(Database.auth.checkAuth, 60 * 1000);
 			}
+
+			this.performRedirect();
 
 			ReactDOM.render(<App />, rootElement);
 		});
+	}
+
+	private static performRedirect () {
+		if (LocationManager.currentLocation.length <= 1) {
+			LocationManager.updateLocation("/folders/");
+		}
 	}
 
 
@@ -174,17 +206,17 @@ export default class App extends React.Component {
 	render () {
 		let Fragment = React.Fragment;
 		return <BrowserRouter>
-			<Fragment>
+			<MuiThemeProvider theme={ App.theme }>
 				<CssBaseline />
 
-				<Route path="/" render={(props) => (
-					<LocationManager history={props.history}>
-						<Route path="/login" component={LoginPage} />
+				<Route path="" render={ (props) => (
+					<LocationManager history={ props.history }>
+						<Route path="/login" component={ LoginPage } />
 
-						<Route path="/folders/" component={MainPage}></Route>
+						<Route path="/folders/" component={ MainPage }></Route>
 					</LocationManager>
-				)} />
-			</Fragment>
+				) } />
+			</MuiThemeProvider>
 		</BrowserRouter>;
 	}
 

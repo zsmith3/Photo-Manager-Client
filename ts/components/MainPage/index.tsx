@@ -1,8 +1,8 @@
+import { Theme, withStyles } from "@material-ui/core";
 import React from "react";
 import AddressBar from "./AddressBar";
-import NavDrawer, { navDrawerWidth } from "./NavDrawer/NavDrawer";
 import AppBar from "./AppBar";
-import { Theme, withStyles } from "@material-ui/core";
+import NavDrawer, { navDrawerWidth } from "./NavDrawer";
 
 
 interface MainPageStyles {
