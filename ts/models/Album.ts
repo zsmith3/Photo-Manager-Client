@@ -24,7 +24,7 @@ export class Album extends Model {
 	 */
 	static create (parentId: number, name: string): Promise<Album> {
 		return new Promise((resolve, reject) => {
-			Database.create(Album.meta.modelName, { parent: parentId, name: name }).then((data) => {
+			Database.create(Album.meta.modelName, { parent: parentId, name: name }).then(data => {
 				let album = Album.addObject(data);
 
 				// App.app.els.navDrawer.refreshAlbums();

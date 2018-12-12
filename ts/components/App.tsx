@@ -8,6 +8,9 @@ import LoginPage from "./LoginPage";
 import MainPage from "./MainPage";
 
 
+export type addressRootTypes = ("folders" | "albums" | "people");
+
+
 // Hack to fix a bug
 declare global {
 	interface Window {
@@ -93,7 +96,7 @@ export default class App extends React.Component {
 
 	// Start application
 	static start (rootElement: HTMLElement) {
-		Database.auth.checkAuth().then((result) => {
+		Database.auth.checkAuth().then(result => {
 			if (result) {
 				// App.app.init();
 
@@ -204,7 +207,6 @@ export default class App extends React.Component {
 	}
 
 	render () {
-		let Fragment = React.Fragment;
 		return <BrowserRouter>
 			<MuiThemeProvider theme={ App.theme }>
 				<CssBaseline />
@@ -213,7 +215,8 @@ export default class App extends React.Component {
 					<LocationManager history={ props.history }>
 						<Route path="/login" component={ LoginPage } />
 
-						<Route path="/folders/" component={ MainPage }></Route>
+						<Route path="/folders/" render={ () => <MainPage location={ props.location } /> }></Route>
+						{/* TODO investigate bug with not accepting string[] to path */}
 					</LocationManager>
 				) } />
 			</MuiThemeProvider>

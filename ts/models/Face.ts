@@ -58,7 +58,7 @@ export class Face extends Model {
 	setPerson (personID: number): Promise<never> {
 		let oldID = this.person.id;
 		return new Promise((resolve, reject) => {
-			Database.update("faces", this.id, { person: personID, status: 1 }).then((data) => {
+			Database.update("faces", this.id, { person: personID, status: 1 }).then(data => {
 				App.app.els.navDrawer.updatePersonFaceCount(personID);
 				App.app.els.navDrawer.updatePersonFaceCount(oldID);
 				this.update(data);
@@ -77,7 +77,7 @@ export class Face extends Model {
 	 */
 	setStatus (status): Promise<never> {
 		return new Promise((resolve, reject) => {
-			Database.update("faces", this.id, { status: status }).then((data) => {
+			Database.update("faces", this.id, { status: status }).then(data => {
 				this.update(data);
 				App.app.els.filesCont.getFilebox(this.id).showIcons();
 

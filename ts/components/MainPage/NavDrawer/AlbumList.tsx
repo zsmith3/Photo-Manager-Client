@@ -1,12 +1,13 @@
-import { List, ListSubheader } from '@material-ui/core';
-import React from 'react';
+import { List, ListSubheader, ListItemSecondaryAction, ListItem, Typography } from '@material-ui/core';
+import React, { Fragment } from 'react';
 import { Album } from '../../../models';
-import { MountTrackedComponent } from '../../utils';
+import { MountTrackedComponent, HoverIconButton, TextDialog } from '../../utils';
 import AlbumListItem from './AlbumListItem';
 
 export default class AlbumList extends MountTrackedComponent<{ parentAlbumID?: number, indent?: number }> {
 	state = {
-		albumIds: []//Album.meta.objects.map(album => album.id)
+		albumIds: [], //Album.meta.objects.map(album => album.id)
+		openDialogNew: false
 	}
 
 	constructor (props) {
@@ -19,14 +20,29 @@ export default class AlbumList extends MountTrackedComponent<{ parentAlbumID?: n
 	}
 
 	render () {
-		return <List style={ this.props.indent ? { padding: 0 } : null } subheader={ this.props.parentAlbumID === undefined ? <ListSubheader>Albums</ListSubheader> : null }>
-			{this.state.albumIds.map(albumId => (
-				<AlbumListItem key={albumId} albumId={albumId} indent={ this.props.indent || 0 } />
-			))}
-			</List>;
+		return <Fragment>
+				<List style={ this.props.indent ? { padding: 0 } : null } subheader={ this.props.parentAlbumID === undefined ?
+						<ListSubheader>
+							Albums
+
+							<HoverIconButton action={ () => this.setState({ openDialogNew: true }) } layers={1} style={ { float: "right" } }>
+								add
+							</HoverIconButton>
+						</ListSubheader>
+					: null }>
+				{ this.state.albumIds.map(albumId => (
+					<AlbumListItem key={albumId} albumId={albumId} indent={ this.props.indent || 0 } />
+				)) }
+				{ this.state.albumIds.length > 0 || <Typography variant="body2" style={ { marginLeft: 40 } }>No albums here.</Typography> }
+				</List>
+
+				{/* New root album dialog */}
+				<TextDialog
+					open={ this.state.openDialogNew } onClose={ () => this.setState({ openDialogNew: false }) }
+					title="Create Album" actionText="Create"
+					label="Album Name"
+					action={ (name: string) => Album.create(null, name) }
+				/>
+			</Fragment>;
 	}
 }
-
-// TODO 1) load people
-// 2) maybe make list item styling global
-// 3) make icon buttons actually do stuff (will involve model changes)

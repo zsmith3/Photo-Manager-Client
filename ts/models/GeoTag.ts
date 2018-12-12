@@ -21,7 +21,7 @@ export class GeoTagArea extends Model {
 	 */
 	static create (dataObj: { name: string }): Promise<GeoTagArea> {
 		return new Promise((resolve, reject) => {
-			Database.create(GeoTagArea.meta.modelName, dataObj).then((data) => {
+			Database.create(GeoTagArea.meta.modelName, dataObj).then(data => {
 				let newArea = GeoTagArea.addObject(data);
 				$("<option></option>").val(newArea.id).text(newArea.name).appendTo("#modal-geotag-form-area-title");
 				resolve(newArea);
@@ -63,7 +63,7 @@ export class GeoTagArea extends Model {
 	 */
 	save () {
 		return new Promise((resolve, reject) => {
-			Database.update(GeoTagArea.meta.modelName, this.id, { name: this.name, address: this.address }).then((data) => {
+			Database.update(GeoTagArea.meta.modelName, this.id, { name: this.name, address: this.address }).then(data => {
 				this.update(data);
 				resolve(this);
 			});
@@ -91,7 +91,7 @@ export class GeoTag extends Model {
 	static create (newGeotag: object, fileID: string): Promise<GeoTag> {
 		return new Promise((resolve, reject) => {
 			// TODO should create geotag then assign to file
-			Database.update(FileObject.meta.modelName, fileID, { "geotag": newGeotag }).then((data) => {
+			Database.update(FileObject.meta.modelName, fileID, { "geotag": newGeotag }).then(data => {
 				let newGeotag = GeoTag.addObject(data.geotag);
 				// TODO ^^ not sure about data format
 				App.app.els.filesCont.getFile(fileID).geotagID = data.geotag.id;

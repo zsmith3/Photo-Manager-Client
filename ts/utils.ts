@@ -33,7 +33,7 @@ function httpRequest (url: string, type: httpMethodTypes, data: any, headers: ob
 		xhr.responseType = responseType;
 
 		xhr.onload = function () {
-			var status = [200, 201, 204].indexOf(this.status) !== -1;
+			var status = [200, 201, 204].includes(this.status);
 
 			if (this.response.size && responseType == "blob") {
 				let fileReader = new FileReader();
@@ -74,7 +74,7 @@ export function apiRequest (url: string, type?: httpMethodTypes, data?: any): Pr
 	if (data) headers["Content-Type"] = "application/msgpack";
 
 	return new Promise((resolve, reject) => {
-		httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers).then((data) => {
+		httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers).then(data => {
 			if (type == "DELETE") {
 				resolve();
 				return;
@@ -121,7 +121,7 @@ declare global {
 		 * @param data.doneCount Number of items completed
 		 * @param data.totalCount Number of items remaining
 		 */
-		onbeforeprogress: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void
+		onbeforeprogress: (data: { item: any, result: T, doneCount: number, totalCount: number }) => void
 
 		/**
 		 * Progress report run after completing each item
@@ -131,7 +131,7 @@ declare global {
 		 * @param data.doneCount Number of items completed
 		 * @param data.totalCount Number of items remaining
 		 */
-		onafterprogress: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void
+		onafterprogress: (data: { item: any, result: T, doneCount: number, totalCount: number }) => void
 
 		/**
 		 * Register a callback to be run upon progress events - NOTE .progress() must come before .then()
@@ -139,7 +139,7 @@ declare global {
 		 * @param before If true, the callback will be run before each item is started. If false, it will be run after each item is completed.
 		 * @returns Promise object representing the main chain promise
 		 */
-		progress: (callback: (data: {item: any, result: T, doneCount: number, totalCount: number}) => void, before: boolean) => Promise<T>
+		progress: (callback: (data: { item: any, result: T, doneCount: number, totalCount: number }) => void, before: boolean) => Promise<T>
 	}
 };
 
@@ -148,6 +148,23 @@ Promise.prototype.progress = function (callback, before) {
 	else this.onafterprogress = callback;
 	return this;
 };
+
+
+/**
+ * Trim a specific character from a string
+ * @param str The string to trim
+ * @param char The character to remove
+ * @param end Which end of the string to trim (defaults to both)
+ */
+export function trimStr (str: string, char: string, end: ("l" | "r" | "lr" | "rl") = "lr") {
+	if (end.includes("l")) {
+		while (str.startsWith(char)) str = str.substr(1);
+	}
+	if (end.includes("r")) {
+		while (str.endsWith(char)) str = str.substr(0, str.length - 1);
+	}
+	return str;
+}
 
 
 /**
@@ -162,11 +179,11 @@ function promiseChain<T, U, V> (list: T[], callback: (resolve: (data: U) => void
 	var done = 0;
 	var finalPromise = list.reduce((promiseChain: Promise<U>, item: T) => {
 		return promiseChain.then((accumulator: U) => {
-			if (finalPromise.onbeforeprogress) finalPromise.onbeforeprogress({item: item, result: accumulator, doneCount: done, totalCount: list.length});
+			if (finalPromise.onbeforeprogress) finalPromise.onbeforeprogress({ item: item, result: accumulator, doneCount: done, totalCount: list.length });
 			return new Promise((resolve, reject) => {
 				callback((data: U) => {
 					done++;
-					if (finalPromise.onafterprogress) finalPromise.onafterprogress({item: item, result: data, doneCount: done, totalCount: list.length});
+					if (finalPromise.onafterprogress) finalPromise.onafterprogress({ item: item, result: data, doneCount: done, totalCount: list.length });
 					resolve(data);
 				}, reject, item, accumulator);
 			});
@@ -238,7 +255,7 @@ function getStyleValue (styleStr: string): number {
 function trimUrl (url: string): string {
 	url = url || "";
 	if (url.startsWith("/")) url = url.substr(1);
-	if (url.indexOf("?") == -1) {
+	if (!url.includes("?")) {
 		if (url.endsWith("/")) url = url.substr(0, url.length - 1);
 		url += "/";
 	}
@@ -280,7 +297,7 @@ function getUrl (oldUrl?: string, keepQuery?: boolean, newQuery?: object): strin
  * @returns New URL with appendix added
  */
 function addToUrl (oldUrl: string, appendix: string): string {
-	if (oldUrl.indexOf("?") == -1) {
+	if (!oldUrl.includes("?")) {
 		return oldUrl + appendix;
 	} else {
 		return oldUrl.replace("?", appendix + "?");

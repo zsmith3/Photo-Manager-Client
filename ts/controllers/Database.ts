@@ -1,7 +1,9 @@
 import { apiRequest, httpMethodTypes } from "../utils";
 import { LocationManager } from "../components/App";
+import { FilterType } from "../models/Model";
 
 export enum DBTables {
+	Folder = "folders",
 	File = "files",
 	Face = "faces",
 	Album = "albums",
@@ -19,7 +21,7 @@ abstract class BaseDatabase {
 	 * @param id ID of requested model instance
 	 * @returns Promise object representing fetched model instance data
 	 */
-	abstract get (table: DBTables, id?: (number | string)): Promise<any>
+	abstract get (table: DBTables, id?: (number | FilterType[])): Promise<any>
 	// TODO separate versions with and without ID
 
 	/**
@@ -37,7 +39,7 @@ abstract class BaseDatabase {
 	 * @param data Data object from which to update instance
 	 * @returns Promise object representing updated model instance data
 	 */
-	abstract update (table: DBTables, id: (number | string), data: any): Promise<any>
+	abstract update (table: DBTables, id: number, data: any): Promise<any>
 
 	/**
 	 *
@@ -45,7 +47,7 @@ abstract class BaseDatabase {
 	 * @param id ID of model instance to delete
 	 * @returns Promise object representing completion
 	 */
-	abstract delete (table: DBTables, id: (number | string)): Promise<any>
+	abstract delete (table: DBTables, id: number): Promise<any>
 
 
 	/** Authorisation-related functions */
@@ -74,7 +76,7 @@ class WebDatabase extends BaseDatabase {
 	 * @param id ID of object
 	 * @param data HTTP request body data
 	 */
-	private request (type: httpMethodTypes, table: string, id?: (number | string), data?: any) {
+	private request (type: httpMethodTypes, table: string, id?: number, data?: any) {
 		let path = table + "/" + (id ? (id + "/") : "");
 
 		return apiRequest(path, type, data);
@@ -82,26 +84,34 @@ class WebDatabase extends BaseDatabase {
 
 	// Interfaces to specific request methods
 
-	get (table: DBTables, id?: (number | string)): Promise<any> {
-		return this.request("GET", table, id);
+	get (table: DBTables, query?: (number | FilterType[])): Promise<any> {
+		if (query instanceof Array) {
+			let queryStrings = query.map(filter => `${ filter.field }__${ filter.type }=${ encodeURI(filter.value) }`);
+			let queryString = (queryStrings.length ? "?" : "") + queryStrings.join("&");
+			return apiRequest(`${ table }/${ queryString }`, "GET");
+		} else if (typeof query === "number") {
+			return this.request("GET", table, query);
+		} else {
+			return this.request("GET", table);
+		}
 	}
 
 	create (table: DBTables, data: any): Promise<any> {
 		return this.request("POST", table, null, data);
 	}
 
-	update (table: DBTables, id: (number | string), data: any): Promise<any> {
+	update (table: DBTables, id: number, data: any): Promise<any> {
 		return this.request("PATCH", table, id, data);
 	}
 
-	delete (table: DBTables, id: (number | string)): Promise<any> {
+	delete (table: DBTables, id: number): Promise<any> {
 		return this.request("DELETE", table, id);
 	}
 
 	auth = {
 		checkAuth (): Promise<boolean> {
 			return new Promise((resolve) => {
-				apiRequest("membership/status/").then((data) => {
+				apiRequest("membership/status/").then(data => {
 					if (data.authenticated) {
 						// TODO use data.user.full_name;
 
@@ -121,7 +131,7 @@ class WebDatabase extends BaseDatabase {
 
 		logIn (username: string, password: string, remain_in: boolean): Promise<never> {
 			return new Promise((resolve, reject) => {
-				apiRequest("membership/login/", "POST", { username: username, password: password }).then((data) => {
+				apiRequest("membership/login/", "POST", { username: username, password: password }).then(data => {
 					if (remain_in) window.localStorage.setItem("jwtToken", data.token);
 					else window.sessionStorage.setItem("jwtToken", data.token);
 

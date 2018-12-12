@@ -21,7 +21,7 @@ export class PersonGroup extends Model {
 		return new Promise(function (resolve, reject) {
 			Database.create(PersonGroup.meta.modelName, { name: name }).then(function (data) {
 				let newGroup = PersonGroup.addObject(data);
-				App.app.els.navDrawer.addPersonGroup(newGroup);
+				// App.app.els.navDrawer.addPersonGroup(newGroup);
 				resolve(newGroup);
 			}).catch(reject);
 		});
@@ -48,7 +48,7 @@ export class PersonGroup extends Model {
 		return new Promise((resolve, reject) => {
 			Database.delete(PersonGroup.meta.modelName, this.id).then(() => {
 				PersonGroup.deleteById(this.id);
-				App.app.els.navDrawer.deletePersonGroup(this.id);
+				// App.app.els.navDrawer.deletePersonGroup(this.id);
 				resolve();
 			}).catch(reject);
 		});
@@ -74,10 +74,10 @@ export class Person extends Model {
 	 */
 	static create (name: string, groupID?: number): Promise<Person> {
 		return new Promise((resolve, reject) => {
-			Database.create(Person.meta.modelName, { full_name: name, group: groupID }).then((data) => {
+			Database.create(Person.meta.modelName, { full_name: name, group: groupID }).then(data => {
 				let newPerson = Person.addObject(data);
-				App.app.els.navDrawer.addPerson(newPerson);
-				App.app.els.navDrawer.updateGroupPersonCount(newPerson.group.id);
+				// App.app.els.navDrawer.addPerson(newPerson);
+				// App.app.els.navDrawer.updateGroupPersonCount(newPerson.group.id);
 
 				resolve(newPerson);
 			}).catch(reject);
@@ -110,7 +110,7 @@ export class Person extends Model {
 	delete () {
 		return new Promise((resolve, reject) => {
 			Database.delete(Person.meta.modelName, this.id).then(() => {
-				App.app.els.navDrawer.deletePerson(this);
+				// App.app.els.navDrawer.deletePerson(this);
 				Person.deleteById(this.id);
 				resolve();
 			}).catch(reject);

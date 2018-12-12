@@ -12,12 +12,17 @@ export class FileObject extends Model {
 	static meta = new ModelMeta<FileObject>({
 		modelName: DBTables.File,
 		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"],
-		specialProps: { "geotag": { deserialize: (file: FileObject, prop: object) => file.geotagID = GeoTag.addObject(prop).id } }
+		specialProps: {
+			"geotag": {
+				deserialize: (file: FileObject, prop: object) => {
+					if (prop === null) file.geotagID = null;
+					else file.geotagID = GeoTag.addObject(prop).id
+				}
+			}
+		}
 		// TODO serialize for this
 	})
 
-
-	id: string
 
 	/** File name */
 	name: string

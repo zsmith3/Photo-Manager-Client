@@ -1,4 +1,5 @@
 import { Database, DBTables } from "../controllers/Database";
+import { FileObject } from "./FileObject";
 
 
 /** Options for ModelMeta.loadState */
@@ -7,6 +8,9 @@ enum ModelLoadStates {
 	loading = 1,
 	loaded = 2
 }
+
+/** Type for use in filtering Model queries */
+export type FilterType = { field: string, type: ("eq" | "in" | "isnull"), value: any };
 
 /** Type for use in specialProps */
 type SpecialPropMethod = { deserialize? (instance: Model, prop: any): void, serialize? (obj: {}, prop: any): void }
@@ -55,11 +59,10 @@ export class Model {
 
 	/**
 	 * Add a new model instance to the local list (from the API)
-	 * @param this Subclass of Model
 	 * @param obj Data representing new instance of model
 	 * @returns Created instance of model
 	 */
-	static addObject<M extends Model> (this: { new (...args: any[]): M, handleListUpdate(): void }, obj: object, handleUpdate=false): M {
+	static addObject<M extends Model> (this: { new (...args: any[]): M, handleListUpdate(): void }, obj: object, handleUpdate=true): M {
 		let object = new this(obj);
 
 		if (handleUpdate) this.handleListUpdate();
@@ -69,7 +72,6 @@ export class Model {
 
 	/**
 	 * Append new model instances to the local list (from the API)
-	 * @param this Subclass of Model
 	 * @param list List of objects representing new instances of model
 	 */
 	static addObjects<M extends Model> (this: { new (...args: any[]): M, addObject (obj: object, handleUpdate: boolean): void, handleListUpdate (): void }, list: object[]): void {
@@ -80,7 +82,6 @@ export class Model {
 
 	/**
 	 * Set (overwrite) the local list of model instances
-	 * @param this Subclass of Model
 	 * @param list List of objects representing new instances of model
 	 * @returns List of created model instances
 	 */
@@ -92,23 +93,22 @@ export class Model {
 
 	/**
 	 * Update a selection of the local model instances
-	 * @param this Subclass of Model
 	 * @param list List of objects representing updated instances of model
 	 */
-	static updateObjects<M extends Model> (this: { new (...args: any[]): M, getById (id: (number | string)): M }, list: { id: (number | string) }[]): void {
+	static updateObjects<M extends Model> (this: { new (...args: any[]): M, getById (id: number): M }, list: { id: number }[]): void {
 		list.forEach(item => this.getById(item.id).update(item));
 	}
 
 	/**
 	 * Get a model instance from the local list from its ID
-	 * @param this Subclass of Model
 	 * @param id ID of requested model instance
 	 * @returns Model instance with specified ID
 	 */
-	static getById<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M> }, id: (number | string)): M {
-		let item = this.meta.objects.find(obj => obj.id == id);
+	static getById<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M> }, id: number): M {
+		let item = this.meta.objects.find(obj => ("id" in obj && obj.id == id));
 		if (item === undefined) {
-			console.error(`Model not found: ${this.meta.modelName} ${id}`);
+			// console.error(`Model not found: ${this.meta.modelName} ${id}`);
+			return null;
 		} else {
 			return item;
 		}
@@ -116,10 +116,9 @@ export class Model {
 
 	/**
 	 * Delete a model instance from the local list from its ID
-	 * @param this Subclass of Model
 	 * @param id ID of model instance to delete
 	 */
-	static deleteById<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, handleListUpdate(): void }, id: (number | string)): void {
+	static deleteById<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, handleListUpdate(): void }, id: number): void {
 		for (let i in this.meta.objects) {
 			if (this.meta.objects[i].id == id) delete this.meta.objects[i];
 		}
@@ -143,11 +142,16 @@ export class Model {
 	/**
 	 * Load all instances of this Model type
 	 */
-	static loadAll<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, setObjects (list: object[]): M[] }): Promise<M[]> {
+	static loadAll<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, setObjects (list: object[]): M[] }, filters?: (FilterType[] | { [field: string]: any })): Promise<M[]> {
+		let filtersArray: FilterType[];
+		if (filters instanceof Array) filtersArray = filters;
+		else if (filters) filtersArray = Object.keys(filters).map(field => (filters[field] === null ? { field: field, type: "isnull" as "isnull", value: true } : { field: field, type: "eq" as "eq", value: filters[field] }));
+		else filtersArray = [];
+
 		if (this.meta.loadState !== ModelLoadStates.loading) {
 			this.meta.loadState = ModelLoadStates.loading;
 			this.meta.loadingPromise = new Promise((resolve, reject) => {
-				Database.get(this.meta.modelName).then((data) => {
+				Database.get(this.meta.modelName, filtersArray).then(data => {
 					this.meta.loadState = ModelLoadStates.loaded;
 					resolve(this.setObjects(data));
 
@@ -160,6 +164,45 @@ export class Model {
 	}
 
 	/**
+	 * Load multiple specified instances of this Model type
+	 * @param ids List of model instance IDs to load
+	 * @returns Promise representing loaded model instances
+	 */
+	static loadIds<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObjects (list: object[]): void, getById (id: number): M }, ids: number[], refresh=false): Promise<M[]> {
+		return new Promise((resolve, reject) => {
+			let remainingIds: number[];
+			if (refresh) remainingIds = ids.filter(id => this.getById(id) === null);
+			else remainingIds = ids;
+
+			(remainingIds.length ? Database.get(this.meta.modelName, [{ field: "id", type: "in", value: remainingIds }]) : Promise.resolve([])).then(data => {
+				this.addObjects(data);
+				resolve(this.meta.objects.filter(file => ids.includes(file.id)));
+			}).catch(reject);
+			// TODO add some mechanism to register when objects have already been requested
+		});
+	}
+
+	/**
+	 * Load specific instance of this Model type
+	 * @param id ID of the model instance to load
+	 * @returns Promise representing loaded model instance
+	 */
+	static loadObject<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObject (obj: object): M, getById (id: number): M }, id: number, refresh=false): Promise<M> {
+		return new Promise((resolve, reject) => {
+			if (!id && id !== 0) reject("No ID given");
+
+			let existing = this.getById(id);
+			if (existing !== null && !refresh) resolve(existing);
+			else {
+				Database.get(this.meta.modelName, id).then(data => {
+					let object = this.addObject(data);
+					resolve(object);
+				}).catch(reject);
+			}
+		});
+	}
+
+	/**
 	 * Execute update handler functions on model list (to be run whenever model list updated)
 	 */
 	static handleListUpdate<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M> }) {
@@ -168,7 +211,7 @@ export class Model {
 
 
 	/** ID property for all models */
-	id: (number | string)
+	id: number
 
 	/** Handler functions for model instance update */
 	private updateHandlers: ((model: Model) => void)[] = []
@@ -199,14 +242,14 @@ export class Model {
 				} else {
 					this[stringForm] = obj[property];
 				}
-			} else if (this.constructor.meta.props.indexOf(property) !== -1) {
+			} else if (this.constructor.meta.props.includes(property)) {
 				this[property] = obj[property];
 			}
 		}
 
 		// Check for problems in data object shape
 		let missedProps = this.constructor.meta.props.filter((prop) => !(prop in obj));
-		let extraProps = Object.keys(obj).filter((prop) => this.constructor.meta.props.indexOf(prop) === -1 && (this.constructor.meta.specialProps === null || !(prop in this.constructor.meta.specialProps)));
+		let extraProps = Object.keys(obj).filter((prop) => !this.constructor.meta.props.includes(prop) && (this.constructor.meta.specialProps === null || !(prop in this.constructor.meta.specialProps)));
 		if (missedProps.length > 0) console.warn(`Missed properties on data for ${this.constructor.meta.modelName} ${this.id}: ${missedProps.join(", ")}`);
 		if (extraProps.length > 0) console.warn(`Extra properties on data for ${this.constructor.meta.modelName} ${this.id}: ${extraProps.join(", ")}`);
 
@@ -232,9 +275,9 @@ export class Model {
 	save (): Promise<any> {
 		let obj = {};
 
-		for (let prop in this.constructor.meta.props) {
+		this.constructor.meta.props.forEach(prop => {
 			if (prop in this) obj[prop] = this[prop];
-		}
+		});
 
 		for (let prop in this.constructor.meta.specialProps) {
 			let methodForm = <SpecialPropMethod>this.constructor.meta.specialProps[prop];
