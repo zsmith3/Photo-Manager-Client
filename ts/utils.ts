@@ -9,19 +9,14 @@ type fileReaderTypes = ("readAsArrayBuffer" | "readAsBinaryString" | "readAsData
 
 /** Base HTTP requests function, with binary support
  * @param url Absolute URL of the request
- * @param type HTTP request method (defaults to "GET")
+ * @param type HTTP request method (default = "GET")
  * @param data HTTP request body data
  * @param headers Object representing any desired HTTP headers
- * @param responseType XHR response type
- * @param readerType FileReader method with which to read the response
+ * @param responseType XHR response type (default = "blob")
+ * @param readerType FileReader method with which to read the response (default = "readAsArrayBuffer")
  * @returns Promise object representing response data
  */
-function httpRequest (url: string, type: httpMethodTypes, data: any, headers: object, responseType?: xhrResponseTypes, readerType?: fileReaderTypes): Promise<any> {
-	type = type || "GET";
-	headers = headers || {};
-	responseType = responseType || "blob";
-	readerType = readerType || "readAsArrayBuffer";
-
+function httpRequest (url: string, type: httpMethodTypes = "GET", data: any = null, headers: {} = {}, responseType: xhrResponseTypes = "blob", readerType: fileReaderTypes = "readAsArrayBuffer"): Promise<any> {
 	return new Promise((resolve, reject) => {
 		var xhr = new XMLHttpRequest();
 		xhr.open(type, url);
@@ -35,7 +30,7 @@ function httpRequest (url: string, type: httpMethodTypes, data: any, headers: ob
 		xhr.onload = function () {
 			var status = [200, 201, 204].includes(this.status);
 
-			if (this.response.size && responseType == "blob") {
+			if (this.response && this.response.size && responseType == "blob") {
 				let fileReader = new FileReader();
 
 				fileReader.onload = function () {
@@ -58,45 +53,63 @@ function httpRequest (url: string, type: httpMethodTypes, data: any, headers: ob
 
 
 /**
- * API (MessagePack) requests function
+ * API requests function.
+ * Uses MessagePack in production, JSON in development.
  * @param url Request URL relative to API root
  * @param type HTTP request method (defaults to "GET")
  * @param data HTTP request body data
  * @returns Promise object representing API response
  */
 export function apiRequest (url: string, type?: httpMethodTypes, data?: any): Promise<any> {
-	var encData: Blob;
-	if (data) encData = new Blob([msgpack.encode(data)]);
-	else encData = null;
+	var encData;
+	if (process.env.NODE_ENV === "production") {
+		if (data) encData = new Blob([msgpack.encode(data)]);
+		else encData = null;
+	} else encData = JSON.stringify(data);
 
 	var headers = {};
-	if (type != "DELETE") headers["Accept"] = "application/msgpack";
-	if (data) headers["Content-Type"] = "application/msgpack";
+	if (process.env.NODE_ENV === "production") {
+		if (type != "DELETE") headers["Accept"] = "application/msgpack";
+		if (data) headers["Content-Type"] = "application/msgpack";
+	} else if (data) headers["Content-Type"] = "application/json";
 
 	return new Promise((resolve, reject) => {
-		httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers).then(data => {
+		let request: Promise<any>;
+		if (process.env.NODE_ENV === "production") request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers);
+		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json");
+		request.then(data => {
 			if (type == "DELETE") {
 				resolve();
 				return;
 			}
 
-			let byteArray = new Uint8Array(data);
-			try {
-				let resData = msgpack.decode(byteArray);
-				resolve(resData);
-			} catch (error) {
-				reject(error);
-			}
+			decodeData(data, resolve, reject);
 		}).catch(function (error) {
-			try {
-				let byteArray = new Uint8Array(error);
-				let resData = msgpack.decode(byteArray);
-				reject(resData);
-			} catch (err) {
-				reject(error);
-			}
+			decodeData(error, reject, reject);
 		});
 	});
+}
+
+
+/**
+ * Decode API data.
+ * Uses MessagePack in production, JSON in development.
+ * @param data Data to be decoded
+ * @param onsuccess Function to run on successful decoding
+ * @param onerror Function to run on error
+ */
+function decodeData (data: any, onsuccess: (data: any) => void, onerror: (data: any) => void) {
+	if (process.env.NODE_ENV === "production") {
+		try {
+			let byteArray = new Uint8Array(data);
+			let resData = msgpack.decode(byteArray);
+			onsuccess(resData);
+		} catch (err) {
+			onerror(err);
+		}
+	} else {
+		onsuccess(data);
+	}
 }
 
 

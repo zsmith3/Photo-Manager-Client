@@ -141,6 +141,7 @@ export class Model {
 
 	/**
 	 * Load all instances of this Model type
+	 * @param filters A set of filters to apply to the model query
 	 */
 	static loadAll<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, setObjects (list: object[]): M[] }, filters?: (FilterType[] | { [field: string]: any })): Promise<M[]> {
 		let filtersArray: FilterType[];
@@ -166,6 +167,7 @@ export class Model {
 	/**
 	 * Load multiple specified instances of this Model type
 	 * @param ids List of model instance IDs to load
+	 * @param refresh If true, all models will be reloaded, even those already present locally (default = false)
 	 * @returns Promise representing loaded model instances
 	 */
 	static loadIds<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObjects (list: object[]): void, getById (id: number): M }, ids: number[], refresh=false): Promise<M[]> {
@@ -185,6 +187,7 @@ export class Model {
 	/**
 	 * Load specific instance of this Model type
 	 * @param id ID of the model instance to load
+	 * @param refresh If true, the model data will be reloaded, even if it is already present locally (default = false)
 	 * @returns Promise representing loaded model instance
 	 */
 	static loadObject<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObject (obj: object): M, getById (id: number): M }, id: number, refresh=false): Promise<M> {

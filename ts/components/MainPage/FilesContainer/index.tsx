@@ -1,77 +1,99 @@
-import React from "react";
-import { FileObject } from "../../../models"
-import FileBox from "./FileBox"
-import { GridList, GridListTile, ListSubheader, LinearProgress } from "@material-ui/core";
-import { addressRootTypes } from "../../App";
+import { GridList, GridListTile, LinearProgress, ListSubheader } from "@material-ui/core";
+import React, { ComponentType } from "react";
 import { Folder } from "../../../models";
-import FolderBox from "./FolderBox";
+import { addressRootTypes } from "../../App";
+import FileCard from "./FileCard";
+import FolderCard from "./FolderCard";
 
-type childType = Folder;
-type objectType = FileObject;
-type dataType = { childName: string, objectName: string, children: childType[], objects: objectType[]}
+/** Type for stored data in FilesContainer */
+type dataType = {
+	/** ID to identify this set of objects */
+	id: number,
 
+	/** Display name for object set */
+	name: string,
+
+	/** IDs of Model instances to display */
+	objectIds: number[],
+
+	/** GridCard component to display for each instance */
+	card: ComponentType<{ modelId: number, scale: number, selected: boolean, onSelect: (event) => void }>,
+
+	/** List of IDs of selected objects */
+	selection?: number[]
+}
+
+/** Grid-based container for displaying Files (and other models) */
 export default class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number }> {
 	state = {
+		/** Storage of this.props to determine when they have been updated */
 		props: { rootType: null as addressRootTypes, rootId: null as number },
-		data: {
-			childName: "Folders",
-			objectName: "Files",
-			children: [] as childType[],
-			objects: [] as objectType[]
-		},
-		selection: {},
-		//selectedChildren: {},
-		//selectedObjects: {},
-		cols: 10, // TODO
+
+		/** Data to be displayed, as a list of object sets */
+		data: [] as dataType[],
+
+		/** Whether data for the current set of props has been loaded */
 		dataLoaded: false
 	}
 
-	constructor (props) {
+	constructor (props: { rootType: addressRootTypes, rootId: number }) {
 		super(props);
 
 		this.state.props = props;
-
-		window.addEventListener("resize", () => this.setState({ cols: 3 })); // TODO
 	}
 
-	private getData (): Promise<dataType> {
+
+	/**
+	 * Fetch all data to be displayed, based on this.props
+	 * @returns Promise object representing data fetched
+	 */
+	private getData (): Promise<dataType[]> {
 		return new Promise((resolve, reject) => {
 			switch (this.props.rootType) {
 				case "folders":
 					if (this.props.rootId === null) {
 						Folder.loadAll<Folder>({ parent: null }).then(folders => {
-							resolve({ childName: "Folders", objectName: "Files", children: folders, objects: [] });
+							resolve([{ id: 1, name: "Folders", objectIds: folders.map(folder => folder.id), card: FolderCard }]);
 						});
 					} else {
 						Folder.loadObject<Folder>(this.props.rootId, true).then(folder => {
-							console.log(folder);
 							folder.getContents().then(data => {
-								console.log(data);
-								resolve({ childName: "Folders", objectName: "Files", children: data.folders, objects: data.files });
+								resolve([{ id: 1, name: "Folders", objectIds: data.folders.map(folder => folder.id), card: FolderCard }, { id: 2, name: "Files", objectIds: data.files.map(file => file.id), card: FileCard }]);
 							}).catch(reject);
 						}).catch(reject);
 					}
-
 					break;
 				}
 		});
 	}
 
 
-	// SELECTION FUNCTIONS
-
-	select (type: ("child" | "object"), id: number, value: boolean) {
-		this.selectAll(false);
-		this.setState({ selection: {
-			...this.state.selection,
-			[type + "_" + id]: value
-		}});
+	/**
+	 * Select or deselect a single object
+	 * @param setId ID of the set to which the object belongs
+	 * @param modelId ID of the object to select
+	 * @param value Whether to select or deselect the object (true => select) (NOT IMPLEMENTED)
+	 */
+	select (setId: number, modelId: number, value: boolean) {
+		let data = this.state.data.map(set => {
+			if (set.id === setId) return Object.assign(set, { selection: [ modelId ]});
+			else return Object.assign(set, { selection: [] });
+		});
+		// let setIndex = data.findIndex(set => set.id === setId);
+		// data[setIndex].selection = [ modelId ];
+		this.setState({ data: data });
 	}
 
+	/**
+	 * Select or deselect all objects
+	 * @param value Whether to select or deselect all objects (true => select)
+	 */
 	selectAll (value: boolean) {
-		let selection = this.state.selection;
-		Object.keys(selection).forEach(key => selection[key] = value);
-		this.setState({ selection: selection });
+		let data = this.state.data.map(set => {
+			if (value) return Object.assign(set, { selection: set.objectIds });
+			else return Object.assign(set, { selection: [] });
+		});
+		this.setState({ data: data });
 	}
 
 
@@ -84,30 +106,22 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		}
 
 		if (this.state.dataLoaded) {
-			return <GridList cols={ this.state.cols } cellHeight={ 100 /* TODO */ } spacing={ 10 } style={ { margin: 0, padding: 10 } } onClick={ () => this.selectAll(false) }>
-					{ this.state.data.children.length > 0 &&
-					<GridListTile key="childrenSubheader" cols={ this.state.cols } style={ { height: "auto" } }>
-						<ListSubheader component="div">{ this.state.data.childName }</ListSubheader>
-					</GridListTile>
-					}
-					{ this.state.data.children.map(folder => (
-						<FolderBox key={ "child_" + folder.id } modelId={ folder.id } selected={ this.state.selection["child_" + folder.id] } onSelect={ (event) => { event.stopPropagation(); this.select("child", folder.id, true); } } />
-					)) }
+			return <GridList cols={ 1 } cellHeight={ 100 /* TODO */ } spacing={ 10 } style={ { margin: 0, padding: 10 } } onClick={ () => this.selectAll(false) }>
+					{ this.state.data.map(objectSet => {
+						let title = objectSet.objectIds.length > 0 && <GridListTile key="childrenSubheader" cols={ 1 } style={ { height: "auto" } }>
+							<ListSubheader component="div">{ objectSet.name }</ListSubheader>
+						</GridListTile>;
 
-					{ this.state.data.objects.length > 0 &&
-					<GridListTile key="objectsSubheader" cols={ this.state.cols } style={ { height: "auto" } }>
-						<ListSubheader component="div">{ this.state.data.objectName }</ListSubheader>
-					</GridListTile>
-					}
-					{ this.state.data.objects.map(file => (
-						<FileBox key={ "object_" + file.id } modelId={ file.id } scale={ scale } selected={ this.state.selection["object_" + file.id] } onSelect={ (event) => { event.stopPropagation(); this.select("object", file.id, true); } } />
-					)) }
+						let cards = objectSet.objectIds.map(objectId => (
+							<objectSet.card key={ `${ objectSet.id }_${ objectId }` } modelId={ objectId } selected={ objectSet.selection.includes(objectId) } onSelect={ this.select.bind(this, objectSet.id, objectId) } scale={ scale } />
+						));
+
+						return [title].concat(cards);
+					}) }
 				</GridList>;
 		} else {
 			this.getData().then(data => {
-				let childrenSelection = data.children.reduce((result, item) => Object.assign(result, { ["child_" + item.id]: false }), {})
-				let objectSelection = data.objects.reduce((result, item) => Object.assign(result, { ["object_" + item.id]: false }), {})
-				this.setState({ data: data, dataLoaded: true, selection: Object.assign(childrenSelection, objectSelection) });
+				this.setState({ data: data.map(set => Object.assign(set, { selection: [] })), dataLoaded: true });
 			});
 			return <LinearProgress />;
 		}
