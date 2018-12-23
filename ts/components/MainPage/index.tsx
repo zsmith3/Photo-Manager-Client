@@ -50,7 +50,7 @@ class MainPage extends React.Component<{ classes: MainPageStyles, location: Loca
 						{/* Placeholder of AppBar height */}
 						<div className={ this.props.classes.toolbar } />
 
-						<AddressBar />
+						<AddressBar rootType={ addressRootType } rootId={ addressRootId } />
 
 						<FilesContainer rootType={ addressRootType } rootId={ addressRootId } />
 					</div>

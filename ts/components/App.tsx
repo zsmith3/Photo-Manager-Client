@@ -6,6 +6,7 @@ import { Database } from "../controllers/Database";
 import "../styles/App.css";
 import LoginPage from "./LoginPage";
 import MainPage from "./MainPage";
+import { History } from "history";
 
 
 export type addressRootTypes = ("folders" | "albums" | "people");
@@ -20,7 +21,7 @@ declare global {
 window.React = React;
 
 
-export class LocationManager extends React.Component<{ history: any }> {
+export class LocationManager extends React.Component<{ history: History }> {
 	static instance: LocationManager
 
 	private static nextLocation: string = null
@@ -36,7 +37,7 @@ export class LocationManager extends React.Component<{ history: any }> {
 		else LocationManager.nextLocation = url;
 	}
 
-	constructor (props) {
+	constructor (props: { history: History }) {
 		super(props);
 
 		LocationManager.instance = this;

@@ -10,7 +10,7 @@ enum ModelLoadStates {
 }
 
 /** Type for use in filtering Model queries */
-export type FilterType = { field: string, type: ("eq" | "in" | "isnull"), value: any };
+export type FilterType = { field: string, type: ("exact" | "in" | "isnull"), value: any };
 
 /** Type for use in specialProps */
 type SpecialPropMethod = { deserialize? (instance: Model, prop: any): void, serialize? (obj: {}, prop: any): void }
@@ -36,7 +36,13 @@ export class ModelMeta<M extends Model> {
 	loadingPromise: Promise<M[]> = null
 
 	/** The current state of loading of all instances from the database */
-	loadState: ModelLoadStates = ModelLoadStates.notLoaded
+	loadAllState: ModelLoadStates = ModelLoadStates.notLoaded
+
+	/** The current state of loading of specific instances from the database */
+	loadStates: Map<number, ModelLoadStates> = new Map()
+
+	/** Handler functions to run when specific instances are loaded */
+	loadHandlers: Map<number, ((model: M) => void)[]> = new Map()
 
 	/**
 	 * ModelMeta constructor
@@ -44,6 +50,17 @@ export class ModelMeta<M extends Model> {
 	 */
 	constructor (data: { modelName: DBTables, props: string[], specialProps?: { [key: string]: (SpecialPropMethod | string) } }) {
 		for (let prop in data) this[prop] = data[prop];
+	}
+
+	/**
+	 * Add a callback to loadHandlers
+	 * @param id ID to insert at
+	 * @param callback Callback to add
+	 */
+	addIdLoadHandler (id: number, callback: (model: M) => void) {
+		let list = this.loadHandlers.get(id);
+		if (list) list.push(callback);
+		else this.loadHandlers.set(id, [callback]);
 	}
 }
 
@@ -62,8 +79,12 @@ export class Model {
 	 * @param obj Data representing new instance of model
 	 * @returns Created instance of model
 	 */
-	static addObject<M extends Model> (this: { new (...args: any[]): M, handleListUpdate(): void }, obj: object, handleUpdate=true): M {
-		let object = new this(obj);
+	static addObject<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, handleListUpdate(): void }, obj: { id: number }, handleUpdate=true): M {
+		let object = this.meta.objects.find(object => object.id === obj.id);
+		if (object) object.update(obj);
+		else object = new this(obj);
+
+		this.meta.loadStates.set(obj.id, ModelLoadStates.loaded);
 
 		if (handleUpdate) this.handleListUpdate();
 
@@ -130,38 +151,69 @@ export class Model {
 	 * Register handler function to be executed when model list is updated
 	 * @param callback Handler function, taking the model list as an argument
 	 */
-	static registerUpdateHandler<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, loadAll (): Promise<M[]> }, callback: (models: M[]) => void): Promise<M[]> {
+	static registerListUpdateHandler<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, loadAll (): Promise<M[]> }, callback: (models: M[]) => void): Promise<M[]> {
 		this.meta.listUpdateHandlers.push(callback);
 
-		if (this.meta.loadState === ModelLoadStates.loaded) {
+		if (this.meta.loadAllState === ModelLoadStates.loaded) {
 			callback(this.meta.objects);
 			return Promise.resolve(this.meta.objects);
 		} else return this.loadAll();
 	}
 
 	/**
-	 * Load all instances of this Model type
-	 * @param filters A set of filters to apply to the model query
+	 * Register handler function to be executed when a specific model is loaded
+	 * @param id ID of model instance
+	 * @param callback Handler function, taking the model instance as an argument
 	 */
-	static loadAll<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, setObjects (list: object[]): M[] }, filters?: (FilterType[] | { [field: string]: any })): Promise<M[]> {
-		let filtersArray: FilterType[];
-		if (filters instanceof Array) filtersArray = filters;
-		else if (filters) filtersArray = Object.keys(filters).map(field => (filters[field] === null ? { field: field, type: "isnull" as "isnull", value: true } : { field: field, type: "eq" as "eq", value: filters[field] }));
-		else filtersArray = [];
+	static registerIdLoadHandler<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, getById (id: number): M, loadObject (id: number, refresh?: boolean): Promise<M> }, id: number, callback: (model: M) => void): void {
+		switch (this.meta.loadStates.get(id)) {
+			case ModelLoadStates.loaded:
+				callback(this.getById(id));
+				break;
+			case ModelLoadStates.loading:
+			case ModelLoadStates.notLoaded:
+				this.meta.addIdLoadHandler(id, callback);
+			case ModelLoadStates.notLoaded:
+				this.loadObject(id);
+				break;
+		}
+	}
 
-		if (this.meta.loadState !== ModelLoadStates.loading) {
-			this.meta.loadState = ModelLoadStates.loading;
+	/**
+	 * Load all instances of this Model type
+	 * @returns Promise representing loaded model instances
+	 * */
+	static loadAll<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, setObjects (list: object[]): M[] }): Promise<M[]> {
+		if (this.meta.loadAllState !== ModelLoadStates.loading) {
+			this.meta.loadAllState = ModelLoadStates.loading;
 			this.meta.loadingPromise = new Promise((resolve, reject) => {
-				Database.get(this.meta.modelName, filtersArray).then(data => {
-					this.meta.loadState = ModelLoadStates.loaded;
+				Database.get(this.meta.modelName).then(data => {
+					this.meta.loadAllState = ModelLoadStates.loaded;
 					resolve(this.setObjects(data));
-
 					delete this.meta.loadingPromise;
 				}).catch(reject);
 			});
 		}
 
 		return this.meta.loadingPromise;
+	}
+
+	/**
+	 * Load all instances of this Model type
+	 * @param filters A set of filters to apply to the model query
+	 * @returns Promise representing loaded model instances
+	 */
+	static loadFiltered<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObjects (list: object[]): void }, filters: (FilterType[] | { [field: string]: any })): Promise<M[]> {
+		let filtersArray: FilterType[];
+		if (filters instanceof Array) filtersArray = filters;
+		else filtersArray = Object.keys(filters).map(field => (filters[field] === null ? { field: field, type: "isnull" as "isnull", value: true } : { field: field, type: "exact" as "exact", value: filters[field] }));
+
+		return new Promise((resolve, reject) => {
+			Database.get(this.meta.modelName, filtersArray).then(data => {
+				this.addObjects(data);
+				resolve(this.meta.objects.filter(model => data.map(obj => obj.id).includes(model.id)));
+			}).catch(reject);
+		});
 	}
 
 	/**
@@ -173,12 +225,29 @@ export class Model {
 	static loadIds<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObjects (list: object[]): void, getById (id: number): M }, ids: number[], refresh=false): Promise<M[]> {
 		return new Promise((resolve, reject) => {
 			let remainingIds: number[];
-			if (refresh) remainingIds = ids.filter(id => this.getById(id) === null);
+			if (refresh) remainingIds = ids.filter(id => (this.meta.loadStates.get(id) || ModelLoadStates.notLoaded) === ModelLoadStates.notLoaded);
 			else remainingIds = ids;
 
+			remainingIds.forEach(id => this.meta.loadStates.set(id, ModelLoadStates.loading));
 			(remainingIds.length ? Database.get(this.meta.modelName, [{ field: "id", type: "in", value: remainingIds }]) : Promise.resolve([])).then(data => {
 				this.addObjects(data);
-				resolve(this.meta.objects.filter(file => ids.includes(file.id)));
+
+				// Listen for all requested objects to be loaded
+
+				let fn = () => {
+					if (ids.filter(id => this.meta.loadStates.get(id) === ModelLoadStates.loading).length === 0) {
+						resolve(this.meta.objects.filter(file => ids.includes(file.id)));
+						return true;
+					} else return false;
+				}
+
+				if (!fn()) {
+					ids.forEach(id => {
+						if (this.meta.loadStates.get(id) === ModelLoadStates.loading) {
+							this.meta.addIdLoadHandler(id, fn);
+						}
+					});
+				}
 			}).catch(reject);
 			// TODO add some mechanism to register when objects have already been requested
 		});
@@ -194,8 +263,8 @@ export class Model {
 		return new Promise((resolve, reject) => {
 			if (!id && id !== 0) reject("No ID given");
 
-			let existing = this.getById(id);
-			if (existing !== null && !refresh) resolve(existing);
+			if (this.meta.loadStates.get(id) === ModelLoadStates.loaded && !refresh) resolve(this.getById(id));
+			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading) this.meta.addIdLoadHandler(id, model => resolve(model));
 			else {
 				Database.get(this.meta.modelName, id).then(data => {
 					let object = this.addObject(data);
@@ -228,13 +297,21 @@ export class Model {
 		this.update(obj);
 
 		this.constructor.meta.objects.push(this);
+
+		// Execute on-load handler functions
+		let loadHandlers = this.constructor.meta.loadHandlers.get(this.id);
+		if (loadHandlers) {
+			loadHandlers.forEach(callback => callback(this));
+			this.constructor.meta.loadHandlers.set(this.id, []);
+		}
 	}
 
 	/**
 	 * Update model instance properties from data object
 	 * @param obj Data object from which to update model instance
+	 * @param handleUpdate Whether to run update handler functions (default = true)
 	 */
-	update (obj: object, noUpdateHandler=false): void {
+	update (obj: object, handleUpdate=true): void {
 		// Assign properties
 		for (let property in obj) {
 			if (this.constructor.meta.specialProps !== null && property in this.constructor.meta.specialProps) {
@@ -257,7 +334,7 @@ export class Model {
 		if (extraProps.length > 0) console.warn(`Extra properties on data for ${this.constructor.meta.modelName} ${this.id}: ${extraProps.join(", ")}`);
 
 		// Trigger model update handlers
-		if (!noUpdateHandler) this.updateHandlers.forEach((callback: (model: Model) => void) => callback(this));
+		if (handleUpdate) this.updateHandlers.forEach((callback: (model: Model) => void) => callback(this));
 	}
 
 	/**
@@ -299,7 +376,7 @@ export class Model {
 	 * Register handler function to be executed when this model instance is updated
 	 * @param callback Handler function, taking the model as an argument
 	 */
-	registerUpdateHandler<M extends Model> (this: M, callback: (model: M) => void) {
+	registerInstanceUpdateHandler<M extends Model> (this: M, callback: (model: M) => void) {
 		this.updateHandlers.push(callback);
 	}
 }

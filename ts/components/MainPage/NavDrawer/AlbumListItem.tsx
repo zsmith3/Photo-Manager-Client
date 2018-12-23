@@ -27,7 +27,7 @@ export default class AlbumListItem extends MountTrackedComponent<{ albumId: numb
 	constructor (props: { albumId: number, indent?: number }) {
 		super(props);
 
-		Album.getById(props.albumId).registerUpdateHandler((album: Album) => this.setStateSafe({ album: album }));
+		Album.getById(props.albumId).registerInstanceUpdateHandler((album: Album) => this.setStateSafe({ album: album }));
 		this.state.album = Album.getById(props.albumId);
 		this.state.parentUpdateID = this.state.album.parent !== null ? this.state.album.parent.id : null
 

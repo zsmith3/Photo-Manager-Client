@@ -22,7 +22,7 @@ class FolderCard extends BaseGridCard<Folder, { icon: string }> {
 	constructor (props: { modelId: number, scale: number, selected: boolean, onSelect: (event) => void, classes: any }) {
 		super(props);
 
-		Folder.getById(props.modelId).registerUpdateHandler((folder: Folder) => this.setStateSafe({ model: folder }));
+		Folder.getById(props.modelId).registerInstanceUpdateHandler((folder: Folder) => this.setStateSafe({ model: folder }));
 		this.state.model = Folder.getById(props.modelId);
 	}
 

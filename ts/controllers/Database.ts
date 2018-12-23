@@ -86,7 +86,8 @@ class WebDatabase extends BaseDatabase {
 
 	get (table: DBTables, query?: (number | FilterType[])): Promise<any> {
 		if (query instanceof Array) {
-			let queryStrings = query.map(filter => `${ filter.field }__${ filter.type }=${ encodeURI(filter.value) }`);
+			let filterToQuery = filter => filter.field + (filter.type === "exact" ? "" : `__${ filter.type }`) + `=${ encodeURI(filter.value) }`;
+			let queryStrings = query.map(filterToQuery);
 			let queryString = (queryStrings.length ? "?" : "") + queryStrings.join("&");
 			return apiRequest(`${ table }/${ queryString }`, "GET");
 		} else if (typeof query === "number") {

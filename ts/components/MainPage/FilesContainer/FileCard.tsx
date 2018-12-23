@@ -24,14 +24,14 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 	constructor (props: { modelId: number, selected: boolean, onSelect: (event) => void, scale: number, classes: any }) {
 		super(props);
 
-		FileObject.getById(props.modelId).registerUpdateHandler((file: FileObject) => this.setStateSafe({ file: file }));
+		FileObject.getById(props.modelId).registerInstanceUpdateHandler((file: FileObject) => this.setStateSafe({ file: file }));
 		this.state.model = FileObject.getById(props.modelId);
 	}
 
 	protected getSize () { return { width: this.props.scale, height: this.props.scale }; }
 
 	render () {
-		if (this.state.model.type === "image" && !this.state.data) mediaRequest("api/images/" + this.state.model.id + "/300x200/").then(data => this.setState({ data: data }));
+		if (this.state.model.type === "image" && !this.state.data) mediaRequest("api/images/" + this.state.model.id + "/300x200/").then(data => this.setStateSafe({ data: data }));
 
 		return this.renderBase(
 			<Fragment>

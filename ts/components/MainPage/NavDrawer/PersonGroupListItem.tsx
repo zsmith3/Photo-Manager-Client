@@ -19,7 +19,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{ groupId
 	constructor (props: { groupId: number }) {
 		super(props);
 
-		PersonGroup.getById(props.groupId).registerUpdateHandler((group: PersonGroup) => this.setState({ group: group }));
+		PersonGroup.getById(props.groupId).registerInstanceUpdateHandler((group: PersonGroup) => this.setState({ group: group }));
 		this.state.group = PersonGroup.getById(props.groupId);
 	}
 

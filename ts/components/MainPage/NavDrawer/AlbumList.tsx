@@ -13,7 +13,7 @@ export default class AlbumList extends MountTrackedComponent<{ parentAlbumID?: n
 	constructor (props) {
 		super(props);
 
-		Album.registerUpdateHandler((albums: Album[]) => {
+		Album.registerListUpdateHandler((albums: Album[]) => {
 			let albumIds = albums.filter((album: Album) => ((album.parent === null) ? (this.props.parentAlbumID === undefined) : (album.parent.id === this.props.parentAlbumID))).map((album: Album) => album.id);
 			this.setStateSafe({ albumIds: albumIds });
 		});

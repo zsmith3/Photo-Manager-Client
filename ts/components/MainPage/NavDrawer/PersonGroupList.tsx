@@ -13,7 +13,7 @@ export default class PersonGroupList extends React.Component {
     constructor (props) {
         super(props);
 
-        PersonGroup.registerUpdateHandler((groups: PersonGroup[]) => this.setState({groupIds: groups.map((group: PersonGroup) => group.id)}));
+        PersonGroup.registerListUpdateHandler((groups: PersonGroup[]) => this.setState({groupIds: groups.map((group: PersonGroup) => group.id)}));
     }
 
 	render () {

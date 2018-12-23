@@ -1,155 +1,128 @@
-import { Icon, IconButton, TextField, Theme, withStyles } from "@material-ui/core";
+import { Icon, IconButton, TextField, Theme, withStyles, Typography } from "@material-ui/core";
 import $ from "jquery";
 import React from "react";
 import { Platform } from "../../controllers/Platform";
-import App from "../App";
-
-
-interface AddressBarStyles {
-	addressBar,
-	address
-}
-
+import App, { LocationManager, addressRootTypes } from "../App";
+import { Folder } from "../../models";
 
 /** Address bar element */
-class AddressBar extends React.Component<{ classes: AddressBarStyles }> {
-	static styles: ((theme: Theme) => AddressBarStyles) = (theme: Theme) => ({
+class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string } }> {
+	static styles = (theme: Theme) => ({
 		addressBar: {
 			backgroundColor: theme.palette.background.paper
 		},
 		address: {
 			display: "inline"
+		},
+		search: {
+			float: "right" as "right"
 		}
 	});
 
 
-	backUrls: string[]
-	forwardUrls: string[]
+	/**
+	 * Determine whether two versions of `this.props` are the same
+	 * @param props1 The first version
+	 * @param props2 The second version
+	 * @returns Whether or not they are equal
+	 */
+	private static compareProps(props1: { rootType: addressRootTypes, rootId: number }, props2: { rootType: addressRootTypes, rootId: number }): boolean {
+		return props1.rootType === props2.rootType && props1.rootId === props2.rootId;
+	}
 
 
-	/** Refresh all address bar elements */
-	refresh (): void {
-		this.refreshArrows();
-		this.refreshAddress();
-		// mdcSetupRipples(this);
+	state = {
+		address: "/"
+	}
+
+
+	constructor (props) {
+		super(props);
+
+		this.fetchAddress(props);
+	}
+
+
+	/**
+	 * Get the address to display, based on `this.props`
+	 * @param props The value of `this.props` to use
+	 * @returns Promise representing the address
+	 */
+	private async getAddress (props: { rootType: addressRootTypes, rootId: number }): Promise<string> {
+		if (props.rootId === null) return "/";
+
+		switch (props.rootType) {
+			case "folders":
+				const folder = await Folder.loadObject<Folder>(props.rootId);
+				return folder.path;
+		}
+	}
+
+	/**
+	 * Load the display address into `this.state`
+	 * (calls `this.setState`)
+	 * @param props The value of `this.props` to use
+	 */
+	private fetchAddress (props: { rootType: addressRootTypes, rootId: number }) {
+		this.getAddress(props).then(address => {
+			if (AddressBar.compareProps(props, this.props)) {
+				this.setState({ address: address });
+			}
+		});
+	}
+
+	/** Move up to the parent folder (or other container) */
+	private moveUp = () => {
+		if (this.props.rootId === null) return;
+
+		switch (this.props.rootType) {
+			case "folders":
+				let folder = Folder.getById(this.props.rootId);
+				LocationManager.updateLocation("/folders/" + (folder.parentID ? `${ folder.parentID }/` : ""));
+		}
+	}
+
+
+	shouldComponentUpdate(nextProps) {
+		if (AddressBar.compareProps(this.props, nextProps)) {
+			// If props are unchanged, then state must have changed, so re-render
+			return true;
+		} else {
+			// If props have changed, fetch the new address, which will update the state
+			this.fetchAddress(nextProps);
+			return false;
+		}
 	}
 
 	render () {
 		return <div className={this.props.classes.addressBar}>
-			<span id="addressBar-nav-icons">
-				<a id="addressBar-arrow-left" title="Back" data-rel="back"><IconButton><Icon>arrow_back</Icon></IconButton></a>
+			<span>
+				<IconButton title="Back" onClick={ () => LocationManager.instance.props.history.goBack() }>
+					<Icon>arrow_back</Icon>
+				</IconButton>
 
-				<a id="addressBar-arrow-right" title="Forward" data-rel="forward"><IconButton><Icon>arrow_forward</Icon></IconButton></a>
+				<IconButton title="Forward" onClick={ () => LocationManager.instance.props.history.goForward() }>
+					<Icon>arrow_forward</Icon>
+				</IconButton>
 
-				<a id="addressBar-arrow-up" title="Up"><IconButton><Icon>arrow_upward</Icon></IconButton></a>
+				<IconButton title="Up" onClick={ this.moveUp }>
+					<Icon>arrow_upward</Icon>
+				</IconButton>
 
-				<a href="/" title="Return to root folders"><IconButton><Icon>home</Icon></IconButton></a>
+				<IconButton title="Return to root folders" onClick={ () => LocationManager.updateLocation("/folders/") }>
+					<Icon>home</Icon>
+				</IconButton>
 			</span>
 
-			<span id="addressBar-address-box"> {/*  className="mdc-chip" */}
-				<p className={this.props.classes.address}>/</p>
-			</span>
-			<span id="search" onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {if (event.key == 'Enter') App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).find('#searchinput').val().toString() })}}>
+			{/* <span> */}
+				<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
+			{/* </span> */}
+
+			{/* <span className={ this.props.classes.search } id="search" onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {if (event.key == 'Enter') App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).find('#searchinput').val().toString() })}}>
 				<TextField id="searchinput" label="Search" title="Search the current view for files" onSubmit={() => App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).val().toString() })} />
-			</span>
+			</span> */}
 		</div>;
 		//<MDCText id="searchinput" placeholder="Search" data-icon-after="search" data-icon-before="arrow_back" title="Search the current view for files" onsubmit="App.app.refreshFilesData(null, null, {'search': $(this).val()});"></MDCText>
-	}
-
-	/** Hide search bar (for mobile) */
-	hideSearch (): void {
-		$("#search .mdc-text-field").addClass("mdc-text-field--with-leading-icon");
-
-		$("#search .mdc-text-field__icon-after").get(0).onclick = () => {
-			$(this).css({"width": "32px", "height": "32px", "font-size": "24px"});
-			// mdcSetupRipples(this);
-			if ($("#searchinput").width() > 0) {
-				// refreshGetData(addGet({"search": $("#searchinput").val()}));
-				// TODO
-			} else {
-				$("#search").css("transition", "width .4s").css({"width": "calc(100vw - 16px)", "padding": "2px"});
-				$("#search .mdc-text-field__input, #search .mdc-text-field__icon-before").css("transition", "opacity .4s").css("opacity", 1);
-				$("#searchinput").focus();
-			}
-		};
-
-		$("#search .mdc-text-field__icon-before").get(0).onclick = () => {
-			$("#search .mdc-text-field__icon-after").css({"width": "", "height": "", "font-size": ""});
-			// mdcSetupRipples($("#search .mdc-text-field__icon-after").get(0));
-			$("#search").css("transition", "width .1s").css({"width": "0px", "padding": 0});
-			$("#search .mdc-text-field__input, #search .mdc-text-field__icon-before").css("transition", "opacity .05s").css("opacity", 0);
-		};
-	}
-
-	/** Show search bar (for desktop) */
-	showSearch (): void {
-		$("#search").removeClass(".mdc-text-field--with-leading-icon");
-		$("#search .mdc-text-field__icon-after").get(0).onclick = null;
-		$("#search .mdc-text-field__icon-before").get(0).onclick = null;
-	}
-
-	/** Refresh stored history (for forward/back arrows) upon following link */
-	refreshUrls (type: ("back" | "forward" | "initial")): void {
-		let currentUrl = Platform.urls.getCurrentAddress() + Platform.urls.getCurrentQuery();
-		switch (type) {
-		case "back":
-			this.backUrls.pop();
-			this.forwardUrls.push(currentUrl);
-			break
-		case "forward":
-			this.backUrls.push(currentUrl);
-			this.forwardUrls.pop();
-			break
-		case "initial":
-			this.backUrls.push(currentUrl);
-			this.forwardUrls = [];
-			break
-		}
-	}
-
-	/** Refresh navigation (back, forward, up) arrows */
-	refreshArrows (): void {
-		if (this.backUrls.length) {
-			$("#addressBar-arrow-left")
-				.attr("href", this.backUrls[this.backUrls.length - 1])
-				.removeClass("mdc-icon-toggle--disabled");
-		} else $("#addressBar-arrow-left").addClass("mdc-icon-toggle--disabled");
-
-		if (this.forwardUrls.length) {
-			$("#addressBar-arrow-right")
-				.attr("href", this.forwardUrls[this.forwardUrls.length - 1])
-				.removeClass("mdc-icon-toggle--disabled");
-		} else $("#addressBar-arrow-right").addClass("mdc-icon-toggle--disabled");
-
-		let titleArray = App.app.data.address.split("/").filter((entry) => entry.trim() != "");
-		$("#addressBar-arrow-up").attr("href", "/" + [App.app.data.folderType, titleArray.slice(0, titleArray.length - 1).join("/"), Platform.urls.getCurrentQuery()].filter((entry) => entry.trim() != "").join("/"));
-	}
-
-	/** Refresh folder address */
-	refreshAddress () {
-		let addressPara = $("#addressBar-address");
-		addressPara.text("/");
-
-		let titleArray = App.app.data.address.split("/").filter((entry) => entry.trim() != "");
-
-		for (let i = 0; i < titleArray.length; i++) {
-			let pathItem = titleArray[i];
-
-			let newItem;
-			if (i < titleArray.length - 1) {
-				newItem = $("<a class='link'></a>")
-					.attr("href", "/" + [App.app.data.folderType, titleArray.slice(0, i + 1).join("/"), Platform.urls.getCurrentQuery()].join("/"))
-					.attr("title", pathItem);
-			} else {
-				newItem = $("<span></span>")
-					.attr("title", pathItem + " (current page)");
-			}
-
-			newItem.text(pathItem);
-
-			newItem.appendTo(addressPara);
-			addressPara.append("/");
-		}
 	}
 }
 

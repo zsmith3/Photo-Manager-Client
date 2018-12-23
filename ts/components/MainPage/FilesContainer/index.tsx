@@ -52,11 +52,11 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 			switch (this.props.rootType) {
 				case "folders":
 					if (this.props.rootId === null) {
-						Folder.loadAll<Folder>({ parent: null }).then(folders => {
+						Folder.loadFiltered<Folder>({ parent: null }).then(folders => {
 							resolve([{ id: 1, name: "Folders", objectIds: folders.map(folder => folder.id), card: FolderCard }]);
 						});
 					} else {
-						Folder.loadObject<Folder>(this.props.rootId, true).then(folder => {
+						Folder.loadObject<Folder>(this.props.rootId).then(folder => {
 							folder.getContents().then(data => {
 								resolve([{ id: 1, name: "Folders", objectIds: data.folders.map(folder => folder.id), card: FolderCard }, { id: 2, name: "Files", objectIds: data.files.map(file => file.id), card: FileCard }]);
 							}).catch(reject);
