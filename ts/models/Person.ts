@@ -1,6 +1,7 @@
 import { Model, ModelMeta } from "./Model"
 import { Database, DBTables } from "../controllers/Database"
 import App from "../components/App"
+import { Face } from "./Face";
 
 
 /** Person Group model */
@@ -102,10 +103,19 @@ export class Person extends Model {
 	/** Group to which person belongs */
 	get group () { return PersonGroup.getById(this.groupID); }
 
+	// /** IDs of faces identified as belonging to person */
+	// private faceIds: number[]
+
+	/** Handler functions to be run when associated faces are updated */
+	faceListUpdateHandlers: ((faces: Face[]) => void)[] = []
+
+	/** Whether faces have been loaded yet */
+	loadedFaces: boolean
+
 
 	/**
 	 * Delete person from remote database
-	 * @returns Promise object representing completion
+	 * @returns Promise representing completion
 	 */
 	delete () {
 		return new Promise((resolve, reject) => {
@@ -117,8 +127,25 @@ export class Person extends Model {
 		});
 	}
 
-	// TODO:
-	// 1) removing people
-	// 2) ordering (of both people and groups)
-	// 3) people pages
+	/**
+	 * Load faces identified as belonging to person
+	 * @returns Promise representing faces loaded
+	 */
+	async getFaces (): Promise<Face[]> {
+		if (this.loadedFaces) return Face.meta.objects.filter(face => face.personID === this.id); // this.faceIds.map(id => Face.getById(id));
+		else {
+			const faces = await Face.loadFiltered({ person: this.id });
+			this.loadedFaces = true;
+			return faces;
+		}
+	}
+
+	/**
+	 * Run handler functions when associated face list is updated
+	 * @returns Promise representing completion
+	 */
+	async handleFaceListUpdate () {
+		const faces = await this.getFaces();
+		this.faceListUpdateHandlers.forEach(callback => callback(faces));
+	}
 }

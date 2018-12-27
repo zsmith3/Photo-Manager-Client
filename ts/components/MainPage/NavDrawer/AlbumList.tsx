@@ -4,9 +4,10 @@ import { Album } from '../../../models';
 import { MountTrackedComponent, HoverIconButton, TextDialog } from '../../utils';
 import AlbumListItem from './AlbumListItem';
 
+/** List of Album instances (for root or child albums) */
 export default class AlbumList extends MountTrackedComponent<{ parentAlbumID?: number, indent?: number }> {
 	state = {
-		albumIds: [], //Album.meta.objects.map(album => album.id)
+		albumIds: [],
 		openDialogNew: false
 	}
 
@@ -30,10 +31,12 @@ export default class AlbumList extends MountTrackedComponent<{ parentAlbumID?: n
 							</HoverIconButton>
 						</ListSubheader>
 					: null }>
-				{ this.state.albumIds.map(albumId => (
-					<AlbumListItem key={albumId} albumId={albumId} indent={ this.props.indent || 0 } />
-				)) }
-				{ this.state.albumIds.length > 0 || <Typography variant="body2" style={ { marginLeft: 40 } }>No albums here.</Typography> }
+				<Fragment>
+					{ this.state.albumIds.map(albumId => (
+						<AlbumListItem key={albumId} albumId={albumId} indent={ this.props.indent || 0 } />
+					)) }
+					{ this.state.albumIds.length > 0 || <Typography variant="body2" style={ { marginLeft: 40 } }>No albums here.</Typography> }
+				</Fragment>
 				</List>
 
 				{/* New root album dialog */}

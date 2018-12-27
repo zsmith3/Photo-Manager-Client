@@ -1,6 +1,7 @@
 import App from "../components/App";
 import { Database, DBTables } from "../controllers/Database";
 import { Model, ModelMeta } from "./Model";
+import { promiseChain } from "../utils";
 
 
 /** Album model */
@@ -56,15 +57,27 @@ export class Album extends Model {
 
 
 	/**
+	 * Add a single file to album
+	 * @param fileId ID of file to be added
+	 * @param multiple Whether this is part of a larger operation
+	 * (and so whether to reload the album)
+	 * @returns Promise representing completion
+	 */
+	async addFile (fileId: number, multiple=false): Promise<void> {
+		await Database.create(DBTables.AlbumFile, { album: this.id, file: fileId });
+		if (!multiple) Album.loadObject(this.id, true);
+	}
+
+	/**
 	 * Add files to album
 	 * @param files List of IDs of files to be added
+	 * @returns Promise representing completion
 	 */
-	addFiles (files: string[]): void {
-		// TODO this kind of thing with Database class
-		apiRequest("albums/" + this.id + "/files/", "POST", files.map((id) => ({"file": id}))).then((data) => {
-			Album.updateObjects(data);
-			App.app.els.navDrawer.refreshAlbums();
+	async addFiles (files: number[]): Promise<void> {
+		await promiseChain(files, (resolve, reject, fileId) => {
+			this.addFile(fileId, true).then(resolve).catch(reject);
 		});
+		Album.loadObject(this.id, true);
 	}
 
 	/**

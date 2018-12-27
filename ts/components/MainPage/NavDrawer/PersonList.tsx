@@ -1,9 +1,10 @@
 import List from "@material-ui/core/List";
 import React, { Fragment } from "react";
-import { Person } from "../../../models";
+import { Person, PersonGroup } from "../../../models";
 import { MountTrackedComponent, TextDialog } from "../../utils";
 import PersonListItem from "./PersonListItem";
 
+/** List of Person instances (within a PersonGroup) */
 export default class PersonList extends MountTrackedComponent<{ groupId?: number }> {
 	state = {
 		personIds: []

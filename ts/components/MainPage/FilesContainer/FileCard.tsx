@@ -2,7 +2,7 @@ import { CardContent, Typography, withStyles } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { FileObject } from "../../../models";
 import { mediaRequest } from "../../../utils";
-import BaseGridCard from "./BaseGridCard";
+import BaseGridCard, { GridCardProps } from "./BaseGridCard";
 
 /** GridCard for File model */
 class FileCard extends BaseGridCard<FileObject, { img: string }> {
@@ -21,10 +21,10 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 		data: ""
 	}
 
-	constructor (props: { modelId: number, selected: boolean, onSelect: (event) => void, scale: number, classes: any }) {
+	constructor (props: GridCardProps & { classes: any }) {
 		super(props);
 
-		FileObject.getById(props.modelId).registerInstanceUpdateHandler((file: FileObject) => this.setStateSafe({ file: file }));
+		FileObject.getById(props.modelId).registerInstanceUpdateHandler((file: FileObject) => this.setStateSafe({ model: file }));
 		this.state.model = FileObject.getById(props.modelId);
 	}
 

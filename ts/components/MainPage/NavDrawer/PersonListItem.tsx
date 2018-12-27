@@ -3,8 +3,9 @@ import React, { Fragment } from "react";
 import { Platform } from "../../../controllers/Platform";
 import { Person, PersonGroup } from "../../../models";
 import { HoverIconButton, SimpleDialog, ListDialog, TextDialog, MountTrackedComponent } from "../../utils";
+import { Link } from "react-router-dom";
 
-
+/** Individual Person instance display, with menu for modification */
 class PersonListItem extends MountTrackedComponent<{ personId: number, classes: { avatar: string, image: string } }> {
 	static style = {
 		avatar: {
@@ -57,9 +58,9 @@ class PersonListItem extends MountTrackedComponent<{ personId: number, classes: 
 						}
 					</span>
 
-					<a href=""> {/* TODO href */}
+					<Link to={ `/people/${ this.state.person.id }/` }>
 						<ListItemText primary={ `${this.state.person.full_name} (${this.state.person.face_count})` } />
-					</a>
+					</Link>
 
 					<ListItemSecondaryAction>
 						<HoverIconButton action={ this.menuOpen }>

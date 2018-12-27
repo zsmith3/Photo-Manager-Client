@@ -263,8 +263,8 @@ export class Model {
 		return new Promise((resolve, reject) => {
 			if (!id && id !== 0) reject("No ID given");
 
-			if (this.meta.loadStates.get(id) === ModelLoadStates.loaded && !refresh) resolve(this.getById(id));
-			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading) this.meta.addIdLoadHandler(id, model => resolve(model));
+			if ((this.meta.loadStates.get(id) === ModelLoadStates.loaded || this.meta.loadAllState === ModelLoadStates.loaded) && !refresh) resolve(this.getById(id));
+			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading || this.meta.loadAllState === ModelLoadStates.loading) this.meta.addIdLoadHandler(id, model => resolve(model));
 			else {
 				Database.get(this.meta.modelName, id).then(data => {
 					let object = this.addObject(data);

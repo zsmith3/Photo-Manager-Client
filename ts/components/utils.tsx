@@ -90,9 +90,21 @@ export class SimpleDialog extends MountTrackedComponent<{ open: boolean, onClose
 	}
 }
 
-// TODO COMMENT THESE
 
-export class ListDialog extends React.Component<{ open: boolean, onClose: () => void, title: string, text?: string, actionText: string, action: (selected: number) => Promise<any>, list: { id: number, name: string }[], selected: number, nullItem?: string }> {
+/**
+ * Simple Material-UI dialog with List selection
+ * (most props are passed to base SimpleDialog)
+ * @param open A state variable determining whether the dialog is open
+ * @param onClose A function which closes the dialog (i.e. by setting "open" to false)
+ * @param title The DialogTitle to display
+ * @param text The DialogContentText (if any) to display
+ * @param actionText The name of the primary DialogAction (the secondary will always be "Cancel")
+ * @param action The function to run when the primary DialogAction button is clicked
+ * @param list List of items to display and select from
+ * @param selected ID of initially selected item
+ * @param nullItem Default item with an ID of `null`
+ */
+export class ListDialog extends React.Component<{ open: boolean, onClose: () => void, title: string, text?: string, actionText: string, action: (selected: number) => Promise<any>, list: { id: number, name: string }[], selected?: number, nullItem?: string }> {
 	state: {
 		selected: number
 	}
@@ -127,6 +139,17 @@ export class ListDialog extends React.Component<{ open: boolean, onClose: () => 
 	}
 }
 
+
+/**
+ * Simple Material-UI dialog with a TextField
+ * @param open A state variable determining whether the dialog is open
+ * @param onClose A function which closes the dialog (i.e. by setting "open" to false)
+ * @param title The DialogTitle to display
+ * @param actionText The name of the primary DialogAction (the secondary will always be "Cancel")
+ * @param action The function to run when the primary DialogAction button is clicked
+ * @param label The label of the TextField component
+ * @param defaultValue Initial value of the TextField component
+ */
 export class TextDialog extends React.Component<{ open: boolean, onClose: () => void, title: string, actionText: string, action: (text: string) => Promise<any>, label: string, defaultValue?: string }> {
 	state: {
 		value: string

@@ -2,6 +2,7 @@ import { apiRequest, httpMethodTypes } from "../utils";
 import { LocationManager } from "../components/App";
 import { FilterType } from "../models/Model";
 
+/** Database table names for different models (used in API urls) */
 export enum DBTables {
 	Folder = "folders",
 	File = "files",
@@ -10,7 +11,8 @@ export enum DBTables {
 	Person = "people",
 	PersonGroup = "people-groups",
 	GeoTagArea = "geotag-areas",
-	GeoTag = "geotags"
+	GeoTag = "geotags",
+	AlbumFile = "album-files"
 }
 
 /** Platform-specific Database interface */
@@ -18,17 +20,16 @@ abstract class BaseDatabase {
 	/**
 	 * Get model instance from table by ID
 	 * @param table Model table name
-	 * @param id ID of requested model instance
-	 * @returns Promise object representing fetched model instance data
+	 * @param query ID of requested model instance, or array of filter queries
+	 * @returns Promise representing fetched model instance data
 	 */
-	abstract get (table: DBTables, id?: (number | FilterType[])): Promise<any>
-	// TODO separate versions with and without ID
+	abstract get (table: DBTables, query?: (number | FilterType[])): Promise<any>
 
 	/**
 	 * Create new model instance
 	 * @param table Model table name
 	 * @param data Data object from which to create new instance
-	 * @returns Promise object representing new model instance data
+	 * @returns Promise representing new model instance data
 	 */
 	abstract create (table: DBTables, data: any): Promise<any>
 
@@ -37,15 +38,15 @@ abstract class BaseDatabase {
 	 * @param table Model table name
 	 * @param id ID of model instance to update
 	 * @param data Data object from which to update instance
-	 * @returns Promise object representing updated model instance data
+	 * @returns Promise representing updated model instance data
 	 */
 	abstract update (table: DBTables, id: number, data: any): Promise<any>
 
 	/**
-	 *
+	 * Delete model instance from table by ID
 	 * @param table Model table name
 	 * @param id ID of model instance to delete
-	 * @returns Promise object representing completion
+	 * @returns Promise representing completion
 	 */
 	abstract delete (table: DBTables, id: number): Promise<any>
 
@@ -54,14 +55,20 @@ abstract class BaseDatabase {
 	auth: {
 		/**
 		 * Determine whether the user is authorised to access the database
-		 * @returns Promise object representing whether or not user is authorised
+		 * @returns Promise representing whether or not user is authorised
 		 */
 		checkAuth (): Promise<boolean>
 
-		/** Log the user in (using localStorage) */
-		logIn (username: string, password: string, remain_in: boolean): Promise<never>
+		/**
+		 * Log the user in (using localStorage)
+		 * @param username Username for authorisation
+		 * @param password Password for authorisation
+		 * @param remain_in Whether to remain logged in
+		 * @returns Promise representing completion
+		 */
+		logIn (username: string, password: string, remain_in: boolean): Promise<void>
 
-		/** Log the user out */
+		/** Log the user out (from localStorage) */
 		logOut (): void
 	}
 };
@@ -75,9 +82,10 @@ class WebDatabase extends BaseDatabase {
 	 * @param table Database table (URL) to request from
 	 * @param id ID of object
 	 * @param data HTTP request body data
+	 * @returns Promise representing response data
 	 */
-	private request (type: httpMethodTypes, table: string, id?: number, data?: any) {
-		let path = table + "/" + (id ? (id + "/") : "");
+	private request (type: httpMethodTypes, table: string, id?: number, data?: any): Promise<any> {
+		let path = table + "/" + ((id || id === 0) ? (id + "/") : "");
 
 		return apiRequest(path, type, data);
 	}
@@ -86,7 +94,7 @@ class WebDatabase extends BaseDatabase {
 
 	get (table: DBTables, query?: (number | FilterType[])): Promise<any> {
 		if (query instanceof Array) {
-			let filterToQuery = filter => filter.field + (filter.type === "exact" ? "" : `__${ filter.type }`) + `=${ encodeURI(filter.value) }`;
+			let filterToQuery = (filter: FilterType) => filter.field + (filter.type === "exact" ? "" : `__${ filter.type }`) + `=${ encodeURI(filter.value) }`;
 			let queryStrings = query.map(filterToQuery);
 			let queryString = (queryStrings.length ? "?" : "") + queryStrings.join("&");
 			return apiRequest(`${ table }/${ queryString }`, "GET");

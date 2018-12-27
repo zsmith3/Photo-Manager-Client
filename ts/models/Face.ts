@@ -36,7 +36,7 @@ export class Face extends Model {
 	status: (0 | 1 | 2 | 3 | 4 | 5)
 
 	/** ID of Person assigned to face */
-	private personID: number
+	personID: number
 
 	/** Person assigned to face */
 	get person (): Person { return Person.getById(this.personID); }
@@ -55,19 +55,13 @@ export class Face extends Model {
 	 * @param personId ID of the person to assign
 	 * @returns Promise object representing completion
 	 */
-	setPerson (personID: number): Promise<never> {
-		let oldID = this.person.id;
-		return new Promise((resolve, reject) => {
-			Database.update("faces", this.id, { person: personID, status: 1 }).then(data => {
-				App.app.els.navDrawer.updatePersonFaceCount(personID);
-				App.app.els.navDrawer.updatePersonFaceCount(oldID);
-				this.update(data);
-				if (App.app.data.folderType == "people" && App.app.data.person.id != personID) {
-					App.app.els.filesCont.removeFile(this.id);
-				}
-				resolve();
-			}).catch(reject);
-		});
+	async setPerson (personID: number): Promise<void> {
+		let oldPerson = this.person;
+		await this.updateSave({ person: personID, status: 1 });
+		oldPerson.update({ face_count: oldPerson.face_count - 1 });
+		if (oldPerson.loadedFaces) oldPerson.handleFaceListUpdate();
+		this.person.update({ face_count: this.person.face_count + 1 });
+		if (this.person.loadedFaces) this.person.handleFaceListUpdate();
 	}
 
 	/**
@@ -75,22 +69,7 @@ export class Face extends Model {
 	 * @param status Status to set to
 	 * @returns Promise object representing completion
 	 */
-	setStatus (status): Promise<never> {
-		return new Promise((resolve, reject) => {
-			Database.update("faces", this.id, { status: status }).then(data => {
-				this.update(data);
-				App.app.els.filesCont.getFilebox(this.id).showIcons();
-
-				if (status >= 4) {
-					App.app.els.navDrawer.updatePersonFaceCount(this.personID);
-
-					if (App.app.data.folderType == "people") {
-						App.app.els.filesCont.removeFile(this.id);
-					}
-				}
-
-				resolve();
-			}).catch(reject);
-		});
+	setStatus (status: (0 | 1 | 2 | 3 | 4 | 5)): Promise<void> {
+		return this.updateSave({ status: status });
 	}
 }

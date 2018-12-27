@@ -21,6 +21,16 @@ Example use case: I want to be able to remotely synchronise the photos on my pho
 
 This project does not yet exist in an easy-to-install format. There are some relevant instructions here for each platform, but it's quite involved, and may not work yet. If you are interested in actually using it then contact me and I'll work on this.
 
+### React Web Client
+
+These are instructions for running the **react** branch in development.
+
+1) Install NPM
+2) Clone this repository (`git clone -b react --single-branch https://github.com/zsmith3/Photo-Manager-Fileserver/`) and enter it (`cd Photo-Manager-Fileserver`)
+3) Install NPM dependencies (`npm install`)
+4) Install Parcel Bundler globally (`npm install -g parcel-bundler`)
+5) Build the project for development with `parcel index.html`
+
 ### Web Client
 
 It should be possible to host these static files with any HTTPS web server. If you want to host the API on the same server, it will also need to support WSGI (see the server branch README for more on this).

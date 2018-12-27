@@ -216,8 +216,9 @@ export default class App extends React.Component {
 					<LocationManager history={ props.history }>
 						<Route path="/login" component={ LoginPage } />
 
-						<Route path="/folders/" render={ () => <MainPage location={ props.location } /> }></Route>
-						{/* TODO investigate bug with not accepting string[] to path */}
+						{ ["/folders/", "/people/"].map(path => (
+						<Route key={ path } path={ path } render={ () => <MainPage location={ props.location } /> } />
+						)) }
 					</LocationManager>
 				) } />
 			</MuiThemeProvider>

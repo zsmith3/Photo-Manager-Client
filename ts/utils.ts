@@ -187,7 +187,7 @@ export function trimStr (str: string, char: string, end: ("l" | "r" | "lr" | "rl
  * @param result Initial value for the result, to be passed through each step in the chain execution
  * @returns Final result from chain execution
  */
-function promiseChain<T, U, V> (list: T[], callback: (resolve: (data: U) => void, reject: (error: V) => void, item: T, accumulator: U) => void, result?: U): Promise<any> {
+export function promiseChain<T, U, V> (list: T[], callback: (resolve: (data: U | void) => void, reject: (error: V) => void, item: T, accumulator: U) => void, result?: U): Promise<any> {
 	// TODO figure out error-catching with this
 	var done = 0;
 	var finalPromise = list.reduce((promiseChain: Promise<U>, item: T) => {

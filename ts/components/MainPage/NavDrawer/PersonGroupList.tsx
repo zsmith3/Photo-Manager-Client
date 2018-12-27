@@ -2,9 +2,10 @@ import { List, ListSubheader } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { PersonGroup } from "../../../models";
 import PersonGroupListItem from "./PersonGroupListItem";
-import { TextDialog, HoverIconButton } from "../../utils";
+import { TextDialog, HoverIconButton, MountTrackedComponent } from "../../utils";
 
-export default class PersonGroupList extends React.Component {
+/** List of PersonGroup instances, with modification options */
+export default class PersonGroupList extends MountTrackedComponent<{}> {
 	state = {
 		groupIds: PersonGroup.meta.objects.map(group => group.id),
 		openDialogNew: false
@@ -13,7 +14,7 @@ export default class PersonGroupList extends React.Component {
     constructor (props) {
         super(props);
 
-        PersonGroup.registerListUpdateHandler((groups: PersonGroup[]) => this.setState({groupIds: groups.map((group: PersonGroup) => group.id)}));
+        PersonGroup.registerListUpdateHandler((groups: PersonGroup[]) => this.setStateSafe({groupIds: groups.map((group: PersonGroup) => group.id)}));
     }
 
 	render () {

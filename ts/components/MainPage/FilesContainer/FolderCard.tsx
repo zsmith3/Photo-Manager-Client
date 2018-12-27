@@ -1,7 +1,7 @@
 import { CardContent, Grid, Icon, Typography, withStyles } from "@material-ui/core";
 import React from "react";
 import { Folder } from "../../../models";
-import BaseGridCard from "./BaseGridCard";
+import BaseGridCard, { GridCardProps } from "./BaseGridCard";
 
 /** GridCard for Folder model */
 class FolderCard extends BaseGridCard<Folder, { icon: string }> {
@@ -19,7 +19,7 @@ class FolderCard extends BaseGridCard<Folder, { icon: string }> {
 		}
 	}
 
-	constructor (props: { modelId: number, scale: number, selected: boolean, onSelect: (event) => void, classes: any }) {
+	constructor (props: GridCardProps & { classes: any }) {
 		super(props);
 
 		Folder.getById(props.modelId).registerInstanceUpdateHandler((folder: Folder) => this.setStateSafe({ model: folder }));
