@@ -40,29 +40,35 @@ export class Folder extends Model {
 
 
 	/** Get (and load if needed) instances of File model within folder */
-	async getFiles (): Promise<FileObject[]> {
-		if (this.loadedFiles) return this.fileIds.map(id => FileObject.getById(id));
+	async getFiles (searchQuery?: string): Promise<FileObject[]> {
+		if (this.loadedFiles && !searchQuery) return this.fileIds.map(id => FileObject.getById(id));
 		else {
-			const files = await FileObject.loadFiltered<FileObject>({ "folder": this.id });
-			this.fileIds = files.map(file => file.id);
+			const files = await FileObject.loadFiltered<FileObject>({ "folder": this.id, ...(searchQuery ? { "search": searchQuery } : {}) });
+			if (!searchQuery) {
+				this.loadedFiles = true;
+				this.fileIds = files.map(file => file.id);
+			}
 			return files;
 		}
 	}
 
 	/** Get (and load if needed) child instances of Folder model within folder */
-	async getSubfolders (): Promise<Folder[]> {
-		if (this.loadedFolders) return this.subfolderIds.map(id => Folder.getById(id));
+	async getSubfolders (searchQuery?: string): Promise<Folder[]> {
+		if (this.loadedFolders && !searchQuery) return this.subfolderIds.map(id => Folder.getById(id));
 		else {
-			const folders = await Folder.loadFiltered<Folder>({ "parent": this.id });
-			this.subfolderIds = folders.map(folder => folder.id);
+			const folders = await Folder.loadFiltered<Folder>({ "parent": this.id, ...(searchQuery ? { "search": searchQuery } : {}) });
+			if (!searchQuery) {
+				this.loadedFolders = true;
+				this.subfolderIds = folders.map(folder => folder.id);
+			}
 			return folders;
 		}
 	}
 
 	/** Get (and load if needed) child files and folders */
-	async getContents (): Promise<{ folders: Folder[], files: FileObject[] }> {
-		const files = await this.getFiles();
-		const folders = await this.getSubfolders();
+	async getContents (searchQuery?: string): Promise<{ folders: Folder[], files: FileObject[] }> {
+		const files = await this.getFiles(searchQuery);
+		const folders = await this.getSubfolders(searchQuery);
 		return { folders: folders, files: files };
 	}
 

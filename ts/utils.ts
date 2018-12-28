@@ -181,6 +181,24 @@ export function trimStr (str: string, char: string, end: ("l" | "r" | "lr" | "rl
 
 
 /**
+ * Remove empty items from a URL query string
+ * @param query The query to prune
+ * @returns The pruned query
+ */
+export function pruneUrlQuery (query: URLSearchParams): URLSearchParams {
+	let newQuery = new URLSearchParams(query.toString());
+	let entries = newQuery.entries();
+	while (true) {
+		let next = entries.next();
+		if (next.done) break;
+		let pair = next.value;
+		if (!pair[1]) newQuery.delete(pair[0]);
+	}
+	return newQuery;
+}
+
+
+/**
  * Chain-execute a Promise-based function on a list of input objects
  * @param list List of objects upon which to execute the function
  * @param callback Promise-based function to run upon each object

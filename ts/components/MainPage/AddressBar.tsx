@@ -1,4 +1,4 @@
-import { Icon, IconButton, TextField, Theme, withStyles, Typography } from "@material-ui/core";
+import { Icon, IconButton, TextField, Theme, withStyles, Typography, InputAdornment } from "@material-ui/core";
 import $ from "jquery";
 import React from "react";
 import { Platform } from "../../controllers/Platform";
@@ -6,7 +6,7 @@ import App, { LocationManager, addressRootTypes } from "../App";
 import { Folder } from "../../models";
 
 /** Address bar element */
-class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string } }> {
+class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string, searchIcon: string } }> {
 	static styles = (theme: Theme) => ({
 		addressBar: {
 			backgroundColor: theme.palette.background.paper
@@ -16,6 +16,9 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		},
 		search: {
 			float: "right" as "right"
+		},
+		searchIcon: {
+			cursor: "pointer" as "pointer"
 		}
 	});
 
@@ -32,7 +35,8 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 
 
 	state = {
-		address: "/"
+		address: "/",
+		searchValue: ""
 	}
 
 
@@ -82,6 +86,10 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		}
 	}
 
+	private search () {
+		LocationManager.updateQuery({ "search": this.state.searchValue });
+	}
+
 
 	shouldComponentUpdate(nextProps) {
 		if (AddressBar.compareProps(this.props, nextProps)) {
@@ -118,11 +126,20 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 				<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
 			{/* </span> */}
 
-			{/* <span className={ this.props.classes.search } id="search" onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {if (event.key == 'Enter') App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).find('#searchinput').val().toString() })}}>
-				<TextField id="searchinput" label="Search" title="Search the current view for files" onSubmit={() => App.app.refreshFilesData(null, null, {"search": $(event.currentTarget).val().toString() })} />
-			</span> */}
+			<TextField className={ this.props.classes.search }
+				placeholder="Search"
+				title="Search the current view for files"
+				defaultValue={ LocationManager.currentQuery.get("search") }
+				onKeyDown={ (event) => { if (event.key === "Enter") this.search(); } }
+				onChange={ (event) => this.state.searchValue = event.currentTarget.value }
+				InputProps={ {
+					endAdornment: (
+						<InputAdornment className={ this.props.classes.searchIcon } position="end" onClick={ () => this.search() }>
+							<Icon>search</Icon>
+						</InputAdornment>
+					)
+				} } />
 		</div>;
-		//<MDCText id="searchinput" placeholder="Search" data-icon-after="search" data-icon-before="arrow_back" title="Search the current view for files" onsubmit="App.app.refreshFilesData(null, null, {'search': $(this).val()});"></MDCText>
 	}
 }
 

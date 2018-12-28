@@ -2,7 +2,7 @@ import { GridList, GridListTile, Icon, LinearProgress, ListItemIcon, ListSubhead
 import React, { ComponentType, Fragment } from "react";
 import { Album, Face, Folder, Person } from "../../../models";
 import { promiseChain } from "../../../utils";
-import { addressRootTypes } from "../../App";
+import { addressRootTypes, LocationManager } from "../../App";
 import { ListDialog, SimpleDialog } from "../../utils";
 import { GridCardProps } from "./BaseGridCard";
 import FaceCard from "./FaceCard";
@@ -53,7 +53,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 		/** Whether data for the current set of props has been loaded */
 		dataLoaded: false,
-		
+
 		/** Whether the context menu is open */
 		openContextMenu: false,
 
@@ -89,16 +89,18 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 				this.setState({ data: data.map(set => Object.assign(set, { selection: [], lastSelected: set.objectIds.length > 0 ? set.objectIds[0] : null })), dataLoaded: true });
 				resolve();
 			}
-	
+
+			let searchQuery = LocationManager.currentQuery.get("search");
+
 			switch (this.props.rootType) {
 				case "folders":
 					if (this.props.rootId === null) {
-						Folder.loadFiltered<Folder>({ parent: null }).then(folders => {
+						Folder.loadFiltered<Folder>({ "parent": null }).then(folders => {
 							complete([{ id: 1, name: "Folders", objectIds: folders.map(folder => folder.id), card: FolderCard }]);
 						});
 					} else {
 						Folder.loadObject<Folder>(this.props.rootId).then(folder => {
-							folder.getContents().then(data => {
+							folder.getContents(searchQuery).then(data => {
 								complete([{ id: 1, name: "Folders", objectIds: data.folders.map(folder => folder.id), card: FolderCard }, { id: 2, name: "Files", objectIds: data.files.map(file => file.id), card: FileCard }]);
 							}).catch(reject);
 						}).catch(reject);
@@ -111,7 +113,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 						person.faceListUpdateHandlers.push(fn);
 					}).catch(reject);
 					break;
-			}	
+			}
 		});
 	}
 

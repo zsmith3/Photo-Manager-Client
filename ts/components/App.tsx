@@ -7,6 +7,7 @@ import "../styles/App.css";
 import LoginPage from "./LoginPage";
 import MainPage from "./MainPage";
 import { History } from "history";
+import { pruneUrlQuery } from "../utils";
 
 
 export type addressRootTypes = ("folders" | "albums" | "people");
@@ -25,16 +26,36 @@ export class LocationManager extends React.Component<{ history: History }> {
 	static instance: LocationManager
 
 	private static nextLocation: string = null
+	private static nextQuery: URLSearchParams = null
 
 	static get currentLocation () {
-		// TODO may need to add search to this
 		if (this.nextLocation === null) return window.location.pathname;
+		else if (this.nextLocation.includes("?")) return this.nextLocation.substr(0, this.nextLocation.indexOf("?"));
 		else return this.nextLocation;
 	}
 
+	static get currentQuery () {
+		if (this.nextLocation === null) return pruneUrlQuery(new URLSearchParams(window.location.search));
+		else if (this.nextLocation.includes("?")) return pruneUrlQuery(new URLSearchParams(this.nextLocation.substr(this.nextLocation.indexOf("?"))));
+		else return new URLSearchParams();
+	}
+
 	static updateLocation (url: string) {
-		if (LocationManager.instance) LocationManager.instance.props.history.push(url);
-		else LocationManager.nextLocation = url;
+		if (this.instance) this.instance.props.history.push(url);
+		else this.nextLocation = url;
+	}
+
+	static updateQuery (newData: { [key: string]: string }, replace=false) {
+		let newQuery: URLSearchParams;
+		if (replace) newQuery = new URLSearchParams();
+		else newQuery = this.currentQuery;
+
+		for (let key in newData) newQuery.set(key, newData[key]);
+
+		let newQueryStr = pruneUrlQuery(newQuery).toString();
+		let nextLocation = this.currentLocation + (newQueryStr.length > 0 ? "?" : "") + newQueryStr;
+
+		this.updateLocation(nextLocation);
 	}
 
 	constructor (props: { history: History }) {
@@ -42,9 +63,8 @@ export class LocationManager extends React.Component<{ history: History }> {
 
 		LocationManager.instance = this;
 
-		if (LocationManager.nextLocation !== null) {
-			LocationManager.updateLocation(LocationManager.nextLocation);
-		}
+		// This will prune query params, and set the location
+		LocationManager.updateQuery({});
 	}
 
 	render () {
