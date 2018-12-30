@@ -1,5 +1,85 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Icon, IconButton, List, ListItem, Radio, ListItemText, TextField, Menu, MenuItem } from "@material-ui/core";
 import React, { Fragment } from "react";
+import { FileImgSizes, FaceImgSizes } from "../controllers/Platform";
+import Hammer from "react-hammerjs";
+import { History } from "history";
+import { pruneUrlQuery } from "../utils";
+
+
+/**
+ * A component which can be added to the React component tree to allow for global location updates
+ * @param history React Router props.history to be passed via the Route.render method
+ */
+export class LocationManager extends React.Component<{ history: History }> {
+	/** Singleton instance of LocationManager */
+	static instance: LocationManager
+
+	/** The URL to which the page will be redirected when possible */
+	private static nextLocation: string = null
+
+	/** The current pathname of the page URL (or the URL which it is about to be redirected to) */
+	static get currentLocation (): string {
+		if (this.nextLocation === null) return window.location.pathname;
+		else if (this.nextLocation.includes("?")) return this.nextLocation.substr(0, this.nextLocation.indexOf("?"));
+		else return this.nextLocation;
+	}
+
+	/** The current query of the page URL */
+	static get currentQuery (): URLSearchParams {
+		if (this.nextLocation === null) return pruneUrlQuery(new URLSearchParams(window.location.search));
+		else if (this.nextLocation.includes("?")) return pruneUrlQuery(new URLSearchParams(this.nextLocation.substr(this.nextLocation.indexOf("?"))));
+		else return new URLSearchParams();
+	}
+
+	/**
+	 * Update the location of the page
+	 * @param url The new URL to move to
+	 */
+	static updateLocation (url: string): void {
+		if (this.instance) this.instance.props.history.push(url);
+		else this.nextLocation = url;
+	}
+
+	/**
+	 * Update the query string of the page
+	 * @param newData Key-value pairs (as object) to add to the query
+	 * @param replace Whether to remove the existing query first (default = false)
+	 */
+	static updateQuery (newData: { [key: string]: string }, replace=false): void {
+		let newQuery: URLSearchParams;
+		if (replace) newQuery = new URLSearchParams();
+		else newQuery = this.currentQuery;
+
+		for (let key in newData) newQuery.set(key, newData[key]);
+
+		let newQueryStr = pruneUrlQuery(newQuery).toString();
+		let nextLocation = this.currentLocation + (newQueryStr.length > 0 ? "?" : "") + newQueryStr;
+
+		this.updateLocation(nextLocation);
+	}
+
+	constructor (props: { history: History }) {
+		super(props);
+
+		LocationManager.instance = this;
+
+		// This will prune query params, and set the location
+		LocationManager.updateQuery({});
+	}
+
+	render () {
+		let Fragment = React.Fragment;
+
+		if (LocationManager.nextLocation === null) {
+			return <Fragment>
+				{ this.props.children }
+			</Fragment>
+		} else {
+			LocationManager.nextLocation = null;
+			return <Fragment />;
+		}
+	}
+}
 
 
 /**
@@ -169,5 +249,90 @@ export class TextDialog extends React.Component<{ open: boolean, onClose: () => 
 				>
 				<TextField autoFocus label={ this.props.label } defaultValue={ this.props.defaultValue } onChange={ (event) => this.state.value = event.currentTarget.value } />
 			</SimpleDialog>;
+	}
+}
+
+
+type ImgSizes = (FileImgSizes | FaceImgSizes);
+
+interface ImageLoaderPropsType {
+	model: {
+		loadImgData (size: ImgSizes): Promise<string>,
+		getBestImgSize (size: ImgSizes): ImgSizes
+	},
+	maxSize: ImgSizes,
+	onFirstLoad? (): void,
+	className?: string,
+	style?: React.CSSProperties
+}
+
+/**
+ * Image component which loads different sizes one-by-one
+ * @param model The File/Face model for which to load image data
+ * @param maxSize The largest image size to load
+ * @param className Class(es) to pass to the <img /> element
+ * @param style CSS styling to pass to the <img /> element
+ */
+export class ImageLoader extends MountTrackedComponent<ImageLoaderPropsType> {
+	state = {
+		loadState: null as ImgSizes,
+		imageData: null as string
+	}
+
+	/**
+	 * Attempt to load image data for a size
+	 * @param size Size of image to load
+	 */
+	loadImg (size: ImgSizes): void {
+		this.props.model.loadImgData(size).then(data => {
+			if (this.props.onFirstLoad && this.state.loadState === null) this.props.onFirstLoad();
+
+			this.setStateSafe({ imageData: data, loadState: size });
+			this.loadNext();
+		}).catch(error => {
+			this.setStateSafe({ loadState: size });
+			this.loadNext();
+		});
+	}
+
+	/** Load the next image size (or stop when maxSize is reached) */
+	loadNext () {
+		if (this.state.loadState !== null && this.state.loadState >= this.props.maxSize) return;
+
+		let nextState = this.state.loadState === null ? 0 : this.state.loadState + 1;
+
+		this.loadImg(nextState);
+	}
+
+	/** Load the initial image (using the best existing size) */
+	loadFirst (props: ImageLoaderPropsType): void {
+		let startState = props.model.getBestImgSize(props.maxSize);
+		if (startState === null) this.loadNext();
+		else this.loadImg(startState);
+	}
+
+	constructor (props: ImageLoaderPropsType) {
+		super(props);
+
+		this.loadFirst(props);
+	}
+
+	shouldComponentUpdate(nextProps: ImageLoaderPropsType) {
+		if (nextProps === this.props) return true;
+		else {
+			if (nextProps.model !== this.props.model) this.state.loadState = null;
+
+			this.loadFirst(nextProps);
+
+			return false;
+		}
+	}
+
+	render () {
+		// <Hammer> element seems to make external <Hammer> placed
+		// around <ImageLoader /> actually work (not sure why)
+		return <Hammer>
+				<img src={ this.state.imageData } className={ this.props.className } style={ this.props.style } />
+			</Hammer>;
 	}
 }

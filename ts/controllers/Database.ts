@@ -1,5 +1,5 @@
 import { apiRequest, httpMethodTypes } from "../utils";
-import { LocationManager } from "../components/App";
+import { LocationManager } from "../components/utils";
 import { FilterType } from "../models/Model";
 
 /** Database table names for different models (used in API urls) */

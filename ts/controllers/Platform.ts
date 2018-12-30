@@ -1,6 +1,21 @@
 import { mediaRequest } from "../utils";
 
 
+/** Sizes for File image data requests */
+export enum FileImgSizes {
+	Thumbnail = 0,
+	Small = 1,
+	Large = 2,
+	Original = 3
+}
+
+/** Sizes for Face image data requests */
+export enum FaceImgSizes {
+	Small = 0,
+	Standard = 1
+}
+
+
 abstract class BasePlatform {
 	urls: {
 		serverUrl: string
@@ -29,7 +44,7 @@ abstract class BasePlatform {
 	}
 
 	// Get the src for an image
-	abstract getImgSrc (object: any, size: string): Promise<string>
+	abstract getImgSrc (object: { id: number }, type: ("file" | "face"), size: (FileImgSizes | FaceImgSizes)): Promise<string>
 
 	// Display notification
 	abstract notify (data: { id: number, title: string, text: string, progress?: number}): void
@@ -59,12 +74,12 @@ class WebPlatform extends BasePlatform {
 		}
 	}
 
-	getImgSrc (object: { type: ("file" | "face"), id: number }, size: string): Promise<string> {
-		switch (object.type) {
-		case "file":
-			return mediaRequest("api/images/" + object.id + size);
-		case "face":
-			return mediaRequest("api/images/faces/" + object.id + size);
+	getImgSrc (object: { id: number }, type: ("file" | "face"), size: (FileImgSizes | FaceImgSizes)): Promise<string> {
+		switch (type) {
+			case "file":
+				return mediaRequest("api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size]);
+			case "face":
+			return mediaRequest("api/images/faces/" + object.id + "/" + ["40/", "200/"][size]);
 		}
 	}
 

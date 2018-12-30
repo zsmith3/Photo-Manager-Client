@@ -2,8 +2,9 @@ import { Icon, IconButton, TextField, Theme, withStyles, Typography, InputAdornm
 import $ from "jquery";
 import React from "react";
 import { Platform } from "../../controllers/Platform";
-import App, { LocationManager, addressRootTypes } from "../App";
+import App, { addressRootTypes } from "../App";
 import { Folder } from "../../models";
+import { LocationManager } from "../utils";
 
 /** Address bar element */
 class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string, searchIcon: string } }> {
@@ -91,7 +92,7 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 	}
 
 
-	shouldComponentUpdate(nextProps) {
+	shouldComponentUpdate (nextProps) {
 		if (AddressBar.compareProps(this.props, nextProps)) {
 			// If props are unchanged, then state must have changed, so re-render
 			return true;

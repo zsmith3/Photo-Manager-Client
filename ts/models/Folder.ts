@@ -1,7 +1,7 @@
 import { Model, ModelMeta } from "./Model";
 import { DBTables } from "../controllers/Database";
 import { FileObject } from "./FileObject";
-import { LocationManager } from "../components/App";
+import { LocationManager } from "../components/utils";
 
 export class Folder extends Model {
 	static meta = new ModelMeta<Folder>({

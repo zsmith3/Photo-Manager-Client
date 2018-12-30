@@ -2,8 +2,9 @@ import { Model, ModelMeta } from "./Model"
 import { Database, DBTables } from "../controllers/Database"
 import { GeoTag } from "."
 import App from "../components/App"
-import { Platform } from "../controllers/Platform"
+import { Platform, FileImgSizes } from "../controllers/Platform"
 import { ImageLoader } from "../controllers/ImageLoader"
+import { LocationManager } from "../components/utils";
 
 
 /** File model */
@@ -61,7 +62,7 @@ export class FileObject extends Model {
 	is_deleted: boolean
 
 	/** Local storage of image data for file */
-	data: object
+	private imageData: Map<FileImgSizes, string> = new Map<FileImgSizes, string>()
 
 	/** Information about state of file zoom/positioning in ImageModal (current session) */
 	zoom: object
@@ -92,19 +93,50 @@ export class FileObject extends Model {
 	}
 
 	/**
+	 * Get (and load if needed) image data for this file
+	 * @param size The size at which to load the image
+	 * @returns Base64 data url for image
+	 */
+	async loadImgData (size: FileImgSizes): Promise<string> {
+		if (this.type !== "image") return null;
+
+		let data = this.imageData.get(size);
+		if (data) return data;
+		else {
+			const data = await Platform.getImgSrc(this, "file", size);
+			this.imageData.set(size, data);
+			return data;
+		}
+	}
+
+	/**
+	 * Get the largest already-loaded size for this image file,
+	 * up to a given maximum size
+	 * @param size The maximum size to look for
+	 * @returns The best size found
+	 */
+	getBestImgSize (size: FileImgSizes): FileImgSizes {
+		let bestInd = null as FileImgSizes;
+		let entries = this.imageData.entries();
+		while (true) {
+			let next = entries.next();
+			if (next.done) break;
+
+			let pair = next.value;
+			if ((bestInd === null || pair[0] > bestInd) && pair[0] <= size) bestInd = pair[0];
+		}
+		return bestInd;
+	}
+
+	/**
 	 * Open the file.
 	 *
 	 * If the file is an image, it is opened in the image modal.
-	 * If the file is a folder, the page navigates to its contents.
 	 * For other types no action is taken.
 	 */
 	open () {
 		if (this.type == "image") {
-			App.app.els.imageModal.openFile(this);
-		} else if (this.type == "folder") {
-			//App.app.refreshFilesData("folders/" + this.path.replace("&", "%26"), "folders/" + this.id);
-			App.app.refreshFilesData("folders/" + this.path.replace("&", "%26") + Platform.urls.getCurrentQuery(), "folders/" + this.id + "/" + Platform.urls.getCurrentQuery());
-			// TODO more general approach to URL encoding
+			LocationManager.updateQuery({ "file": this.id.toString() });
 		}
 	}
 

@@ -1,5 +1,5 @@
 // Structure to handle input events
-var Input = {
+export const Input = {
 	keysDown: {},
 	xPos: -1,
 	yPos: -1,
@@ -104,13 +104,14 @@ var Input = {
 };
 
 // Attach input events to window
-window.onkeydown = Input.keydown;
+/* window.onkeydown = Input.keydown;
 window.onkeyup = Input.keyup;
 window.onblur = Input.clearKeysDown;
 
 window.onmousemove = Input.mousemove;
 
 window.onclick = Input.click;
+ */
 
 window.ontouchstart = Input.touchstart;
 window.ontouchend = Input.touchend;

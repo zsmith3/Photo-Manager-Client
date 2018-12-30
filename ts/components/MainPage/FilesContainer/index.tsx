@@ -1,13 +1,14 @@
 import { GridList, GridListTile, Icon, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList } from "@material-ui/core";
 import React, { ComponentType, Fragment } from "react";
-import { Album, Face, Folder, Person } from "../../../models";
+import { Album, Face, Folder, Person, FileObject } from "../../../models";
 import { promiseChain } from "../../../utils";
-import { addressRootTypes, LocationManager } from "../../App";
-import { ListDialog, SimpleDialog } from "../../utils";
+import { addressRootTypes } from "../../App";
+import { ListDialog, SimpleDialog, LocationManager } from "../../utils";
 import { GridCardProps } from "./BaseGridCard";
 import FaceCard from "./FaceCard";
 import FileCard from "./FileCard";
 import FolderCard from "./FolderCard";
+import ImageModal from "./ImageModal";
 
 /** Different object selection modes */
 export enum SelectMode {
@@ -70,12 +71,6 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 		/** Model selection upon which dialogs should act */
 		actionSelection: { setId: null as number, objectIds: [] as number[] }
-	}
-
-	constructor (props: { rootType: addressRootTypes, rootId: number }) {
-		super(props);
-
-		this.state.props = props;
 	}
 
 
@@ -243,14 +238,61 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	/** Close a dialog from its name */
 	private dialogClose = (type) => this.setState({ openDialogs: { ...this.state.openDialogs, [type]: false } }) // loading: false })
 
+	getAdjacentItem (setId: number, currentId: number, direction: (-1 | 1)) {
+		let set = this.state.data.find(set => set.id === setId);
+		if (!set) return null;
+		let currentIndex = set.objectIds.indexOf(currentId);
+		let nextIndex = currentIndex + direction;
+		if (nextIndex < 0 || nextIndex >= set.objectIds.length) return null;
+		else return set.objectIds[nextIndex];
+	}
+
+	getOpenFileId () {
+		switch (this.props.rootType) {
+			case "folders":
+				let fileId = parseInt(LocationManager.currentQuery.get("file"));
+				if (FileObject.getById(fileId)) return fileId;
+				else return null;
+			case "people":
+				let faceId = parseInt(LocationManager.currentQuery.get("face"));
+				let face = Face.getById(faceId);
+				if (face) return face.file.id;
+				else return null;
+		}
+	}
+
+	getAdjacentFileId (direction: (-1 | 1)) {
+		switch (this.props.rootType) {
+			case "folders":
+				let fileId = parseInt(LocationManager.currentQuery.get("file"));
+				return this.getAdjacentItem(2, fileId, direction);
+			case "people":
+				let faceId = parseInt(LocationManager.currentQuery.get("face"));
+				return this.getAdjacentItem(1, faceId, direction);
+		}
+	}
+
+
+	constructor (props: { rootType: addressRootTypes, rootId: number }) {
+		super(props);
+
+		this.state.props = props;
+		this.getData();
+	}
+
+	shouldComponentUpdate(nextProps) {
+		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId) {
+			this.state.dataLoaded = false;
+			this.getData();
+		}
+
+		return true;
+	}
 
 	render () {
 		let scale = 150;
 
-		if (this.state.props != this.props) {
-			this.state.dataLoaded = false;
-			this.state.props = this.props;
-		}
+		let openFileId = this.getOpenFileId();
 
 		if (this.state.dataLoaded) {
 			return <Fragment>
@@ -269,14 +311,17 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 									scale={ scale } />
 							));
 
-							return [title].concat(cards);
+							return [ title ].concat(cards);
 						}) }
 					</GridList>
 
 					{ this.getPopups() }
+
+					{ (openFileId !== null) &&
+						<ImageModal fileId={ openFileId } lastFileId={ this.getAdjacentFileId(-1) } nextFileId={ this.getAdjacentFileId(1) } />
+					}
 				</Fragment>;
 		} else {
-			this.getData();
 			return <LinearProgress />;
 		}
 	}
