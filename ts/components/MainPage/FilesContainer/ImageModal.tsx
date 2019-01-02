@@ -1,11 +1,10 @@
-import React, { Fragment } from "react";
-import { Modal, Typography, withStyles, Toolbar, AppBar, Icon, IconButton } from "@material-ui/core";
-import { ImageLoader } from "../../utils";
-import { FileImgSizes } from "../../../controllers/Platform";
-import { FileObject } from "../../../models";
+import { AppBar, Icon, IconButton, Modal, Toolbar, Typography, withStyles } from "@material-ui/core";
+import React from "react";
 import Hammer from "react-hammerjs";
 import { Input } from "../../../controllers/Input";
-import { LocationManager } from "../../utils";
+import { FileImgSizes } from "../../../controllers/Platform";
+import { FileObject } from "../../../models";
+import { ImageLoader, LocationManager } from "../../utils";
 
 const platform: ("desktop" | "mobile") = "desktop";
 // TODO set platform properly
@@ -242,6 +241,7 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 							{ this.state.file && <ImageLoader
 								model={ this.state.file }
 								maxSize={ FileImgSizes.Original }
+								maxFirstSize={ FileImgSizes.Large }
 								className={ this.props.classes.img }
 								style={ this.state.imgZoomStyle }
 								onFirstLoad={ () => this.setZoom("min", "min", "c", "c") } /> }

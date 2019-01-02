@@ -1,9 +1,10 @@
 import { GridList, GridListTile, Icon, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList } from "@material-ui/core";
 import React, { ComponentType, Fragment } from "react";
-import { Album, Face, Folder, Person, FileObject } from "../../../models";
+import { Platform } from "../../../controllers/Platform";
+import { Album, Face, FileObject, Folder, Person } from "../../../models";
 import { promiseChain } from "../../../utils";
 import { addressRootTypes } from "../../App";
-import { ListDialog, SimpleDialog, LocationManager } from "../../utils";
+import { ListDialog, LocationManager, SimpleDialog } from "../../utils";
 import { GridCardProps } from "./BaseGridCard";
 import FaceCard from "./FaceCard";
 import FileCard from "./FileCard";
@@ -40,7 +41,13 @@ type dataType = {
 	selection?: number[],
 
 	/** ID of last selected object */
-	lastSelected?: number
+	lastSelected?: number,
+
+	/** `this.select` bound to this object set, for caching */
+	onSelect?: (modelId: number, mode: SelectMode) => void,
+
+	/** `this.menuOpen` bound to this object set, for caching */
+	onMenu?: (modelId: number, anchorPos: { top: number, left: number }) => void
 }
 
 /** Grid-based container for displaying Files (and other models) */
@@ -76,25 +83,28 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 	/**
 	 * Load all data to be displayed, into `this.state` based on `this.props`
+	 * @param props Value of `this.props` to use (defaults to current value of `this.props`)
 	 * @returns Promise representing completion
 	 */
-	private getData (): Promise<void> {
+	private getData (props?: { rootType: addressRootTypes, rootId: number }): Promise<void> {
+		props = props || this.props;
+
 		return new Promise((resolve, reject) => {
 			let complete = (data: dataType[]) => {
-				this.setState({ data: data.map(set => Object.assign(set, { selection: [], lastSelected: set.objectIds.length > 0 ? set.objectIds[0] : null })), dataLoaded: true });
+				this.setState({ data: data.map(set => Object.assign(set, { selection: [], lastSelected: set.objectIds.length > 0 ? set.objectIds[0] : null, onSelect: this.select.bind(this, set.id), onMenu: this.menuOpen.bind(this, set.id) })), dataLoaded: true });
 				resolve();
 			}
 
 			let searchQuery = LocationManager.currentQuery.get("search");
 
-			switch (this.props.rootType) {
+			switch (props.rootType) {
 				case "folders":
-					if (this.props.rootId === null) {
+					if (props.rootId === null) {
 						Folder.loadFiltered<Folder>({ "parent": null }).then(folders => {
 							complete([{ id: 1, name: "Folders", objectIds: folders.map(folder => folder.id), card: FolderCard }]);
 						});
 					} else {
-						Folder.loadObject<Folder>(this.props.rootId).then(folder => {
+						Folder.loadObject<Folder>(props.rootId).then(folder => {
 							folder.getContents(searchQuery).then(data => {
 								complete([{ id: 1, name: "Folders", objectIds: data.folders.map(folder => folder.id), card: FolderCard }, { id: 2, name: "Files", objectIds: data.files.map(file => file.id), card: FileCard }]);
 							}).catch(reject);
@@ -102,7 +112,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 					}
 					break;
 				case "people":
-					Person.loadObject<Person>(this.props.rootId).then(person => {
+					Person.loadObject<Person>(props.rootId).then(person => {
 						let fn = (faces: Face[]) => complete([{ id: 1, name: "Faces", objectIds: faces.map(face => face.id), card: FaceCard }]);
 						person.getFaces().then(fn).catch(reject);
 						person.faceListUpdateHandlers.push(fn);
@@ -238,7 +248,14 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	/** Close a dialog from its name */
 	private dialogClose = (type) => this.setState({ openDialogs: { ...this.state.openDialogs, [type]: false } }) // loading: false })
 
-	getAdjacentItem (setId: number, currentId: number, direction: (-1 | 1)) {
+	/**
+	 * Get the next/previous object in one of the sets
+	 * @param setId The set of objects to search
+	 * @param currentId The ID of the current object
+	 * @param direction +1 for next object, -1 for previous object
+	 * @returns The ID of the chosen adjacent object
+	 */
+	getAdjacentItem (setId: number, currentId: number, direction: (-1 | 1)): number {
 		let set = this.state.data.find(set => set.id === setId);
 		if (!set) return null;
 		let currentIndex = set.objectIds.indexOf(currentId);
@@ -247,7 +264,11 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		else return set.objectIds[nextIndex];
 	}
 
-	getOpenFileId () {
+	/**
+	 * Get the ID of the currently open file
+	 * @returns ID of file, or `null` if none is open
+	 */
+	getOpenFileId (): number {
 		switch (this.props.rootType) {
 			case "folders":
 				let fileId = parseInt(LocationManager.currentQuery.get("file"));
@@ -261,7 +282,12 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		}
 	}
 
-	getAdjacentFileId (direction: (-1 | 1)) {
+	/**
+	 * Get the next/previous object to the currently open file
+	 * @param direction +1 for next object, -1 for previous object
+	 * @returns ID of chosen object
+	 */
+	getAdjacentFileId (direction: (-1 | 1)): number {
 		switch (this.props.rootType) {
 			case "folders":
 				let fileId = parseInt(LocationManager.currentQuery.get("file"));
@@ -276,14 +302,18 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	constructor (props: { rootType: addressRootTypes, rootId: number }) {
 		super(props);
 
-		this.state.props = props;
-		this.getData();
+		// TODO this should not be needed as FilesContainer should not be re-constructed
+		Platform.queue.reset();
+
+		this.getData(props);
 	}
 
-	shouldComponentUpdate(nextProps) {
+	shouldComponentUpdate(nextProps: { rootType: addressRootTypes, rootId: number }) {
+		// If the view has changed, reset and fetch new data
 		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId) {
 			this.state.dataLoaded = false;
-			this.getData();
+			Platform.queue.reset();
+			this.getData(nextProps);
 		}
 
 		return true;
@@ -296,6 +326,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 		if (this.state.dataLoaded) {
 			return <Fragment>
+					{/* Main display grid */}
 					<GridList cols={ 1 } cellHeight={ 100 /* TODO */ } spacing={ 10 } style={ { margin: 0, padding: 10 } } onClick={ () => this.selectAll(false) }>
 						{ this.state.data.map(objectSet => {
 							let title = objectSet.objectIds.length > 0 && <GridListTile key="childrenSubheader" cols={ 1 } style={ { height: "auto" } }>
@@ -306,8 +337,8 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 								<objectSet.card key={ `${ objectSet.id }_${ objectId }` }
 									modelId={ objectId }
 									selected={ objectSet.selection.includes(objectId) }
-									onSelect={ this.select.bind(this, objectSet.id, objectId) }
-									onMenu={ this.menuOpen.bind(this, objectSet.id, objectId) }
+									onSelect={ objectSet.onSelect }
+									onMenu={ objectSet.onMenu }
 									scale={ scale } />
 							));
 
@@ -315,13 +346,16 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 						}) }
 					</GridList>
 
+					{/* Context menu and dialogs */}
 					{ this.getPopups() }
 
+					{/* ImageModal to display individual image files */}
 					{ (openFileId !== null) &&
 						<ImageModal fileId={ openFileId } lastFileId={ this.getAdjacentFileId(-1) } nextFileId={ this.getAdjacentFileId(1) } />
 					}
 				</Fragment>;
 		} else {
+			// Loading bar when data for current view not yet loaded
 			return <LinearProgress />;
 		}
 	}

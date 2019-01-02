@@ -15,6 +15,7 @@ export enum FaceImgSizes {
 	Standard = 1
 }
 
+// TODO document this
 
 abstract class BasePlatform {
 	urls: {
@@ -53,6 +54,9 @@ abstract class BasePlatform {
 
 // Platform-specific versions of functions
 class WebPlatform extends BasePlatform {
+	/** Media queue instance for this Platform instance */
+	private mediaQueue = new MediaQueue()
+
 	urls = {
 		serverUrl: "http://localhost/fileserver/",
 
@@ -77,9 +81,9 @@ class WebPlatform extends BasePlatform {
 	getImgSrc (object: { id: number }, type: ("file" | "face"), size: (FileImgSizes | FaceImgSizes)): Promise<string> {
 		switch (type) {
 			case "file":
-				return mediaRequest("api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size]);
+				return this.mediaQueue.add("api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size]); // mediaRequest("api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size]);
 			case "face":
-			return mediaRequest("api/images/faces/" + object.id + "/" + ["40/", "200/"][size]);
+				return this.mediaQueue.add("api/images/faces/" + object.id + "/" + ["40/", "200/"][size]); // mediaRequest("api/images/faces/" + object.id + "/" + ["40/", "200/"][size]);
 		}
 	}
 
@@ -87,5 +91,69 @@ class WebPlatform extends BasePlatform {
 		// TODO
 	}
 }
+
+
+/** Item format for MediaQueue */
+interface MediaQueueItem {
+	url: string,
+	resolve: (data: string) => void,
+	reject: (error?: any) => void
+}
+
+/** Queue to download media (i.e. images) sequentially, with up to some number at a time */
+class MediaQueue {
+	/** Maximum number of media items to be downloading at any one time */
+	max: number
+
+	/** Queued items to be downloaded */
+	private items: MediaQueueItem[] = []
+
+	/** Number of items currently being downloaded */
+	private running = 0
+
+
+	constructor (max=6) {
+		this.max = max;
+	}
+
+
+	/**
+	 * Add an item to the download queue
+	 * @param url URL of the media item to download
+	 * @returns Promise representing downloaded media data
+	 */
+	add (url: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			this.items.unshift({ url: url, resolve: resolve, reject: reject });
+			this.run();
+		});
+	}
+
+	/** Run the next download if there is space available */
+	run () {
+		if (this.items.length === 0 || this.running >= this.max) return;
+
+		let item = this.items.pop();
+		this.running++;
+
+		mediaRequest(item.url).then(data => {
+			this.running--;
+			item.resolve(data);
+			this.run();
+		}).catch(error => {
+			this.running--;
+			item.reject(error);
+			this.run();
+		});
+
+		this.run();
+	}
+
+	/** Reset the queue (cancel all not-yet-started items) */
+	reset () {
+		this.items = [];
+	}
+}
+
 
 export const Platform = new WebPlatform();

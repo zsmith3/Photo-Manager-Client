@@ -7,6 +7,10 @@ import { ImageLoader } from "../controllers/ImageLoader"
 import { LocationManager } from "../components/utils";
 
 
+/** Possible values for File.type field */
+export type FileTypes = ("image" | "video" | "file")
+
+
 /** File model */
 export class FileObject extends Model {
 	/** File model metadata */
@@ -32,7 +36,7 @@ export class FileObject extends Model {
 	path: string
 
 	/** File type (broad) */
-	type: ("folder" | "image" | "video" | "file")
+	type: FileTypes
 
 	/** File format (extension) */
 	format: string
@@ -78,6 +82,8 @@ export class FileObject extends Model {
 	/** File geotag (if image) */
 	get geotag (): GeoTag { return GeoTag.getById(this.geotagID); }
 
+	/** Material icon to use in place of image data */
+	imageMaterialIcon = "photo"
 
 	/**
 	 * Construct a new FileObject instance

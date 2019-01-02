@@ -1,7 +1,8 @@
-import { CardContent, Typography, withStyles } from "@material-ui/core";
+import { CardContent, Icon, Typography, withStyles } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { FileImgSizes } from "../../../controllers/Platform";
 import { FileObject } from "../../../models";
+import { FileTypes } from "../../../models/FileObject";
 import { ImageLoader } from "../../utils";
 import BaseGridCard, { GridCardProps } from "./BaseGridCard";
 
@@ -16,6 +17,13 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 			objectFit: "contain" as "contain"
 		}
 	}
+
+	/** Icons to display for non-image file types */
+	static fileTypeIcons = new Map<FileTypes, string>([
+		["file", "insert_drive_file"],
+		["image", "photo"],
+		["video", "movie"]
+	])
 
 	state = {
 		model: null as FileObject,
@@ -34,7 +42,11 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 	render () {
 		return this.renderBase(
 			<Fragment>
+				{ this.state.model.type === "image" ?
 				<ImageLoader model={ this.state.model } maxSize={ FileImgSizes.Small } className={ this.props.classes.img } style={ { width: this.props.scale, height: this.props.scale * 2 / 3 } } />
+				:
+				<Icon style={ { width: this.props.scale, fontSize: this.props.scale * 2 / 3, lineHeight: (this.props.scale * 2 / 3) + "px", textAlign: "center" } }>{ FileCard.fileTypeIcons.get(this.state.model.type) }</Icon>
+				}
 				<CardContent className={ this.props.classes.content } style={ { height: this.props.scale / 3 } }>
 					<Typography variant="body2" align="center">{ this.state.model.name }</Typography>
 				</CardContent>

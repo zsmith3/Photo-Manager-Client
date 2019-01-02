@@ -16,10 +16,10 @@ export interface GridCardProps {
 	selected: boolean,
 
 	/** Handler function to select item */
-	onSelect: (mode: SelectMode) => void,
+	onSelect: (modelId: number, mode: SelectMode) => void,
 
 	/** Handler function to open the context menu */
-	onMenu: (anchorPos: { top: number, left: number }) => void,
+	onMenu: (modelId: number, anchorPos: { top: number, left: number }) => void,
 }
 
 /**
@@ -61,13 +61,13 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 	/** Select this item on click */
 	onClick = (event: React.MouseEvent) => {
 		event.stopPropagation();
-		this.props.onSelect(event.shiftKey ? SelectMode.Extend : (event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace));
+		this.props.onSelect(this.props.modelId, event.shiftKey ? SelectMode.Extend : (event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace));
 	}
 
 	/** Open context menu on right-click */
 	onContextMenu = (event: React.MouseEvent) => {
 		event.preventDefault();
-		this.props.onMenu({ top: event.clientY, left: event.clientX });
+		this.props.onMenu(this.props.modelId, { top: event.clientY, left: event.clientX });
 	}
 
 

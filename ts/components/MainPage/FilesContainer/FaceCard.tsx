@@ -1,20 +1,17 @@
 import { Typography, withStyles } from "@material-ui/core";
 import React, { Fragment } from "react";
+import { FaceImgSizes } from "../../../controllers/Platform";
 import { Face } from "../../../models";
-import { mediaRequest } from "../../../utils";
+import { ImageLoader } from "../../utils";
 import BaseGridCard, { GridCardProps } from "./BaseGridCard";
 
 /** GridCard for Face model */
-class FaceCard extends BaseGridCard<Face, { img: string, statusIcon: string }> {
+class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 	static styles = {
 		...BaseGridCard.styles,
 		content: {
 			padding: 0
         },
-        img: {
-            width: "100%",
-            height: "100%"
-		},
 		statusIcon: {
 			position: "absolute" as "absolute",
 			bottom: 0,
@@ -39,13 +36,15 @@ class FaceCard extends BaseGridCard<Face, { img: string, statusIcon: string }> {
 
 	protected getSize () { return { width: this.props.scale * 8 / 15, height: this.props.scale * 2 / 3 }; }
 
-	render () {
-		if (!this.state.data) mediaRequest("api/images/faces/" + this.state.model.id + "/200/").then(data => this.setStateSafe({ data: data }));
+	shouldComponentUpdate(nextProps, nextState) {
+		return nextState !== this.state || nextProps.modelId !== this.props.modelId || nextProps.selected !== this.props.selected || nextProps.scale !== this.props.scale;
+	}
 
+	render () {
 		return this.renderBase(
 			<Fragment>
-				<img src={ this.state.data } className={ this.props.classes.img } />
-				{ this.state.model.status > 1 && 
+				<ImageLoader model={ this.state.model } maxSize={ FaceImgSizes.Standard } minSize={ FaceImgSizes.Standard } style={ this.getSize() } />
+				{ this.state.model.status > 1 &&
 				<Typography variant="h2" className={ this.props.classes.statusIcon }>?</Typography>
 				}
 			</Fragment>

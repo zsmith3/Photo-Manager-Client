@@ -1,6 +1,6 @@
 import { FileObject, Person } from ".";
-import App from "../components/App";
-import { Database, DBTables } from "../controllers/Database";
+import { DBTables } from "../controllers/Database";
+import { FaceImgSizes, Platform } from "../controllers/Platform";
 import { Model, ModelMeta } from "./Model";
 
 
@@ -9,9 +9,15 @@ export class Face extends Model {
 	/** Face model metadata */
 	static meta = new ModelMeta<Face>({
 		modelName: DBTables.Face,
-		props: ["id", "rect_x", "rect_y", "rect_w", "rect_h", "file", "status"],
-		// TODO think file will need to be under specialProps
-		specialProps: { "person": "personID" }
+		props: ["id", "rect_x", "rect_y", "rect_w", "rect_h", "status"],
+		specialProps: {
+			"person": "personID",
+			/* "file": { TODO add file to API properly
+				deserialize: (face: Face, prop: object) => {
+					face.fileID = FileObject.addObject(prop).id;
+				}
+			} */
+		}
 	});
 
 
@@ -29,9 +35,6 @@ export class Face extends Model {
 	/** Height of face bounding box */
 	rect_h: number
 
-	/** Image file in which face is found */
-	file: FileObject
-
 	/** Identification status of face */
 	status: (0 | 1 | 2 | 3 | 4 | 5)
 
@@ -41,9 +44,52 @@ export class Face extends Model {
 	/** Person assigned to face */
 	get person (): Person { return Person.getById(this.personID); }
 
-	/** Local storage of image data for face */
-	data: object
+	/** ID of image file in which face is found */
+	fileID: number
 
+	/** Image file in which face is found */
+	get file (): FileObject { return FileObject.getById(this.fileID); }
+
+	/** Local storage of image data for face */
+	imageData: Map<FaceImgSizes, string> = new Map<FaceImgSizes, string>()
+
+	/** Material icon to use in place of image data */
+	imageMaterialIcon = "face"
+
+
+	/**
+	 * Get (and load if needed) image data for this face
+	 * @param size The size at which to load the image
+	 * @returns Base64 data url for image
+	 */
+	async loadImgData (size: FaceImgSizes): Promise<string> {
+		let data = this.imageData.get(size);
+		if (data) return data;
+		else {
+			const data = await Platform.getImgSrc(this, "face", size);
+			this.imageData.set(size, data);
+			return data;
+		}
+	}
+
+	/**
+	 * Get the largest already-loaded size for face image data,
+	 * up to a given maximum size
+	 * @param size The maximum size to look for
+	 * @returns The best size found
+	 */
+	getBestImgSize (size: FaceImgSizes): FaceImgSizes {
+		let bestInd = null as FaceImgSizes;
+		let entries = this.imageData.entries();
+		while (true) {
+			let next = entries.next();
+			if (next.done) break;
+
+			let pair = next.value;
+			if ((bestInd === null || pair[0] > bestInd) && pair[0] <= size) bestInd = pair[0];
+		}
+		return bestInd;
+	}
 
 	/** Open the image file to which the face belongs */
 	open (): void {
