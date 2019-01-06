@@ -303,7 +303,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		super(props);
 
 		// TODO this should not be needed as FilesContainer should not be re-constructed
-		Platform.queue.reset();
+		Platform.mediaQueue.reset();
 
 		this.getData(props);
 	}
@@ -312,7 +312,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		// If the view has changed, reset and fetch new data
 		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId) {
 			this.state.dataLoaded = false;
-			Platform.queue.reset();
+			Platform.mediaQueue.reset();
 			this.getData(nextProps);
 		}
 

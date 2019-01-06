@@ -55,7 +55,7 @@ abstract class BasePlatform {
 // Platform-specific versions of functions
 class WebPlatform extends BasePlatform {
 	/** Media queue instance for this Platform instance */
-	private mediaQueue = new MediaQueue()
+	mediaQueue = new MediaQueue()
 
 	urls = {
 		serverUrl: "http://localhost/fileserver/",

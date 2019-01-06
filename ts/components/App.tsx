@@ -7,6 +7,7 @@ import "../styles/App.css";
 import LoginPage from "./LoginPage";
 import MainPage from "./MainPage";
 import { LocationManager } from "./utils";
+import RegisterPage from "./RegisterPage";
 
 
 /** Possible root parts for the URL */
@@ -48,22 +49,28 @@ export default class App extends React.Component {
 	static start (rootElement: HTMLElement): void {
 		Database.auth.checkAuth().then(result => {
 			if (result) {
-				// App.app.init();
-
 				if (this.authCheckInterval) window.clearInterval(this.authCheckInterval);
 				this.authCheckInterval = window.setInterval(Database.auth.checkAuth, 60 * 1000);
 			}
 
-			this.performRedirect();
+			this.performRedirect(result);
 
 			ReactDOM.render(<App />, rootElement);
 		});
 	}
 
-	/** Rewrite malformatted page URL  */
-	private static performRedirect () {
+	/**
+	 * Rewrite malformatted page URL
+	 * @param auth Whether the user is logged in
+	 */
+	private static performRedirect (auth: boolean) {
 		if (LocationManager.currentLocation.length <= 1) {
 			LocationManager.updateLocation("/folders/");
+		} else if (auth) {
+			// TODO make this neater
+			if (LocationManager.currentLocation === "/login" || LocationManager.currentLocation === "/register") {
+				LocationManager.updateLocation("/folders/");
+			}
 		}
 	}
 
@@ -71,9 +78,6 @@ export default class App extends React.Component {
 		super(props);
 
 		App.app = this;
-
-		// Notification snackbar
-		//this.snackbar = new mdc.snackbar.MDCSnackbar($("#snackbar").get(0));
 	}
 
 	render () {
@@ -84,6 +88,7 @@ export default class App extends React.Component {
 				<Route path="" render={ (props) => (
 					<LocationManager history={ props.history }>
 						<Route path="/login" component={ LoginPage } />
+						<Route path="/register" component={ RegisterPage } />
 
 						{ ["/folders/", "/people/"].map(path => (
 						<Route key={ path } path={ path } render={ () => <MainPage location={ props.location } /> } />

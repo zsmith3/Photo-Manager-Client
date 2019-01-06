@@ -70,6 +70,13 @@ abstract class BaseDatabase {
 
 		/** Log the user out (from localStorage) */
 		logOut (): void
+
+		/**
+		 * Create a new user account
+		 * @param data New user data to pass to the API
+		 * @returns Promise representing completion
+		 */
+		register (data: { first_name: string, last_name: string, username: string, email: string, password: string, confirm_password: string, token: string }): Promise<any>
 	}
 };
 
@@ -122,8 +129,6 @@ class WebDatabase extends BaseDatabase {
 			return new Promise((resolve) => {
 				apiRequest("membership/status/").then(data => {
 					if (data.authenticated) {
-						// TODO use data.user.full_name;
-
 						window.sessionStorage.setItem("csrf_token", data.csrf_token);
 
 						resolve(true);
@@ -138,7 +143,7 @@ class WebDatabase extends BaseDatabase {
 			});
 		},
 
-		logIn (username: string, password: string, remain_in: boolean): Promise<never> {
+		logIn (username: string, password: string, remain_in: boolean): Promise<void> {
 			return new Promise((resolve, reject) => {
 				apiRequest("membership/login/", "POST", { username: username, password: password }).then(data => {
 					if (remain_in) window.localStorage.setItem("jwtToken", data.token);
@@ -152,7 +157,11 @@ class WebDatabase extends BaseDatabase {
 		logOut (): void {
 			window.sessionStorage.removeItem("jwtToken");
 			window.localStorage.removeItem("jwtToken");
-			LocationManager.updateLocation("/login");
+			if (LocationManager.currentLocation != "/register") LocationManager.updateLocation("/login");
+		},
+
+		register (data: { first_name: string, last_name: string, username: string, email: string, password: string, confirm_password: string, token: string }): Promise<any> {
+			return apiRequest("membership/register/", "POST", data);
 		}
 	}
 };

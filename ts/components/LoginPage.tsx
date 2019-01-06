@@ -1,25 +1,22 @@
-import { Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Theme, Typography, withStyles, withWidth } from "@material-ui/core";
+import { Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Typography, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import { Database } from "../controllers/Database";
+import { Link } from "react-router-dom";
 
-interface LoginStyles {
-	center
-	paper
-}
-
-class LoginPage extends React.Component<{ classes: LoginStyles, width: Breakpoint, history: any }> {
-	static styles: ((theme: Theme) => LoginStyles) = (theme: Theme) => ({
+/** Separate page for logging in */
+class LoginPage extends React.Component<{ classes: { center: string, paper: string }, width: Breakpoint, history: any }> {
+	static styles = {
 		center: {
 			margin: "auto",
-			textAlign: "center"
+			textAlign: "center" as "center"
 		},
 		paper: {
 			padding: 50,
-			boxSizing: "border-box"
+			boxSizing: "border-box" as "border-box"
 		}
-	})
+	}
 
 	state = {
 		username: "",
@@ -28,6 +25,7 @@ class LoginPage extends React.Component<{ classes: LoginStyles, width: Breakpoin
 		error: { username: [], password: [], non_field_errors: [] }
 	}
 
+	/** Attempt to log in with current input data */
 	handleSubmit (event: Event) {
 		Database.auth.logIn(this.state.username, this.state.password, this.state.remain_in).then(() => {
 			this.props.history.push("/folders/");
@@ -78,6 +76,10 @@ class LoginPage extends React.Component<{ classes: LoginStyles, width: Breakpoin
 							<br />
 
 							<Typography component="p">{ this.state.error.non_field_errors }</Typography>
+
+							<br />
+
+							<Typography><Link to="/register">Create Account</Link></Typography>
 						</Paper>
 					</Grid>
 				</Grid>
