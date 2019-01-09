@@ -4,6 +4,7 @@ export const Input = {
 	xPos: -1,
 	yPos: -1,
 	touchesDown: 0,
+	isTouching: false,
 
 	// Register pressed key
 	keydown: function (event) {
@@ -75,6 +76,7 @@ export const Input = {
 	},
 
 	touchstart: function (event) {
+		Input.isTouching = true;
 		Input.touchesDown++;
 	},
 

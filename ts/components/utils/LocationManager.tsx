@@ -1,5 +1,5 @@
 import React from "react";
-import { pruneUrlQuery } from "../../utils";
+import { pruneUrlQuery, getPathnameFromUrl, getQueryFromUrl } from "../../utils";
 import { History } from "history";
 
 /**
@@ -15,16 +15,18 @@ export default class LocationManager extends React.Component<{ history: History 
 
 	/** The current pathname of the page URL (or the URL which it is about to be redirected to) */
 	static get currentLocation (): string {
-		if (this.nextLocation === null) return window.location.pathname;
-		else if (this.nextLocation.includes("?")) return this.nextLocation.substr(0, this.nextLocation.indexOf("?"));
-		else return this.nextLocation;
+		if (this.nextLocation === null) {
+			if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") return window.location.pathname;
+			else return getPathnameFromUrl(window.location.hash);
+		} else return getPathnameFromUrl(this.nextLocation);
 	}
 
 	/** The current query of the page URL */
 	static get currentQuery (): URLSearchParams {
-		if (this.nextLocation === null) return pruneUrlQuery(new URLSearchParams(window.location.search));
-		else if (this.nextLocation.includes("?")) return pruneUrlQuery(new URLSearchParams(this.nextLocation.substr(this.nextLocation.indexOf("?"))));
-		else return new URLSearchParams();
+		if (this.nextLocation === null) {
+			if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") return pruneUrlQuery(new URLSearchParams(window.location.search));
+			else return getQueryFromUrl(window.location.hash);
+		} else return getQueryFromUrl(this.nextLocation);
 	}
 
 	/**

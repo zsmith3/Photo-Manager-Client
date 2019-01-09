@@ -363,3 +363,24 @@ function ifDefElse<T> (first: T, second: T): T {
 	if (first === null || first === undefined) return second;
 	else return first;
 }
+
+
+/**
+ * Extract the path, excluding search, from a URL
+ * @param url URL with or without search
+ * @returns Path-only URL
+ */
+export function getPathnameFromUrl (url: string): string {
+	if (url.includes("?")) return url.substr(0, url.indexOf("?"));
+	else return url;
+}
+
+/**
+ * Extract the search from a URL
+ * @param url URL with or without search
+ * @returns Search params data
+ */
+export function getQueryFromUrl (url: string): URLSearchParams {
+	if (url.includes("?")) return pruneUrlQuery(new URLSearchParams(url.substr(url.indexOf("?"))));
+	else return new URLSearchParams();
+}

@@ -3,6 +3,8 @@ import React from "react";
 import { SelectMode } from ".";
 import { Model } from "../../../models";
 import { MountTrackedComponent } from "../../utils";
+import { Input } from "../../../controllers/Input";
+import Hammer from "react-hammerjs";
 
 /** Type for BaseGridCard props  */
 export interface GridCardProps {
@@ -14,6 +16,9 @@ export interface GridCardProps {
 
 	/** Whether the card is selected */
 	selected: boolean,
+
+	/** (Touch only) Whether to select on tap (rather than opening) */
+	selectOnTap: boolean,
 
 	/** Handler function to select item */
 	onSelect: (modelId: number, mode: SelectMode) => void,
@@ -48,9 +53,14 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 		}
 	}
 
+
 	state = {
 		model: null as M
 	}
+
+	/** (Touch only) The timestamp at which this item was last selected (used to ignore extraneous click events) */
+	selectResetTime: number = 0
+
 
 	/**
 	 * Get the size of this Card
@@ -61,15 +71,31 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 	/** Select this item on click */
 	onClick = (event: React.MouseEvent) => {
 		event.stopPropagation();
-		this.props.onSelect(this.props.modelId, event.shiftKey ? SelectMode.Extend : (event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace));
+		// Ignore onClick on touchscreen if Hammer.onPress has recently been fired
+		if (Input.isTouching && Date.now() - this.selectResetTime < 500) return;
+
+		if (Input.isTouching) {
+			if (this.props.selectOnTap) this.props.onSelect(this.props.modelId, SelectMode.Toggle);
+			else this.state.model.open();
+		} else this.props.onSelect(this.props.modelId, event.shiftKey ? SelectMode.Extend : (event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace));
 	}
 
 	/** Open context menu on right-click */
 	onContextMenu = (event: React.MouseEvent) => {
 		event.preventDefault();
-		this.props.onMenu(this.props.modelId, { top: event.clientY, left: event.clientX });
+		// Ignore onContextMenu on touchscreen as Hammer.onPress will already have fired
+		if (event.type == "contextmenu" && Input.isTouching) return;
+
+		if (Input.isTouching) {
+			this.props.onSelect(this.props.modelId, SelectMode.Replace);
+			this.selectResetTime = Date.now();
+		} else this.props.onMenu(this.props.modelId, { top: event.clientY, left: event.clientX });
 	}
 
+
+	shouldComponentUpdate(nextProps, nextState) {
+		return nextState !== this.state || nextProps.modelId !== this.props.modelId || nextProps.selected !== this.props.selected || nextProps.scale !== this.props.scale;
+	}
 
 	/**
 	 * Render the base tile/card
@@ -78,16 +104,20 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 	 */
 	renderBase (content: JSX.Element) {
 		return <GridListTile>
-				<Card className={ this.props.classes.card }
-					style={ { ...(this.getSize()), backgroundColor: this.props.selected ? "lightblue" : "white" } }
-					onClick={ this.onClick }
-					onDoubleClick={ () => this.state.model.open() }
-					onContextMenu={ this.onContextMenu }>
-					<div style={ { display: this.props.selected ? "block" : "none" } } className={ this.props.classes.border }></div>
-					<CardActionArea className={ this.props.classes.action }>
-                        { content }
-					</CardActionArea>
-				</Card>
+				<Hammer onPress={ this.onContextMenu }>
+					<div> {/* This <div> is needed for Hammer to bind event listeners */}
+						<Card className={ this.props.classes.card }
+							style={ { ...(this.getSize()), backgroundColor: this.props.selected ? "lightblue" : "white" } }
+							onClick={ this.onClick }
+							onDoubleClick={ () => this.state.model.open() }
+							onContextMenu={ this.onContextMenu }>
+							<div style={ { display: this.props.selected ? "block" : "none" } } className={ this.props.classes.border } />
+							<CardActionArea className={ this.props.classes.action }>
+								{ content }
+							</CardActionArea>
+						</Card>
+					</div>
+				</Hammer>
 			</GridListTile>;
 	}
 }

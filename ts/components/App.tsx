@@ -1,7 +1,7 @@
 import { createMuiTheme, CssBaseline, MuiThemeProvider } from "@material-ui/core";
 import React from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, HashRouter, Route } from "react-router-dom";
 import { Database } from "../controllers/Database";
 import "../styles/App.css";
 import LoginPage from "./LoginPage";
@@ -81,8 +81,7 @@ export default class App extends React.Component {
 	}
 
 	render () {
-		return <BrowserRouter>
-			<MuiThemeProvider theme={ App.theme }>
+		let children = <MuiThemeProvider theme={ App.theme }>
 				<CssBaseline />
 
 				<Route path="" render={ (props) => (
@@ -95,7 +94,9 @@ export default class App extends React.Component {
 						)) }
 					</LocationManager>
 				) } />
-			</MuiThemeProvider>
-		</BrowserRouter>;
+			</MuiThemeProvider>;
+
+		if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") return <BrowserRouter>{ children }</BrowserRouter>;
+		else return <HashRouter>{ children }</HashRouter>;
 	}
 }

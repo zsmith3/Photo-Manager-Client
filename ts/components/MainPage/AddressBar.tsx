@@ -1,13 +1,13 @@
-import { Icon, IconButton, TextField, Theme, withStyles, Typography, InputAdornment } from "@material-ui/core";
-import $ from "jquery";
+import { Hidden, Icon, IconButton, InputAdornment, TextField, Theme, Typography, withStyles, withWidth, Zoom } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
+import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
-import { Platform } from "../../controllers/Platform";
-import App, { addressRootTypes } from "../App";
 import { Folder } from "../../models";
+import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
 
 /** Address bar element */
-class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string, searchIcon: string } }> {
+class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string, searchIcon: string, searchShowIcon: string }, width: Breakpoint }> {
 	static styles = (theme: Theme) => ({
 		addressBar: {
 			backgroundColor: theme.palette.background.paper
@@ -16,10 +16,20 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 			display: "inline"
 		},
 		search: {
-			float: "right" as "right"
+			float: "right" as "right",
+			[theme.breakpoints.down("xs")]: {
+				position: "absolute" as "absolute",
+				backgroundColor: "white",
+				width: "100%",
+				left: 0,
+				padding: "0 10px"
+			}
 		},
 		searchIcon: {
 			cursor: "pointer" as "pointer"
+		},
+		searchShowIcon: {
+			float: "right" as "right"
 		}
 	});
 
@@ -37,7 +47,8 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 
 	state = {
 		address: "/",
-		searchValue: ""
+		searchValue: "",
+		searchShown: false
 	}
 
 
@@ -104,7 +115,10 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 	}
 
 	render () {
+		let searchShown = isWidthUp("sm", this.props.width) ? true : this.state.searchShown;
+
 		return <div className={this.props.classes.addressBar}>
+			{/* Navigation buttons */}
 			<span>
 				<IconButton title="Back" onClick={ () => LocationManager.instance.props.history.goBack() }>
 					<Icon>arrow_back</Icon>
@@ -123,25 +137,41 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 				</IconButton>
 			</span>
 
-			{/* <span> */}
-				<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
-			{/* </span> */}
+			{/* Page address (i.e. folder path) */}
+			<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
 
-			<TextField className={ this.props.classes.search }
-				placeholder="Search"
-				title="Search the current view for files"
-				defaultValue={ LocationManager.currentQuery.get("search") }
-				onKeyDown={ (event) => { if (event.key === "Enter") this.search(); } }
-				onChange={ (event) => this.state.searchValue = event.currentTarget.value }
-				InputProps={ {
-					endAdornment: (
-						<InputAdornment className={ this.props.classes.searchIcon } position="end" onClick={ () => this.search() }>
-							<Icon>search</Icon>
-						</InputAdornment>
-					)
-				} } />
+			{/* Button to show/hide search bar on mobile */}
+			<Hidden smUp>
+				<IconButton className={ this.props.classes.searchShowIcon } onClick={ () => this.setState({ searchShown: true }) }>
+					<Icon>search</Icon>
+				</IconButton>
+			</Hidden>
+
+			{/* Search bar (with zoom effect for mobile) */}
+			<Zoom in={ searchShown } style={ { transformOrigin: '100% 50% 0' } }>
+				<TextField className={ this.props.classes.search }
+					placeholder="Search"
+					title="Search the current view for files"
+					defaultValue={ LocationManager.currentQuery.get("search") }
+					onKeyDown={ (event) => { if (event.key === "Enter") this.search(); } }
+					onChange={ (event) => this.state.searchValue = event.currentTarget.value }
+					InputProps={ {
+						startAdornment: (
+							<Hidden smUp>
+								<InputAdornment className={ this.props.classes.searchIcon } position="start" onClick={ () => this.setState({ searchShown: false }) }>
+									<Icon>arrow_back</Icon>
+								</InputAdornment>
+							</Hidden>
+						),
+						endAdornment: (
+							<InputAdornment className={ this.props.classes.searchIcon } position="end" onClick={ () => this.search() }>
+								<Icon>search</Icon>
+							</InputAdornment>
+						)
+					} } />
+			</Zoom>
 		</div>;
 	}
 }
 
-export default withStyles(AddressBar.styles)(AddressBar);
+export default withWidth()(withStyles(AddressBar.styles)(AddressBar));

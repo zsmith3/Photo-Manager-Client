@@ -1,9 +1,10 @@
-import { Divider, Drawer, Hidden, Theme, withStyles } from "@material-ui/core";
+import { Divider, Drawer, Hidden, Theme, withStyles, List, ListItem, ListItemIcon, ListItemText, Icon } from "@material-ui/core";
 import $ from "jquery";
 import React from "react";
-import { Album } from "../../../models";
+import { Album, Person, PersonGroup, GeoTagArea } from "../../../models";
 import AlbumList from "./AlbumList";
 import PersonGroupList from "./PersonGroupList";
+import { ImageLoader } from "../../utils";
 
 
 window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true;
@@ -41,28 +42,40 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 	render () {
 		let Fragment = React.Fragment;
 
-		// TODO look into applying this class properly to avoid scroll bar issue
-		const drawer = <div className={this.props.classes.drawer} tabIndex={0} role="button" onClick={() => this.setState({mobileOpen: false})} onKeyDown={() => this.setState({mobileOpen: false})}>
-				<div className={this.props.classes.toolbar} />
-
-				<Divider />
-
-				<AlbumList />
-
-				<Divider />
-
-				<PersonGroupList />
-			</div>;
-
 		return <Fragment>
 				<Hidden smUp implementation="css">
 					<Drawer variant="temporary" open={this.state.mobileOpen} onClose={() => this.setState({mobileOpen: false})} ModalProps={ { keepMounted: true } }>
-					{drawer}
+						<div className={this.props.classes.drawer} tabIndex={0} role="button" onClick={() => this.setState({mobileOpen: false})} onKeyDown={() => this.setState({mobileOpen: false})}>
+							<div className={this.props.classes.toolbar} />
+
+							<Divider />
+
+							<List>
+								<ListItem button>
+									<ListItemIcon><Icon>photo_album</Icon></ListItemIcon>
+									<ListItemText primary="Albums" />
+								</ListItem>
+								<ListItem button>
+									<ListItemIcon><Icon>person</Icon></ListItemIcon>
+									<ListItemText primary="People" />
+								</ListItem>
+							</List>
+						</div>
 					</Drawer>
 				</Hidden>
 				<Hidden xsDown implementation="css">
 					<Drawer variant="permanent" open>
-					{drawer}
+						<div className={this.props.classes.drawer} tabIndex={0} role="button" onClick={() => this.setState({mobileOpen: false})} onKeyDown={() => this.setState({mobileOpen: false})}>
+							<div className={this.props.classes.toolbar} />
+
+							<Divider />
+
+							<AlbumList />
+
+							<Divider />
+
+							<PersonGroupList />
+						</div>
 					</Drawer>
 				</Hidden>
 			</Fragment>;

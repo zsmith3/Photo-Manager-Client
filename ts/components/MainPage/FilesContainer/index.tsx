@@ -324,19 +324,22 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 		let openFileId = this.getOpenFileId();
 
+		let selectOnTap = this.state.data.filter(set => set.selection.length > 0).length > 0;
+
 		if (this.state.dataLoaded) {
 			return <Fragment>
 					{/* Main display grid */}
 					<GridList cols={ 1 } cellHeight={ 100 /* TODO */ } spacing={ 10 } style={ { margin: 0, padding: 10 } } onClick={ () => this.selectAll(false) }>
 						{ this.state.data.map(objectSet => {
 							let title = objectSet.objectIds.length > 0 && <GridListTile key="childrenSubheader" cols={ 1 } style={ { height: "auto" } }>
-								<ListSubheader component="div">{ objectSet.name }</ListSubheader>
+								<ListSubheader component="div">{ objectSet.name }<span style={ { float: "right" } }>{ selectOnTap && objectSet.selection.length + " selected" }</span></ListSubheader>
 							</GridListTile>;
 
 							let cards = objectSet.objectIds.map(objectId => (
 								<objectSet.card key={ `${ objectSet.id }_${ objectId }` }
 									modelId={ objectId }
 									selected={ objectSet.selection.includes(objectId) }
+									selectOnTap={ selectOnTap }
 									onSelect={ objectSet.onSelect }
 									onMenu={ objectSet.onMenu }
 									scale={ scale } />
