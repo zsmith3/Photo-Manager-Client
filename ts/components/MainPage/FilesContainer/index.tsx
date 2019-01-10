@@ -1,4 +1,4 @@
-import { GridList, GridListTile, Icon, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList } from "@material-ui/core";
+import { GridList, GridListTile, Icon, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, IconButton } from "@material-ui/core";
 import React, { ComponentType, Fragment } from "react";
 import { Platform } from "../../../controllers/Platform";
 import { Album, Face, FileObject, Folder, Person } from "../../../models";
@@ -10,6 +10,7 @@ import FaceCard from "./FaceCard";
 import FileCard from "./FileCard";
 import FolderCard from "./FolderCard";
 import ImageModal from "./ImageModal";
+import { Input } from "../../../controllers/Input";
 
 /** Different object selection modes */
 export enum SelectMode {
@@ -51,11 +52,8 @@ type dataType = {
 }
 
 /** Grid-based container for displaying Files (and other models) */
-export default class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number }> {
+export default class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number, searchQuery: string }> {
 	state = {
-		/** Storage of this.props to determine when they have been updated */
-		props: { rootType: null as addressRootTypes, rootId: null as number },
-
 		/** Data to be displayed, as a list of object sets */
 		data: [] as dataType[],
 
@@ -86,7 +84,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	 * @param props Value of `this.props` to use (defaults to current value of `this.props`)
 	 * @returns Promise representing completion
 	 */
-	private getData (props?: { rootType: addressRootTypes, rootId: number }): Promise<void> {
+	private getData (props?: { rootType: addressRootTypes, rootId: number, searchQuery: string }): Promise<void> {
 		props = props || this.props;
 
 		return new Promise((resolve, reject) => {
@@ -95,7 +93,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 				resolve();
 			}
 
-			let searchQuery = LocationManager.currentQuery.get("search");
+			//let searchQuery = LocationManager.currentQuery.get("search");
 
 			switch (props.rootType) {
 				case "folders":
@@ -105,7 +103,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 						});
 					} else {
 						Folder.loadObject<Folder>(props.rootId).then(folder => {
-							folder.getContents(searchQuery).then(data => {
+							folder.getContents(props.searchQuery).then(data => {
 								complete([{ id: 1, name: "Folders", objectIds: data.folders.map(folder => folder.id), card: FolderCard }, { id: 2, name: "Files", objectIds: data.files.map(file => file.id), card: FileCard }]);
 							}).catch(reject);
 						}).catch(reject);
@@ -232,10 +230,16 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	 */
 	private menuOpen (setId: number, modelId: number, anchorPos: { top: number, left: number }) {
 		let selection = this.state.data.find(set => set.id === setId).selection;
+
+		if (modelId !== null && !selection.includes(modelId)) {
+			this.select(setId, modelId, SelectMode.Replace);
+			selection = [ modelId ];
+		}
+
 		this.setState({
 			openContextMenu: true,
 			menuAnchorPos: anchorPos,
-			actionSelection: { setId: setId, objectIds: selection.length > 0 ? selection : [ modelId ] }
+			actionSelection: { setId: setId, objectIds: selection }
 		});
 	}
 
@@ -253,15 +257,20 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	 * @param setId The set of objects to search
 	 * @param currentId The ID of the current object
 	 * @param direction +1 for next object, -1 for previous object
+	 * @param filter Function to filter valid objects
 	 * @returns The ID of the chosen adjacent object
 	 */
-	getAdjacentItem (setId: number, currentId: number, direction: (-1 | 1)): number {
+	getAdjacentItem (setId: number, currentId: number, direction: (-1 | 1), filter?: (id: number) => void): number {
 		let set = this.state.data.find(set => set.id === setId);
 		if (!set) return null;
-		let currentIndex = set.objectIds.indexOf(currentId);
+
+		let objectIds = set.objectIds;
+		if (filter) objectIds = objectIds.filter(filter);
+
+		let currentIndex = objectIds.indexOf(currentId);
 		let nextIndex = currentIndex + direction;
-		if (nextIndex < 0 || nextIndex >= set.objectIds.length) return null;
-		else return set.objectIds[nextIndex];
+		if (nextIndex < 0 || nextIndex >= objectIds.length) return null;
+		else return objectIds[nextIndex];
 	}
 
 	/**
@@ -291,7 +300,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		switch (this.props.rootType) {
 			case "folders":
 				let fileId = parseInt(LocationManager.currentQuery.get("file"));
-				return this.getAdjacentItem(2, fileId, direction);
+				return this.getAdjacentItem(2, fileId, direction, id => FileObject.getById(id).type === "image");
 			case "people":
 				let faceId = parseInt(LocationManager.currentQuery.get("face"));
 				return this.getAdjacentItem(1, faceId, direction);
@@ -299,7 +308,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	}
 
 
-	constructor (props: { rootType: addressRootTypes, rootId: number }) {
+	constructor (props: { rootType: addressRootTypes, rootId: number, searchQuery: string }) {
 		super(props);
 
 		// TODO this should not be needed as FilesContainer should not be re-constructed
@@ -308,9 +317,9 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		this.getData(props);
 	}
 
-	shouldComponentUpdate(nextProps: { rootType: addressRootTypes, rootId: number }) {
+	shouldComponentUpdate(nextProps: { rootType: addressRootTypes, rootId: number, searchQuery: string }) {
 		// If the view has changed, reset and fetch new data
-		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId) {
+		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId || nextProps.searchQuery !== this.props.searchQuery) {
 			this.state.dataLoaded = false;
 			Platform.mediaQueue.reset();
 			this.getData(nextProps);
@@ -324,7 +333,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 		let openFileId = this.getOpenFileId();
 
-		let selectOnTap = this.state.data.filter(set => set.selection.length > 0).length > 0;
+		let selectOnTap = Input.isTouching && this.state.data.filter(set => set.selection.length > 0).length > 0;
 
 		if (this.state.dataLoaded) {
 			return <Fragment>
@@ -332,7 +341,14 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 					<GridList cols={ 1 } cellHeight={ 100 /* TODO */ } spacing={ 10 } style={ { margin: 0, padding: 10 } } onClick={ () => this.selectAll(false) }>
 						{ this.state.data.map(objectSet => {
 							let title = objectSet.objectIds.length > 0 && <GridListTile key="childrenSubheader" cols={ 1 } style={ { height: "auto" } }>
-								<ListSubheader component="div">{ objectSet.name }<span style={ { float: "right" } }>{ selectOnTap && objectSet.selection.length + " selected" }</span></ListSubheader>
+								<ListSubheader component="div">
+									{ objectSet.name }
+									{ selectOnTap && <span style={ { float: "right" } }>
+										<IconButton onClick={ event => { event.stopPropagation(); objectSet.onMenu(null, { left: event.clientX, top: event.clientY }); } }>
+											<Icon>more_vert</Icon>
+										</IconButton>
+									</span> }
+								</ListSubheader>
 							</GridListTile>;
 
 							let cards = objectSet.objectIds.map(objectId => (

@@ -1,17 +1,19 @@
-import { AppBar, Icon, IconButton, Modal, Toolbar, Typography, withStyles } from "@material-ui/core";
+import { AppBar, Icon, IconButton, Modal, Toolbar, Typography, withStyles, Theme } from "@material-ui/core";
 import React from "react";
 import Hammer from "react-hammerjs";
 import { Input } from "../../../controllers/Input";
 import { FileImgSizes } from "../../../controllers/Platform";
 import { FileObject } from "../../../models";
 import { ImageLoader, LocationManager } from "../../utils";
+import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 
 const platform: ("desktop" | "mobile") = "desktop";
 // TODO set platform properly
 
 /** Dialog to display and modify image file */
-class ImageModal extends React.Component<{ fileId: number, nextFileId: number, lastFileId: number, classes: { title: string, img: string, arrows: string, arrowIcon:string, arrowLeft: string, arrowRight: string, closeIcon: string } }> {
-	static styles = {
+class ImageModal extends React.Component<{ fileId: number, nextFileId: number, lastFileId: number, classes: { title: string, img: string, arrows: string, arrowsLandscape: string, arrowsPortrait: string, arrowIcon:string, arrowLeft: string, arrowRight: string, closeIcon: string }, width: Breakpoint }> {
+	static styles = (theme: Theme) => ({
 		title: {
 			width: "60%",
 			margin: "auto"
@@ -23,13 +25,29 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 		},
 		arrows: {
 			position: "absolute" as "absolute",
-			width: 100,
-			height: 100,
-			top: "calc(50vh - 20px)"
+			[theme.breakpoints.up("md")]: {
+				width: 100,
+				height: 100
+			},
+			[theme.breakpoints.down("sm")]: {
+				width: 50,
+				height: 50
+			}
+		},
+		arrowsLandscape: {
+			top: "calc(50vh - 20px)",
+		},
+		arrowsPortrait: {
+			bottom: 20
 		},
 		arrowIcon: {
-			fontSize: 88,
-			color: "white"
+			color: "white",
+			[theme.breakpoints.up("md")]: {
+				fontSize: 88
+			},
+			[theme.breakpoints.down("sm")]: {
+				fontSize: 44
+			}
 		},
 		arrowLeft: {
 			left: "calc(10px + 2%)"
@@ -39,9 +57,12 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 		},
 		closeIcon: {
 			color: "white",
-			fontSize: 40
+			fontSize: 40,
+			position: "absolute" as "absolute",
+			right: 5
 		}
-	}
+	})
+
 
 	/** Data about the current state of image drag/zoom */
 	dragging = { doneX: 0, doneY: 0, scaleDone: 1, resetTimeout: -1 };
@@ -81,15 +102,16 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 		// TODO need to get App.app.config.platform before this will work
 
 		let previousZoomState = this.fileZoomStates.get(this.state.file.id);
-		let toolBarHeight = 60; // TODO height of the top imagemodal bar
+		let toolBarHeight = 64; // TODO height of the top imagemodal bar
+		let verticalMargin = 20;
 
 		// Calculate bounding box
 		maxW = (maxW || previousZoomState.maxW) || "min";
 		maxH = (maxH || previousZoomState.maxH) || "min";
 		if (maxW == "max") maxW = this.state.file.width;
-		else if (maxW == "min") maxW = window.innerWidth - (platform === "mobile" ? 0 : 300);
+		else if (maxW == "min") maxW = window.innerWidth - (isWidthUp("md", this.props.width) ? 300 : (window.innerWidth > window.innerHeight ? 150 : 0));
 		if (maxH == "max") maxH = this.state.file.height;
-		else if (maxH == "min") maxH = window.innerHeight - (platform === "mobile" ? 0 : toolBarHeight);
+		else if (maxH == "min") maxH = window.innerHeight - toolBarHeight - verticalMargin;
 
 		// Calculate new size
 		let newWidth: number, newHeight: number;
@@ -105,7 +127,7 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 		if (xPos !== 0) xPos = (xPos || previousZoomState.xPos) || "c";
 		if (yPos !== 0) yPos = (yPos || previousZoomState.yPos) || "c";
 		if (xPos === "c") xPos = (window.innerWidth - newWidth) / 2;
-		if (yPos === "c") yPos = (window.innerHeight - newHeight + (platform === "mobile" ? 0 : toolBarHeight)) / 2;
+		if (yPos === "c") yPos = (window.innerHeight - newHeight + toolBarHeight) / 2;
 
 		// Update state
 		this.setState({ imgZoomStyle: { width: newWidth, height: newHeight, left: xPos, top: yPos } });
@@ -161,7 +183,7 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 	setResetTimeout () {
 		window.clearTimeout(this.dragging.resetTimeout);
 
-		if (platform === "mobile") {
+		if (Input.isTouching) {
 			this.dragging.resetTimeout = window.setTimeout(() => { if (Input.touchesDown == 0) this.setZoom("min", "min", "c", "c"); }, 100);
 		}
 	}
@@ -169,11 +191,13 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 
 	/** Change the displayed image on mobile swipe events */
 	onSwipe = event => {
-		// TODO
-		if (platform === "mobile") {
-			let direction = Math.round(-event.deltaX / 100);
-			direction = direction / Math.abs(direction);
-			if (direction) this.switchFile(direction);
+		if (Input.isTouching && Math.abs(event.deltaX) > 300) {
+			let direction = event.deltaX > 0 ? "last" : "next";
+			if (direction === "last" && this.props.lastFileId !== null || direction === "next" && this.props.nextFileId !== null) {
+				this.switchFile(direction);
+			}
+
+			Input.touchesDown = 0;
 		}
 	}
 
@@ -222,6 +246,8 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 	}
 
 	render () {
+		let arrowPosClass = window.innerWidth > window.innerHeight ? this.props.classes.arrowsLandscape : this.props.classes.arrowsPortrait;
+
 		return <Modal open={ true }>
 				<div>
 					{/* Top bar */}
@@ -249,10 +275,10 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 					</Hammer>
 
 					{/* Arrows */}
-					{ this.props.lastFileId !== null && <IconButton className={ this.props.classes.arrows + " " + this.props.classes.arrowLeft } onClick={ () => this.switchFile("last") }>
+					{ this.props.lastFileId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowLeft].join(" ") } onClick={ () => this.switchFile("last") }>
 						<Icon className={ this.props.classes.arrowIcon }>keyboard_arrow_left</Icon>
 					</IconButton> }
-					{ this.props.nextFileId !== null && <IconButton className={ this.props.classes.arrows + " " + this.props.classes.arrowRight } onClick={ () => this.switchFile("next") }>
+					{ this.props.nextFileId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowRight].join(" ") } onClick={ () => this.switchFile("next") }>
 						<Icon className={ this.props.classes.arrowIcon }>keyboard_arrow_right</Icon>
 					</IconButton> }
 				</div>
@@ -303,4 +329,4 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 	} */
 }
 
-export default withStyles(ImageModal.styles)(ImageModal);
+export default withWidth()(withStyles(ImageModal.styles)(ImageModal));

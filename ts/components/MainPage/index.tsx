@@ -7,6 +7,7 @@ import { Location } from "history";
 import { trimStr } from "../../utils";
 import FilesContainer from "./FilesContainer";
 import { addressRootTypes } from "../App";
+import { LocationManager } from "../utils";
 
 
 interface MainPageStyles {
@@ -18,7 +19,7 @@ interface MainPageStyles {
 class MainPage extends React.Component<{ classes: MainPageStyles, location: Location<any> }> {
 	static styles: ((theme: Theme) => MainPageStyles) = (theme: Theme) => ({
 		rightOfNavDrawer: {
-			[theme.breakpoints.up("sm")]: {
+			[theme.breakpoints.up("md")]: {
 				marginLeft: navDrawerWidth
 			}
 		},
@@ -52,7 +53,7 @@ class MainPage extends React.Component<{ classes: MainPageStyles, location: Loca
 
 						<AddressBar rootType={ addressRootType } rootId={ addressRootId } />
 
-						<FilesContainer rootType={ addressRootType } rootId={ addressRootId } />
+						<FilesContainer rootType={ addressRootType } rootId={ addressRootId } searchQuery={ LocationManager.currentQuery.get("search") } />
 					</div>
 				</div>
 			</Fragment>

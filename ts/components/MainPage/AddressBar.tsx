@@ -17,7 +17,7 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		},
 		search: {
 			float: "right" as "right",
-			[theme.breakpoints.down("xs")]: {
+			[theme.breakpoints.down("sm")]: {
 				position: "absolute" as "absolute",
 				backgroundColor: "white",
 				width: "100%",
@@ -115,7 +115,7 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 	}
 
 	render () {
-		let searchShown = isWidthUp("sm", this.props.width) ? true : this.state.searchShown;
+		let searchShown = isWidthUp("md", this.props.width) ? true : this.state.searchShown;
 
 		return <div className={this.props.classes.addressBar}>
 			{/* Navigation buttons */}
@@ -141,7 +141,7 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 			<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
 
 			{/* Button to show/hide search bar on mobile */}
-			<Hidden smUp>
+			<Hidden mdUp>
 				<IconButton className={ this.props.classes.searchShowIcon } onClick={ () => this.setState({ searchShown: true }) }>
 					<Icon>search</Icon>
 				</IconButton>
@@ -157,7 +157,7 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 					onChange={ (event) => this.state.searchValue = event.currentTarget.value }
 					InputProps={ {
 						startAdornment: (
-							<Hidden smUp>
+							<Hidden mdUp>
 								<InputAdornment className={ this.props.classes.searchIcon } position="start" onClick={ () => this.setState({ searchShown: false }) }>
 									<Icon>arrow_back</Icon>
 								</InputAdornment>

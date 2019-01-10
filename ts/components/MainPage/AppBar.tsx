@@ -8,7 +8,7 @@ import { Database } from "../../controllers/Database";
 class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: any } }> {
 	static styles = theme => ({
 		rightOfNavDrawer: {
-			[theme.breakpoints.up("sm")]: {
+			[theme.breakpoints.up("md")]: {
 				marginLeft: navDrawerWidth
 			}
 		}
@@ -28,7 +28,7 @@ class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: any } }> {
 		return <AppBar>
 				<Toolbar className={this.props.classes.rightOfNavDrawer}>
 					{/* Show/hide navbar (mobile) */}
-					<Hidden smUp implementation="css">
+					<Hidden mdUp implementation="css">
 						<IconButton color="inherit" aria-label="Menu" onClick={ () => navDrawerInstance.setState({ mobileOpen: true }) }>
 							<Icon>menu</Icon>
 						</IconButton>

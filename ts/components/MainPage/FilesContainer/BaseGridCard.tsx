@@ -85,6 +85,8 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 		event.preventDefault();
 		// Ignore onContextMenu on touchscreen as Hammer.onPress will already have fired
 		if (event.type == "contextmenu" && Input.isTouching) return;
+		// Ignore Hammer.onPress on non-touchscreen, as not relevant
+		if (event.type == "press" && !Input.isTouching) return;
 
 		if (Input.isTouching) {
 			this.props.onSelect(this.props.modelId, SelectMode.Replace);
