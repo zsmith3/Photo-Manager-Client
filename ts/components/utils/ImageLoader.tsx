@@ -10,7 +10,7 @@ interface ImageLoaderPropsType {
 	/** The Model for which to render the image (File or Face) */
 	model: {
 		imageMaterialIcon: string,
-		loadImgData (size: ImgSizes): Promise<string>,
+		loadImgData (size: ImgSizes, queue: boolean): Promise<string>,
 		getBestImgSize (size: ImgSizes): ImgSizes
 	},
 
@@ -22,6 +22,9 @@ interface ImageLoaderPropsType {
 
 	/** Maximum image size to load initially into `img.src`, when all sizes have already been downloaded locally */
 	maxFirstSize?: ImgSizes,
+
+	/** Whether to avoid load queue (if true, this image will be prioritised) */
+	noQueue?: boolean,
 
 	/** Handler function to run when image data for a new model is first loaded */
 	onFirstLoad? (): void,
@@ -53,7 +56,9 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 
 		this.isLoading = true;
 
-		props.model.loadImgData(size).then(data => {
+		props.model.loadImgData(size, !props.noQueue).then(data => {
+			if (props.model !== this.props.model) return;
+
 			if (props.onFirstLoad && this.state.imageData === null) props.onFirstLoad();
 
 			let oldState = this.state.loadState;

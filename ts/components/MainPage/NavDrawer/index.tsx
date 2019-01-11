@@ -1,10 +1,9 @@
-import { Divider, Drawer, Hidden, Theme, withStyles, List, ListItem, ListItemIcon, ListItemText, Icon } from "@material-ui/core";
+import { Divider, Drawer, Hidden, Theme, withStyles } from "@material-ui/core";
 import $ from "jquery";
 import React, { Fragment } from "react";
-import { Album, Person, PersonGroup, GeoTagArea } from "../../../models";
-import AlbumList from "./AlbumList";
-import PersonGroupList from "./PersonGroupList";
+import { Album, GeoTagArea, Person, PersonGroup } from "../../../models";
 import { ImageLoader } from "../../utils";
+import PersonGroupList from "./PersonGroupList";
 
 
 window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true;
@@ -45,7 +44,7 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 
 				<Divider />
 
-				<AlbumList />
+				{/* <AlbumList /> */}
 
 				<Divider />
 

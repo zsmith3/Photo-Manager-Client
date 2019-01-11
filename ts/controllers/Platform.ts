@@ -45,7 +45,7 @@ abstract class BasePlatform {
 	}
 
 	// Get the src for an image
-	abstract getImgSrc (object: { id: number }, type: ("file" | "face"), size: (FileImgSizes | FaceImgSizes)): Promise<string>
+	abstract getImgSrc (object: { id: number }, type: ("file" | "face"), size: (FileImgSizes | FaceImgSizes), queue: boolean): Promise<string>
 
 	// Display notification
 	abstract notify (data: { id: number, title: string, text: string, progress?: number}): void
@@ -58,7 +58,7 @@ class WebPlatform extends BasePlatform {
 	mediaQueue = new MediaQueue()
 
 	urls = {
-		serverUrl: "http://localhost/fileserver/",
+		serverUrl: "http://192.168.1.150/fileserver/",
 
 		getPageUrl (page, query) {
 			if (page == "index") page = "";
@@ -78,13 +78,19 @@ class WebPlatform extends BasePlatform {
 		}
 	}
 
-	getImgSrc (object: { id: number }, type: ("file" | "face"), size: (FileImgSizes | FaceImgSizes)): Promise<string> {
+	getImgSrc (object: { id: number }, type: ("file" | "face"), size: (FileImgSizes | FaceImgSizes), queue: boolean): Promise<string> {
+		let url: string;
 		switch (type) {
 			case "file":
-				return this.mediaQueue.add("api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size]); // mediaRequest("api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size]);
+				url = "api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size];
+				break;
 			case "face":
-				return this.mediaQueue.add("api/images/faces/" + object.id + "/" + ["40/", "200/"][size]); // mediaRequest("api/images/faces/" + object.id + "/" + ["40/", "200/"][size]);
+				url = "api/images/faces/" + object.id + "/" + ["40/", "200/"][size];
+				break;
 		}
+
+		if (queue) return this.mediaQueue.add(url);
+		else return mediaRequest(url);
 	}
 
 	notify (data: { id: number, title: string, text: string, progress?: number}): void {
@@ -111,6 +117,9 @@ class MediaQueue {
 	/** Number of items currently being downloaded */
 	private running = 0
 
+	/** Whether the queue is currently paused */
+	private paused = false
+
 
 	constructor (max=6) {
 		this.max = max;
@@ -131,7 +140,7 @@ class MediaQueue {
 
 	/** Run the next download if there is space available */
 	run () {
-		if (this.items.length === 0 || this.running >= this.max) return;
+		if (this.paused || this.items.length === 0 || this.running >= this.max) return;
 
 		let item = this.items.pop();
 		this.running++;
@@ -152,6 +161,17 @@ class MediaQueue {
 	/** Reset the queue (cancel all not-yet-started items) */
 	reset () {
 		this.items = [];
+	}
+
+	/** Pause the queue (delay all not-yet-started items) */
+	pause () {
+		this.paused = true;
+	}
+
+	/** Resume the queue (having paused it) */
+	resume () {
+		this.paused = false;
+		this.run();
 	}
 }
 

@@ -77,7 +77,7 @@ export class GeoTag extends Model {
 	/** Geotag model metadata */
 	static meta = new ModelMeta<GeoTag>({
 		modelName: DBTables.GeoTag,
-		props: ["id", "latitude", "longitude", "areaID"],
+		props: ["id", "latitude", "longitude"],
 		specialProps: { "area": "areaID" }
 	})
 

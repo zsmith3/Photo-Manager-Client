@@ -2,8 +2,8 @@ import { AppBar, Icon, IconButton, Modal, Toolbar, Typography, withStyles, Theme
 import React from "react";
 import Hammer from "react-hammerjs";
 import { Input } from "../../../controllers/Input";
-import { FileImgSizes } from "../../../controllers/Platform";
-import { FileObject } from "../../../models";
+import { FileImgSizes, Platform } from "../../../controllers/Platform";
+import { FileObject, Face } from "../../../models";
 import { ImageLoader, LocationManager } from "../../utils";
 import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
@@ -11,8 +11,10 @@ import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 const platform: ("desktop" | "mobile") = "desktop";
 // TODO set platform properly
 
+type modelType = ("file" | "face");
+
 /** Dialog to display and modify image file */
-class ImageModal extends React.Component<{ fileId: number, nextFileId: number, lastFileId: number, classes: { title: string, img: string, arrows: string, arrowsLandscape: string, arrowsPortrait: string, arrowIcon:string, arrowLeft: string, arrowRight: string, closeIcon: string }, width: Breakpoint }> {
+class ImageModal extends React.Component<{ type: modelType, itemId: number, nextItemId: number, lastItemId: number, classes: { title: string, img: string, arrows: string, arrowsLandscape: string, arrowsPortrait: string, arrowIcon:string, arrowLeft: string, arrowRight: string, closeIcon: string }, width: Breakpoint }> {
 	static styles = (theme: Theme) => ({
 		title: {
 			width: "60%",
@@ -80,14 +82,36 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 
 
 	/**
+	 * Load an item into `this.state` to display
+	 * @param type The item type
+	 * @param itemId The item ID
+	 */
+	loadFile (type: modelType, itemId: number) {
+		switch (type) {
+			case "file":
+				FileObject.loadObject(itemId).then(file => this.setState({ file: file }));
+				break;
+			case "face":
+				Face.loadObject<Face>(itemId).then(face => this.setState({ file: face.file }));
+				break;
+		}
+	}
+
+	/** Close the modal */
+	close () {
+		Platform.mediaQueue.resume();
+		LocationManager.updateQuery({ file: "", face: "" });
+	}
+
+	/**
 	 * Move forwards or backwards by one file
 	 * @param direction The direction to move
 	 */
 	switchFile (direction: ("last" | "next")) {
 		if (direction === "last") {
-			LocationManager.updateQuery({ file: this.props.lastFileId.toString() });
+			LocationManager.updateQuery({ [this.props.type]: this.props.lastItemId.toString() });
 		} else {
-			LocationManager.updateQuery({ file: this.props.nextFileId.toString() });
+			LocationManager.updateQuery({ [this.props.type]: this.props.nextItemId.toString() });
 		}
 	}
 
@@ -193,7 +217,7 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 	onSwipe = event => {
 		if (Input.isTouching && Math.abs(event.deltaX) > 300) {
 			let direction = event.deltaX > 0 ? "last" : "next";
-			if (direction === "last" && this.props.lastFileId !== null || direction === "next" && this.props.nextFileId !== null) {
+			if (direction === "last" && this.props.lastItemId !== null || direction === "next" && this.props.nextItemId !== null) {
 				this.switchFile(direction);
 			}
 
@@ -231,16 +255,18 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 	constructor (props) {
 		super(props);
 
-		FileObject.loadObject(props.fileId).then(file => this.setState({ file: file }));
+		Platform.mediaQueue.pause();
+
+		this.loadFile(props.type, props.itemId);
 	}
 
-	shouldComponentUpdate (nextProps: { fileId: number }) {
+	shouldComponentUpdate (nextProps: { type: modelType, itemId: number }) {
 		if (this.props === nextProps) {
 			// If props are unchanged, then state must have changed, so re-render
 			return true;
 		} else {
 			// If props have changed, fetch the new file, which will update the state
-			FileObject.loadObject(nextProps.fileId).then(file => this.setState({ file: file }));
+			this.loadFile(nextProps.type, nextProps.itemId);
 			return false;
 		}
 	}
@@ -255,7 +281,7 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 						<Toolbar>
 							<Typography variant="h4" color="inherit" align="center" className={ this.props.classes.title }>{ this.state.file && this.state.file.name }</Typography>
 
-							<IconButton onClick={ () => LocationManager.updateQuery({ file: "" })}>
+							<IconButton onClick={ () => this.close() }>
 								<Icon className={ this.props.classes.closeIcon }>clear</Icon>
 							</IconButton>
 						</Toolbar>
@@ -268,6 +294,7 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 								model={ this.state.file }
 								maxSize={ FileImgSizes.Original }
 								maxFirstSize={ FileImgSizes.Large }
+								noQueue={ true }
 								className={ this.props.classes.img }
 								style={ this.state.imgZoomStyle }
 								onFirstLoad={ () => this.setZoom("min", "min", "c", "c") } /> }
@@ -275,10 +302,10 @@ class ImageModal extends React.Component<{ fileId: number, nextFileId: number, l
 					</Hammer>
 
 					{/* Arrows */}
-					{ this.props.lastFileId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowLeft].join(" ") } onClick={ () => this.switchFile("last") }>
+					{ this.props.lastItemId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowLeft].join(" ") } onClick={ () => this.switchFile("last") }>
 						<Icon className={ this.props.classes.arrowIcon }>keyboard_arrow_left</Icon>
 					</IconButton> }
-					{ this.props.nextFileId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowRight].join(" ") } onClick={ () => this.switchFile("next") }>
+					{ this.props.nextItemId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowRight].join(" ") } onClick={ () => this.switchFile("next") }>
 						<Icon className={ this.props.classes.arrowIcon }>keyboard_arrow_right</Icon>
 					</IconButton> }
 				</div>

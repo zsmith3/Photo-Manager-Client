@@ -2,6 +2,7 @@ import { FileObject, Person } from ".";
 import { DBTables } from "../controllers/Database";
 import { FaceImgSizes, Platform } from "../controllers/Platform";
 import { Model, ModelMeta } from "./Model";
+import { LocationManager } from "../components/utils";
 
 
 /** Face model */
@@ -12,11 +13,11 @@ export class Face extends Model {
 		props: ["id", "rect_x", "rect_y", "rect_w", "rect_h", "status"],
 		specialProps: {
 			"person": "personID",
-			/* "file": { TODO add file to API properly
-				deserialize: (face: Face, prop: object) => {
+			"file": {
+				deserialize: (face: Face, prop: { id: number }) => {
 					face.fileID = FileObject.addObject(prop).id;
 				}
-			} */
+			}
 		}
 	});
 
@@ -60,13 +61,14 @@ export class Face extends Model {
 	/**
 	 * Get (and load if needed) image data for this face
 	 * @param size The size at which to load the image
+	 * @param queue Whether to queue image loading
 	 * @returns Base64 data url for image
 	 */
-	async loadImgData (size: FaceImgSizes): Promise<string> {
+	async loadImgData (size: FaceImgSizes, queue: boolean): Promise<string> {
 		let data = this.imageData.get(size);
 		if (data) return data;
 		else {
-			const data = await Platform.getImgSrc(this, "face", size);
+			const data = await Platform.getImgSrc(this, "face", size, queue);
 			this.imageData.set(size, data);
 			return data;
 		}
@@ -93,7 +95,7 @@ export class Face extends Model {
 
 	/** Open the image file to which the face belongs */
 	open (): void {
-		this.file.open();
+		LocationManager.updateQuery({ "face": this.id.toString() });
 	}
 
 	/**

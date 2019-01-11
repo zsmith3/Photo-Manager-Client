@@ -101,15 +101,16 @@ export class FileObject extends Model {
 	/**
 	 * Get (and load if needed) image data for this file
 	 * @param size The size at which to load the image
+	 * @param queue Whether to queue image loading
 	 * @returns Base64 data url for image
 	 */
-	async loadImgData (size: FileImgSizes): Promise<string> {
+	async loadImgData (size: FileImgSizes, queue: boolean): Promise<string> {
 		if (this.type !== "image") return null;
 
 		let data = this.imageData.get(size);
 		if (data) return data;
 		else {
-			const data = await Platform.getImgSrc(this, "file", size);
+			const data = await Platform.getImgSrc(this, "file", size, queue);
 			this.imageData.set(size, data);
 			return data;
 		}

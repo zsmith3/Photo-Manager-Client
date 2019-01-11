@@ -260,7 +260,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	 * @param filter Function to filter valid objects
 	 * @returns The ID of the chosen adjacent object
 	 */
-	getAdjacentItem (setId: number, currentId: number, direction: (-1 | 1), filter?: (id: number) => void): number {
+	getAdjacentItem (setId: number, currentId: number, direction: (-1 | 1), filter?: (id: number) => boolean): number {
 		let set = this.state.data.find(set => set.id === setId);
 		if (!set) return null;
 
@@ -274,10 +274,10 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	}
 
 	/**
-	 * Get the ID of the currently open file
-	 * @returns ID of file, or `null` if none is open
+	 * Get the ID of the currently open item (file or face)
+	 * @returns ID of item, or `null` if none is open
 	 */
-	getOpenFileId (): number {
+	getOpenItemId (): number {
 		switch (this.props.rootType) {
 			case "folders":
 				let fileId = parseInt(LocationManager.currentQuery.get("file"));
@@ -285,8 +285,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 				else return null;
 			case "people":
 				let faceId = parseInt(LocationManager.currentQuery.get("face"));
-				let face = Face.getById(faceId);
-				if (face) return face.file.id;
+				if (Face.getById(faceId)) return faceId;
 				else return null;
 		}
 	}
@@ -303,7 +302,8 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 				return this.getAdjacentItem(2, fileId, direction, id => FileObject.getById(id).type === "image");
 			case "people":
 				let faceId = parseInt(LocationManager.currentQuery.get("face"));
-				return this.getAdjacentItem(1, faceId, direction);
+				let faceFileId = Face.getById(faceId).fileID;
+				return this.getAdjacentItem(1, faceId, direction, id => id === faceId || Face.getById(id).fileID !== faceFileId);
 		}
 	}
 
@@ -331,7 +331,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	render () {
 		let scale = 150;
 
-		let openFileId = this.getOpenFileId();
+		let openItemId = this.getOpenItemId();
 
 		let selectOnTap = Input.isTouching && this.state.data.filter(set => set.selection.length > 0).length > 0;
 
@@ -369,8 +369,8 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 					{ this.getPopups() }
 
 					{/* ImageModal to display individual image files */}
-					{ (openFileId !== null) &&
-						<ImageModal fileId={ openFileId } lastFileId={ this.getAdjacentFileId(-1) } nextFileId={ this.getAdjacentFileId(1) } />
+					{ (openItemId !== null) &&
+						<ImageModal type={ this.props.rootType === "people" ? "face" : "file" } itemId={ openItemId } lastItemId={ this.getAdjacentFileId(-1) } nextItemId={ this.getAdjacentFileId(1) } />
 					}
 				</Fragment>;
 		} else {
