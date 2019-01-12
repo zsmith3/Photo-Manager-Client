@@ -1,16 +1,20 @@
-import { GridList, GridListTile, Icon, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, IconButton } from "@material-ui/core";
+import { GridList, GridListTile, Icon, IconButton, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, withStyles, withWidth } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
+import { isWidthUp } from "@material-ui/core/withWidth";
+import { Slider } from "@material-ui/lab";
 import React, { ComponentType, Fragment } from "react";
+import { Input } from "../../../controllers/Input";
 import { Platform } from "../../../controllers/Platform";
 import { Album, Face, FileObject, Folder, Person } from "../../../models";
 import { promiseChain } from "../../../utils";
 import { addressRootTypes } from "../../App";
 import { ListDialog, LocationManager, SimpleDialog } from "../../utils";
-import { GridCardProps } from "./BaseGridCard";
+import { navDrawerWidth } from "../NavDrawer";
+import BaseGridCard, { GridCardProps } from "./BaseGridCard";
 import FaceCard from "./FaceCard";
 import FileCard from "./FileCard";
 import FolderCard from "./FolderCard";
 import ImageModal from "./ImageModal";
-import { Input } from "../../../controllers/Input";
 
 /** Different object selection modes */
 export enum SelectMode {
@@ -52,7 +56,21 @@ type dataType = {
 }
 
 /** Grid-based container for displaying Files (and other models) */
-export default class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number, searchQuery: string }> {
+class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number, searchQuery: string, classes: { grid: string, contextMenuButton: string, scaleSlider: string }, width: Breakpoint }> {
+	static styles = {
+		grid: {
+			margin: 0,
+			padding: 10
+		},
+		contextMenuButton: {
+			float: "right" as "right"
+		},
+		scaleSlider: {
+			width: 200, margin: 20
+		}
+	}
+
+
 	state = {
 		/** Data to be displayed, as a list of object sets */
 		data: [] as dataType[],
@@ -75,7 +93,10 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		},
 
 		/** Model selection upon which dialogs should act */
-		actionSelection: { setId: null as number, objectIds: [] as number[] }
+		actionSelection: { setId: null as number, objectIds: [] as number[] },
+
+		/** Current user-desired scale (actual scale will be set as a factor of available screen width) */
+		currentScale: null as number
 	}
 
 
@@ -89,7 +110,15 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 		return new Promise((resolve, reject) => {
 			let complete = (data: dataType[]) => {
-				this.setState({ data: data.map(set => Object.assign(set, { selection: [], lastSelected: set.objectIds.length > 0 ? set.objectIds[0] : null, onSelect: this.select.bind(this, set.id), onMenu: this.menuOpen.bind(this, set.id) })), dataLoaded: true });
+				this.setState({
+					data: data.map(set => Object.assign(set, {
+						selection: [],
+						lastSelected: set.objectIds.length > 0 ? set.objectIds[0] : null,
+						onSelect: this.select.bind(this, set.id),
+						onMenu: this.menuOpen.bind(this, set.id)
+					})),
+					dataLoaded: true
+				});
 				resolve();
 			}
 
@@ -104,14 +133,19 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 					} else {
 						Folder.loadObject<Folder>(props.rootId).then(folder => {
 							folder.getContents(props.searchQuery).then(data => {
-								complete([{ id: 1, name: "Folders", objectIds: data.folders.map(folder => folder.id), card: FolderCard }, { id: 2, name: "Files", objectIds: data.files.map(file => file.id), card: FileCard }]);
+								complete([
+									{ id: 1, name: "Folders", objectIds: data.folders.map(folder => folder.id), card: FolderCard },
+									{ id: 2, name: "Files", objectIds: data.files.map(file => file.id), card: FileCard }
+								]);
 							}).catch(reject);
 						}).catch(reject);
 					}
 					break;
 				case "people":
 					Person.loadObject<Person>(props.rootId).then(person => {
-						let fn = (faces: Face[]) => complete([{ id: 1, name: "Faces", objectIds: faces.map(face => face.id), card: FaceCard }]);
+						let fn = (faces: Face[]) => complete([
+							{ id: 1, name: "Faces", objectIds: faces.map(face => face.id), card: FaceCard }
+						]);
 						person.getFaces().then(fn).catch(reject);
 						person.faceListUpdateHandlers.push(fn);
 					}).catch(reject);
@@ -119,6 +153,52 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 			}
 		});
 	}
+
+
+	// Selection methods
+
+	/**
+	 * Select or deselect a single object
+	 * @param setId ID of the set to which the object belongs
+	 * @param modelId ID of the object to select
+	 * @param mode Selection mode to use (replace, toggle or extend)
+	 */
+	private select (setId: number, modelId: number, mode: SelectMode) {
+		let data = this.state.data.map(set => {
+			let resolve = (selection: number[]) => Object.assign(set, { selection: selection, lastSelected: modelId });
+			if (set.id === setId) {
+				switch (mode) {
+					case SelectMode.Replace:
+						return resolve([ modelId ]);
+					case SelectMode.Toggle:
+						if (set.selection.includes(modelId)) return resolve(set.selection.filter(id => id !== modelId));
+						else return resolve(set.selection.concat([ modelId ]));
+					case SelectMode.Extend:
+						let first = set.objectIds.indexOf(set.lastSelected);
+						let second = set.objectIds.indexOf(modelId);
+						let selection = [];
+						for (let i = Math.min(first, second); i <= Math.max(first, second); i++) selection.push(set.objectIds[i]);
+						return resolve(selection);
+				}
+			} else return Object.assign(set, { selection: [] });
+		});
+		this.setState({ data: data });
+	}
+
+	/**
+	 * Select or deselect all objects
+	 * @param value Whether to select or deselect all objects (true => select)
+	 */
+	private selectAll (value: boolean) {
+		let data = this.state.data.map(set => {
+			if (value) return Object.assign(set, { selection: set.objectIds });
+			else return Object.assign(set, { selection: [] });
+		});
+		this.setState({ data: data });
+	}
+
+
+	// Menu/dialog methods
 
 	/**
 	 * Get menu/dialogs to display based on rootType
@@ -183,46 +263,6 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	}
 
 	/**
-	 * Select or deselect a single object
-	 * @param setId ID of the set to which the object belongs
-	 * @param modelId ID of the object to select
-	 * @param mode Selection mode to use (replace, toggle or extend)
-	 */
-	private select (setId: number, modelId: number, mode: SelectMode) {
-		let data = this.state.data.map(set => {
-			let resolve = (selection: number[]) => Object.assign(set, { selection: selection, lastSelected: modelId });
-			if (set.id === setId) {
-				switch (mode) {
-					case SelectMode.Replace:
-						return resolve([ modelId ]);
-					case SelectMode.Toggle:
-						if (set.selection.includes(modelId)) return resolve(set.selection.filter(id => id !== modelId));
-						else return resolve(set.selection.concat([ modelId ]));
-					case SelectMode.Extend:
-						let first = set.objectIds.indexOf(set.lastSelected);
-						let second = set.objectIds.indexOf(modelId);
-						let selection = [];
-						for (let i = Math.min(first, second); i <= Math.max(first, second); i++) selection.push(set.objectIds[i]);
-						return resolve(selection);
-				}
-			} else return Object.assign(set, { selection: [] });
-		});
-		this.setState({ data: data });
-	}
-
-	/**
-	 * Select or deselect all objects
-	 * @param value Whether to select or deselect all objects (true => select)
-	 */
-	private selectAll (value: boolean) {
-		let data = this.state.data.map(set => {
-			if (value) return Object.assign(set, { selection: set.objectIds });
-			else return Object.assign(set, { selection: [] });
-		});
-		this.setState({ data: data });
-	}
-
-	/**
 	 * Open the context menu
 	 * @param setId ID of selected object set
 	 * @param modelId ID of model which was right-clicked
@@ -251,6 +291,9 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 
 	/** Close a dialog from its name */
 	private dialogClose = (type) => this.setState({ openDialogs: { ...this.state.openDialogs, [type]: false } }) // loading: false })
+
+
+	// ImageModal (item selection) methods
 
 	/**
 	 * Get the next/previous object in one of the sets
@@ -308,20 +351,97 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	}
 
 
-	constructor (props: { rootType: addressRootTypes, rootId: number, searchQuery: string }) {
+	// Scaling methods
+
+	/** Get the total available display width for container */
+	getTotalWidth (): number {
+		const padding = 10;
+		return window.innerWidth - (isWidthUp("md", this.props.width) ? navDrawerWidth : 0) - padding;
+	}
+
+	/** Get default/range for scale, based on root type */
+	getScaleConfig (): { max: number, min: number, default: number } {
+		switch (this.props.rootType) {
+			case "folders":
+				return { max: 300, min: 50, default: 150 };
+			case "people":
+				return { max: 160, min: 40, default: 80 };
+		}
+	}
+
+	/**
+	 * Get required scale for an item count
+	 * @param count The number of GridCard items which should fit on one row
+	 * @returns The required width of each GridCard
+	 */
+	getScaleFromCount (count: number) {
+		let margin = BaseGridCard.margin * 2;
+		let width = this.getTotalWidth();
+		return width / count - margin;
+	}
+
+	/**
+	 * Get count resulting from a scale
+	 * @param scale The desired width of each GridCard item
+	 * @returns The (rounded) number of GridCard items which will fit on one row
+	 */
+	getCountFromScale (scale: number) {
+		let margin = BaseGridCard.margin * 2;
+		let width = this.getTotalWidth();
+		return Math.max(Math.floor(width / (scale + margin)), 1);
+	}
+
+	/** Get the current display scale (based on the current user-desired scale) */
+	getCurrentScale () {
+		let count = this.getCountFromScale(this.state.currentScale);
+		let newScale = this.getScaleFromCount(count);
+		return newScale;
+	}
+
+	/** The Slider (range input) element to modify scale */
+	getScaleSlider () {
+		const config = this.getScaleConfig();
+
+		let minCount = this.getCountFromScale(config.max);
+		let maxCount = this.getCountFromScale(config.min);
+		let defaultCount = this.getCountFromScale(config.default);
+
+		if (this.state.currentScale === null) this.state.currentScale = config.default;
+
+		return <Slider
+			className={ this.props.classes.scaleSlider }
+			value={ -this.getCountFromScale(this.state.currentScale) }
+			min={ -maxCount }
+			max={ -minCount }
+			step={ 1 }
+			onChange={ (event, value) => this.setState({ currentScale: this.getScaleFromCount(-value) }) }
+			onDoubleClick={ event => this.setState({ currentScale: this.getScaleFromCount(defaultCount) }) } />;
+	}
+
+
+	// Component methods
+
+	constructor (props: { rootType: addressRootTypes, rootId: number, searchQuery: string, classes: any, width: Breakpoint }) {
 		super(props);
 
 		// TODO this should not be needed as FilesContainer should not be re-constructed
 		Platform.mediaQueue.reset();
 
+		// Update scaling on resize
+		window.addEventListener("resize", () => this.forceUpdate());
+
 		this.getData(props);
 	}
 
 	shouldComponentUpdate(nextProps: { rootType: addressRootTypes, rootId: number, searchQuery: string }) {
-		// If the view has changed, reset and fetch new data
+		// If the view has changed, load new view
 		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId || nextProps.searchQuery !== this.props.searchQuery) {
+			// Reset state
 			this.state.dataLoaded = false;
+			this.state.currentScale = null;
 			Platform.mediaQueue.reset();
+
+			// Fetch new data
 			this.getData(nextProps);
 		}
 
@@ -329,21 +449,21 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 	}
 
 	render () {
-		let scale = 150;
-
 		let openItemId = this.getOpenItemId();
 
 		let selectOnTap = Input.isTouching && this.state.data.filter(set => set.selection.length > 0).length > 0;
 
 		if (this.state.dataLoaded) {
 			return <Fragment>
+					{ this.getScaleSlider() }
+
 					{/* Main display grid */}
-					<GridList cols={ 1 } cellHeight={ 100 /* TODO */ } spacing={ 10 } style={ { margin: 0, padding: 10 } } onClick={ () => this.selectAll(false) }>
+					<GridList className={ this.props.classes.grid } cols={ 1 } cellHeight="auto" spacing={ 10 } onClick={ () => this.selectAll(false) }>
 						{ this.state.data.map(objectSet => {
-							let title = objectSet.objectIds.length > 0 && <GridListTile key="childrenSubheader" cols={ 1 } style={ { height: "auto" } }>
+							let title = objectSet.objectIds.length > 0 && <GridListTile key="childrenSubheader" cols={ 1 }>
 								<ListSubheader component="div">
 									{ objectSet.name }
-									{ selectOnTap && <span style={ { float: "right" } }>
+									{ selectOnTap && <span className={ this.props.classes.contextMenuButton }>
 										<IconButton onClick={ event => { event.stopPropagation(); objectSet.onMenu(null, { left: event.clientX, top: event.clientY }); } }>
 											<Icon>more_vert</Icon>
 										</IconButton>
@@ -358,7 +478,7 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 									selectOnTap={ selectOnTap }
 									onSelect={ objectSet.onSelect }
 									onMenu={ objectSet.onMenu }
-									scale={ scale } />
+									scale={ this.getCurrentScale() } />
 							));
 
 							return [ title ].concat(cards);
@@ -379,3 +499,5 @@ export default class FilesContainer extends React.Component<{ rootType: addressR
 		}
 	}
 }
+
+export default withWidth()(withStyles(FilesContainer.styles)(FilesContainer));

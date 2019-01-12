@@ -13,6 +13,7 @@ import { LocationManager } from "../utils";
 interface MainPageStyles {
 	rightOfNavDrawer
 	toolbar
+	mainContent
 }
 
 
@@ -23,7 +24,10 @@ class MainPage extends React.Component<{ classes: MainPageStyles, location: Loca
 				marginLeft: navDrawerWidth
 			}
 		},
-		toolbar: theme.mixins.toolbar
+		toolbar: theme.mixins.toolbar,
+		mainContent: {
+			overflowX: "hidden"
+		}
 	});
 
 	render () {
@@ -42,12 +46,12 @@ class MainPage extends React.Component<{ classes: MainPageStyles, location: Loca
 				<NavDrawer />
 
 				{/* Main body of the page */}
-				<div className={this.props.classes.rightOfNavDrawer}>
+				<div className={ this.props.classes.rightOfNavDrawer }>
 					{/* AppBar (fixed top) */}
 					<AppBar />
 
 					{/* Main content of the page */}
-					<div>
+					<div className={ this.props.classes.mainContent }>
 						{/* Placeholder of AppBar height */}
 						<div className={ this.props.classes.toolbar } />
 

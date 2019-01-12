@@ -1,10 +1,10 @@
 import { Card, CardActionArea, GridListTile } from "@material-ui/core";
 import React from "react";
+import Hammer from "react-hammerjs";
 import { SelectMode } from ".";
+import { Input } from "../../../controllers/Input";
 import { Model } from "../../../models";
 import { MountTrackedComponent } from "../../utils";
-import { Input } from "../../../controllers/Input";
-import Hammer from "react-hammerjs";
 
 /** Type for BaseGridCard props  */
 export interface GridCardProps {
@@ -30,12 +30,15 @@ export interface GridCardProps {
 /**
  * Base class for all GridTile/Card displays
  * @template M The Model displayed
- * @template P Additional props
  * @template S Additional styling classes
+ * @template P Additional props
  */
-export default abstract class BaseGridCard<M extends (Model & { open: () => any }), S={}> extends MountTrackedComponent<GridCardProps & { classes: ({ border: string, card: string, action: string, content?: string } & S) }> {
+export default abstract class BaseGridCard<M extends (Model & { open: () => any }), S={}, P={}> extends MountTrackedComponent<GridCardProps & P & { classes: ({ border: string, card: string, action: string, content?: string } & S) }> {
+	/** The margin on each side of GridCards */
+	static margin = 5
+
 	/** Default styles */
-	static styles = {
+	static styles: any = {
 		border: {
 			position: "absolute" as "absolute",
 			width: "100%",
@@ -46,7 +49,7 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 		},
 		card: {
 			position: "relative" as "relative",
-			margin: 5
+			margin: BaseGridCard.margin
 		},
 		action: {
 			cursor: "default"

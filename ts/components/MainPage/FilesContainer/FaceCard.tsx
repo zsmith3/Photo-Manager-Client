@@ -34,7 +34,7 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 		this.state.model = Face.getById(props.modelId);
 	}
 
-	protected getSize () { return { width: this.props.scale * 8 / 15, height: this.props.scale * 2 / 3 }; }
+	protected getSize () { return { width: this.props.scale, height: this.props.scale * 5 / 4 }; }
 
 
 	render () {
