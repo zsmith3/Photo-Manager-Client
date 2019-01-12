@@ -1,4 +1,4 @@
-import { GridList, GridListTile, Icon, IconButton, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, withStyles, withWidth } from "@material-ui/core";
+import { GridList, GridListTile, Icon, IconButton, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, withStyles, withWidth, Theme } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import { Slider } from "@material-ui/lab";
@@ -57,7 +57,7 @@ type dataType = {
 
 /** Grid-based container for displaying Files (and other models) */
 class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number, searchQuery: string, classes: { grid: string, contextMenuButton: string, scaleSlider: string }, width: Breakpoint }> {
-	static styles = {
+	static styles = (theme: Theme) => ({
 		grid: {
 			margin: 0,
 			padding: 10
@@ -66,9 +66,15 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 			float: "right" as "right"
 		},
 		scaleSlider: {
-			width: 200, margin: 20
+			margin: 20,
+			[theme.breakpoints.up("md")]: {
+				width: 200
+			},
+			[theme.breakpoints.down("sm")]: {
+				width: "calc(100% - 40px)"
+			}
 		}
-	}
+	})
 
 
 	state = {
