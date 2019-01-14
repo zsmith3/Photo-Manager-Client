@@ -1,10 +1,10 @@
-import { CardContent, Grid, Icon, Typography, withStyles, withWidth, Theme } from "@material-ui/core";
+import { CardContent, Grid, Icon, Theme, Typography, withStyles, withWidth } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
+import { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import { Folder } from "../../../models";
-import BaseGridCard, { GridCardProps } from "./BaseGridCard";
-import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
-import { isWidthUp, isWidthDown } from "@material-ui/core/withWidth";
 import { navDrawerWidth } from "../NavDrawer";
+import BaseGridCard, { GridCardExport, GridCardProps } from "./BaseGridCard";
 
 /** GridCard for Folder model */
 class FolderCard extends BaseGridCard<Folder, { icon: string, smallIcon: string, largeIcon: string, title: string }, { width: Breakpoint }> {
@@ -37,6 +37,7 @@ class FolderCard extends BaseGridCard<Folder, { icon: string, smallIcon: string,
 		}
 	})
 
+
 	constructor (props: GridCardProps & { width: Breakpoint, classes: any }) {
 		super(props);
 
@@ -44,15 +45,7 @@ class FolderCard extends BaseGridCard<Folder, { icon: string, smallIcon: string,
 		this.state.model = Folder.getById(props.modelId);
 	}
 
-	protected getSize () {
-		const padding = 10;
-		let margin = BaseGridCard.margin * 2;
-		let desiredScale = isWidthUp("md", this.props.width) ? 200 : 150;
-		let totalWidth = window.innerWidth - (isWidthUp("md", this.props.width) ? navDrawerWidth : 0) - padding;
-		let count = Math.max(Math.floor(totalWidth / (desiredScale + margin)), 1);
-		let actualScale = totalWidth / count - margin;
-		return { width: actualScale, height: isWidthUp("md", this.props.width) ? null : 60 };
-	}
+	protected getSize () { return meta.getSize(null, this.props.width); }
 
 	render () {
 		let hasLongName = this.state.model.name.length > 16;
@@ -74,4 +67,16 @@ class FolderCard extends BaseGridCard<Folder, { icon: string, smallIcon: string,
 	}
 }
 
-export default withWidth()(withStyles(FolderCard.styles)(FolderCard));
+const meta: GridCardExport = {
+	component: withWidth()(withStyles(FolderCard.styles)(FolderCard)),
+	getSize (scale: number, width: Breakpoint) {
+		const padding = 10;
+		let margin = BaseGridCard.margin * 2;
+		let desiredScale = isWidthUp("md", width) ? 200 : 150;
+		let totalWidth = window.innerWidth - (isWidthUp("md", width) ? navDrawerWidth : 0) - padding;
+		let count = Math.max(Math.floor(totalWidth / (desiredScale + margin)), 1);
+		let actualScale = totalWidth / count - margin;
+		return { width: actualScale, height: isWidthUp("md", width) ? 73 : 60 };
+	}
+}
+export default meta;

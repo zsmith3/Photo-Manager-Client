@@ -1,19 +1,44 @@
-import { Hidden, Icon, IconButton, InputAdornment, TextField, Theme, Typography, withStyles, withWidth, Zoom } from "@material-ui/core";
+import { Grid, Hidden, Icon, IconButton, InputAdornment, TextField, Theme, Typography, withStyles, withWidth, Zoom } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import { Folder } from "../../models";
 import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
+import { navDrawerWidth } from "./NavDrawer";
 
 /** Address bar element */
 class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string, searchIcon: string, searchShowIcon: string }, width: Breakpoint }> {
+	static height = 36
+
 	static styles = (theme: Theme) => ({
 		addressBar: {
-			backgroundColor: theme.palette.background.paper
+			backgroundColor: theme.palette.background.paper,
+			height: AddressBar.height
 		},
 		address: {
-			display: "inline"
+			display: "inline-block",
+			lineHeight: "36px",
+			overflow: "hidden" as "hidden",
+			whiteSpace: "nowrap" as "nowrap",
+			textOverflow: "ellipsis" as "ellipsis",
+			margin: "0 10px",
+			direction: "rtl" as "rtl",
+			[theme.breakpoints.down("sm")]: {
+				maxWidth: "calc(100vw - 200px)"
+			},
+			[theme.breakpoints.up("md")]: {
+				maxWidth: "calc(100vw - " + (navDrawerWidth + 378) + "px)"
+			}
+		},
+		placeholder: {
+			flexGrow: 1
+		},
+		searchShowIcon: {
+			float: "right" as "right"
+		},
+		searchZoom: {
+			transformOrigin: "100% 50% 0"
 		},
 		search: {
 			float: "right" as "right",
@@ -27,9 +52,6 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		},
 		searchIcon: {
 			cursor: "pointer" as "pointer"
-		},
-		searchShowIcon: {
-			float: "right" as "right"
 		}
 	});
 
@@ -118,60 +140,74 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		let searchShown = isWidthUp("md", this.props.width) ? true : this.state.searchShown;
 
 		return <div className={this.props.classes.addressBar}>
-			{/* Navigation buttons */}
-			<span>
-				<IconButton title="Back" onClick={ () => LocationManager.instance.props.history.goBack() }>
-					<Icon>arrow_back</Icon>
-				</IconButton>
+			{/* Grid is needed to avoid positioning of elements affecting each other */}
+			<Grid container>
+				{/* Navigation buttons */}
+				<Grid item>
+					<IconButton title="Back" onClick={ () => LocationManager.instance.props.history.goBack() }>
+						<Icon>arrow_back</Icon>
+					</IconButton>
 
-				<IconButton title="Forward" onClick={ () => LocationManager.instance.props.history.goForward() }>
-					<Icon>arrow_forward</Icon>
-				</IconButton>
+					<IconButton title="Forward" onClick={ () => LocationManager.instance.props.history.goForward() }>
+						<Icon>arrow_forward</Icon>
+					</IconButton>
 
-				<IconButton title="Up" onClick={ this.moveUp }>
-					<Icon>arrow_upward</Icon>
-				</IconButton>
+					<IconButton title="Up" onClick={ this.moveUp }>
+						<Icon>arrow_upward</Icon>
+					</IconButton>
 
-				<IconButton title="Return to root folders" onClick={ () => LocationManager.updateLocation("/folders/") }>
-					<Icon>home</Icon>
-				</IconButton>
-			</span>
+					<IconButton title="Return to root folders" onClick={ () => LocationManager.updateLocation("/folders/") }>
+						<Icon>home</Icon>
+					</IconButton>
+				</Grid>
 
-			{/* Page address (i.e. folder path) */}
-			<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
+				{/* Page address (i.e. folder path) */}
+				<Grid item>
+					<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
+				</Grid>
 
-			{/* Button to show/hide search bar on mobile */}
-			<Hidden mdUp>
-				<IconButton className={ this.props.classes.searchShowIcon } onClick={ () => this.setState({ searchShown: true }) }>
-					<Icon>search</Icon>
-				</IconButton>
-			</Hidden>
+				{/* Placeholder to push following to right */}
+				<div style={ { flexGrow: 1 } } />
 
-			{/* Search bar (with zoom effect for mobile) */}
-			<Zoom in={ searchShown } style={ { transformOrigin: '100% 50% 0' } }>
-				<TextField className={ this.props.classes.search }
-					placeholder="Search"
-					title="Search the current view for files"
-					defaultValue={ LocationManager.currentQuery.get("search") }
-					onKeyDown={ (event) => { if (event.key === "Enter") this.search(); } }
-					onChange={ (event) => this.state.searchValue = event.currentTarget.value }
-					InputProps={ {
-						startAdornment: (
-							<Hidden mdUp>
-								<InputAdornment className={ this.props.classes.searchIcon } position="start" onClick={ () => this.setState({ searchShown: false }) }>
-									<Icon>arrow_back</Icon>
-								</InputAdornment>
-							</Hidden>
-						),
-						endAdornment: (
-							<InputAdornment className={ this.props.classes.searchIcon } position="end" onClick={ () => this.search() }>
-								<Icon>search</Icon>
-							</InputAdornment>
-						)
-					} } />
-			</Zoom>
+				<Grid item>
+					{/* Button to show/hide search bar on mobile */}
+					<Hidden mdUp>
+						<IconButton className={ this.props.classes.searchShowIcon } onClick={ () => this.setState({ searchShown: true }) }>
+							<Icon>search</Icon>
+						</IconButton>
+					</Hidden>
+
+
+					{/* Search bar (with zoom effect for mobile) */}
+					<Zoom in={ searchShown }>
+						<TextField className={ this.props.classes.search }
+							placeholder="Search"
+							title="Search the current view for files"
+							defaultValue={ LocationManager.currentQuery.get("search") }
+							onKeyDown={ (event) => { if (event.key === "Enter") this.search(); } }
+							onChange={ (event) => this.state.searchValue = event.currentTarget.value }
+							InputProps={ {
+								startAdornment: (
+									<Hidden mdUp>
+										<InputAdornment className={ this.props.classes.searchIcon } position="start" onClick={ () => this.setState({ searchShown: false }) }>
+											<Icon>arrow_back</Icon>
+										</InputAdornment>
+									</Hidden>
+								),
+								endAdornment: (
+									<InputAdornment className={ this.props.classes.searchIcon } position="end" onClick={ () => this.search() }>
+										<Icon>search</Icon>
+									</InputAdornment>
+								)
+							} } />
+					</Zoom>
+				</Grid>
+			</Grid>
+
 		</div>;
 	}
 }
 
 export default withWidth()(withStyles(AddressBar.styles)(AddressBar));
+
+export const addressBarHeight = AddressBar.height;

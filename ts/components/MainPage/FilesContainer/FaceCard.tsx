@@ -1,9 +1,10 @@
 import { Typography, withStyles } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import React, { Fragment } from "react";
 import { FaceImgSizes } from "../../../controllers/Platform";
 import { Face } from "../../../models";
 import { ImageLoader } from "../../utils";
-import BaseGridCard, { GridCardProps } from "./BaseGridCard";
+import BaseGridCard, { GridCardExport, GridCardProps } from "./BaseGridCard";
 
 /** GridCard for Face model */
 class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
@@ -34,8 +35,7 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 		this.state.model = Face.getById(props.modelId);
 	}
 
-	protected getSize () { return { width: this.props.scale, height: this.props.scale * 5 / 4 }; }
-
+	protected getSize () { return meta.getSize(this.props.scale, null); }
 
 	render () {
 		return this.renderBase(
@@ -49,4 +49,8 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 	}
 }
 
-export default withStyles(FaceCard.styles)(FaceCard);
+const meta: GridCardExport = {
+	component: withStyles(FaceCard.styles)(FaceCard),
+	getSize (scale: number, width: Breakpoint) { return { width: scale, height: scale * 5 / 4 }; }
+}
+export default meta;

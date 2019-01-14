@@ -1,7 +1,7 @@
 import { Icon } from "@material-ui/core";
 import React, { Fragment } from "react";
 import Hammer from "react-hammerjs";
-import { FaceImgSizes, FileImgSizes } from "../../controllers/Platform";
+import { FaceImgSizes, FileImgSizes, Platform } from "../../controllers/Platform";
 import MountTrackedComponent from "./MountTrackedComponent";
 
 type ImgSizes = (FileImgSizes | FaceImgSizes);
@@ -40,6 +40,9 @@ interface ImageLoaderPropsType {
 export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsType> {
 	/** Track whether an image is currently being loaded, allowing `this.loadNext` to be called harmlessly at any time */
 	private isLoading = false
+
+	/** ID of MediaQueueItem for currently loading image (used to cancel on unmount) */
+	private imageQueueId: number = null
 
 	state = {
 		loadState: null as ImgSizes,
@@ -82,6 +85,7 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 			this.isLoading = false;
 			this.loadNext();
 		});
+		this.imageQueueId = Platform.mediaQueue.currentId;
 	}
 
 	/**
@@ -115,7 +119,13 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 		this.loadFirst(props);
 	}
 
-	shouldComponentUpdate(nextProps: ImageLoaderPropsType) {
+	componentWillUnmount () {
+		super.componentWillUnmount();
+
+		Platform.mediaQueue.cancel(this.imageQueueId);
+	}
+
+	shouldComponentUpdate (nextProps: ImageLoaderPropsType) {
 		// If no important props have changed then re-render (image data loaded must still be correct)
 		if (nextProps.model === this.props.model && nextProps.maxSize === this.props.maxSize && nextProps.minSize === this.props.minSize && nextProps.maxFirstSize === this.props.maxFirstSize) return true;
 		else {

@@ -101,6 +101,7 @@ class WebPlatform extends BasePlatform {
 
 /** Item format for MediaQueue */
 interface MediaQueueItem {
+	id: number,
 	url: string,
 	resolve: (data: string) => void,
 	reject: (error?: any) => void
@@ -120,6 +121,9 @@ class MediaQueue {
 	/** Whether the queue is currently paused */
 	private paused = false
 
+	/** Unique ID of latest item added */
+	currentId = 0
+
 
 	constructor (max=6) {
 		this.max = max;
@@ -133,7 +137,8 @@ class MediaQueue {
 	 */
 	add (url: string): Promise<string> {
 		return new Promise((resolve, reject) => {
-			this.items.unshift({ url: url, resolve: resolve, reject: reject });
+			this.currentId++;
+			this.items.unshift({ id: this.currentId, url: url, resolve: resolve, reject: reject });
 			this.run();
 		});
 	}
@@ -172,6 +177,15 @@ class MediaQueue {
 	resume () {
 		this.paused = false;
 		this.run();
+	}
+
+	/**
+	 * Cancel a queued item (if not started yet)
+	 * @param id ID of the item to cancel
+	 */
+	cancel (id: number) {
+		let index = this.items.findIndex(item => item.id === id);
+		if (index !== -1) this.items.splice(index, 1);
 	}
 }
 

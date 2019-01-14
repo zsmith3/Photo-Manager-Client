@@ -1,8 +1,9 @@
-import { GridList, GridListTile, Icon, IconButton, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, withStyles, withWidth, Theme } from "@material-ui/core";
+import { Icon, IconButton, LinearProgress, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Theme, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import { Slider } from "@material-ui/lab";
-import React, { ComponentType, Fragment } from "react";
+import React, { Fragment } from "react";
+import { Grid } from "react-virtualized";
 import { Input } from "../../../controllers/Input";
 import { Platform } from "../../../controllers/Platform";
 import { Album, Face, FileObject, Folder, Person } from "../../../models";
@@ -10,7 +11,7 @@ import { promiseChain } from "../../../utils";
 import { addressRootTypes } from "../../App";
 import { ListDialog, LocationManager, SimpleDialog } from "../../utils";
 import { navDrawerWidth } from "../NavDrawer";
-import BaseGridCard, { GridCardProps } from "./BaseGridCard";
+import BaseGridCard, { GridCardExport } from "./BaseGridCard";
 import FaceCard from "./FaceCard";
 import FileCard from "./FileCard";
 import FolderCard from "./FolderCard";
@@ -40,7 +41,7 @@ type dataType = {
 	objectIds: number[],
 
 	/** GridCard component to display for each instance */
-	card: ComponentType<GridCardProps>,
+	card: GridCardExport,
 
 	/** List of IDs of selected objects */
 	selection?: number[],
@@ -56,11 +57,13 @@ type dataType = {
 }
 
 /** Grid-based container for displaying Files (and other models) */
-class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number, searchQuery: string, classes: { grid: string, contextMenuButton: string, scaleSlider: string }, width: Breakpoint }> {
+class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number, searchQuery: string, offsetTop: number, classes: { container: string, contextMenuButton: string, scaleSlider: string, subheader: string, grid: string }, width: Breakpoint }> {
 	static styles = (theme: Theme) => ({
-		grid: {
-			margin: 0,
-			padding: 10
+		container: {
+			margin: 5,
+			marginBottom: 0,
+			overflowY: "auto" as "auto",
+			overflowX: "hidden" as "hidden"
 		},
 		contextMenuButton: {
 			float: "right" as "right"
@@ -73,6 +76,13 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 			[theme.breakpoints.down("sm")]: {
 				width: "calc(100% - 40px)"
 			}
+		},
+		subheader: {
+			backgroundColor: theme.palette.background.default
+		},
+		grid: {
+			overflowX: "hidden" as "hidden",
+			paddingBottom: 10
 		}
 	})
 
@@ -127,8 +137,6 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 				});
 				resolve();
 			}
-
-			//let searchQuery = LocationManager.currentQuery.get("search");
 
 			switch (props.rootType) {
 				case "folders":
@@ -361,8 +369,14 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 
 	/** Get the total available display width for container */
 	getTotalWidth (): number {
-		const padding = 10;
-		return window.innerWidth - (isWidthUp("md", this.props.width) ? navDrawerWidth : 0) - padding;
+		const margin = 10;
+		return window.innerWidth - (isWidthUp("md", this.props.width) ? navDrawerWidth : 0) - margin;
+	}
+
+	/** Get the total available display height for container */
+	getTotalHeight (): number {
+		const sliderHeight = 20;
+		return window.innerHeight - this.props.offsetTop - sliderHeight;
 	}
 
 	/** Get default/range for scale, based on root type */
@@ -427,7 +441,7 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 
 	// Component methods
 
-	constructor (props: { rootType: addressRootTypes, rootId: number, searchQuery: string, classes: any, width: Breakpoint }) {
+	constructor (props: { rootType: addressRootTypes, rootId: number, searchQuery: string, offsetTop: number, classes: any, width: Breakpoint }) {
 		super(props);
 
 		// TODO this should not be needed as FilesContainer should not be re-constructed
@@ -455,30 +469,23 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 	}
 
 	render () {
+		// ID of item open in ImageModal
 		let openItemId = this.getOpenItemId();
 
+		// Whether in selection mode (touch only)
 		let selectOnTap = Input.isTouching && this.state.data.filter(set => set.selection.length > 0).length > 0;
 
 		if (this.state.dataLoaded) {
 			return <Fragment>
+					{/* Scaling slider */}
 					{ this.getScaleSlider() }
 
 					{/* Main display grid */}
-					<GridList className={ this.props.classes.grid } cols={ 1 } cellHeight="auto" spacing={ 10 } onClick={ () => this.selectAll(false) }>
+					<div className={ this.props.classes.container } style={ { height: this.getTotalHeight() } } onClick={ () => this.selectAll(false) }>
 						{ this.state.data.map(objectSet => {
-							let title = objectSet.objectIds.length > 0 && <GridListTile key="childrenSubheader" cols={ 1 }>
-								<ListSubheader component="div">
-									{ objectSet.name }
-									{ selectOnTap && <span className={ this.props.classes.contextMenuButton }>
-										<IconButton onClick={ event => { event.stopPropagation(); objectSet.onMenu(null, { left: event.clientX, top: event.clientY }); } }>
-											<Icon>more_vert</Icon>
-										</IconButton>
-									</span> }
-								</ListSubheader>
-							</GridListTile>;
-
-							let cards = objectSet.objectIds.map(objectId => (
-								<objectSet.card key={ `${ objectSet.id }_${ objectId }` }
+							// Actual item GridCards to display
+							let allCards = objectSet.objectIds.map(objectId => (
+								<objectSet.card.component key={ `${ objectSet.id }_${ objectId }` }
 									modelId={ objectId }
 									selected={ objectSet.selection.includes(objectId) }
 									selectOnTap={ selectOnTap }
@@ -487,9 +494,44 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 									scale={ this.getCurrentScale() } />
 							));
 
-							return [ title ].concat(cards);
+							// Sizing calculations
+							let cardSize = objectSet.card.getSize(this.getCurrentScale(), this.props.width);
+							let cellSize = { width: cardSize.width + BaseGridCard.margin * 2, height: cardSize.height + BaseGridCard.margin * 2 };
+							let columnCount = this.getCountFromScale(cardSize.width);
+							let rowCount = Math.ceil(allCards.length / columnCount);
+							let contentHeight = rowCount * cellSize.height + 10;
+							let gridHeight = isWidthUp("md", this.props.width) ? contentHeight : Math.min(contentHeight, this.getTotalHeight() - 48);
+
+							return objectSet.objectIds.length > 0 &&
+								<Fragment key={ objectSet.id }>
+									{/* Object set title */}
+									<ListSubheader component="div" className={ this.props.classes.subheader }>
+										{ objectSet.name }
+										{ selectOnTap && <span className={ this.props.classes.contextMenuButton }>
+											<IconButton onClick={ event => { event.stopPropagation(); objectSet.onMenu(null, { left: event.clientX, top: event.clientY }); } }>
+												<Icon>more_vert</Icon>
+											</IconButton>
+										</span> }
+									</ListSubheader>
+
+									{/* Card Grid */}
+									<Grid
+										className={ this.props.classes.grid }
+										width={ this.getTotalWidth() }
+										height={ gridHeight }
+										rowCount={ rowCount }
+										rowHeight={ cellSize.height }
+										columnCount={ columnCount }
+										columnWidth={ cellSize.width }
+										cellRenderer={ (props: { columnIndex, isScrolling, isVisible, key, parent, rowIndex, style }) => (
+											<div key={ props.key } style={ props.style }>
+												{ allCards[ props.rowIndex * columnCount + props.columnIndex ] }
+											</div>
+										) }
+									/>
+								</Fragment>;
 						}) }
-					</GridList>
+					</div>
 
 					{/* Context menu and dialogs */}
 					{ this.getPopups() }

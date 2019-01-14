@@ -1,10 +1,11 @@
 import { CardContent, Icon, Typography, withStyles } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import React, { Fragment } from "react";
 import { FileImgSizes } from "../../../controllers/Platform";
 import { FileObject } from "../../../models";
 import { FileTypes } from "../../../models/FileObject";
 import { ImageLoader } from "../../utils";
-import BaseGridCard, { GridCardProps } from "./BaseGridCard";
+import BaseGridCard, { GridCardExport, GridCardProps } from "./BaseGridCard";
 
 /** GridCard for File model */
 class FileCard extends BaseGridCard<FileObject, { img: string }> {
@@ -37,7 +38,7 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 		this.state.model = FileObject.getById(props.modelId);
 	}
 
-	protected getSize () { return { width: this.props.scale, height: this.props.scale }; }
+	protected getSize () { return meta.getSize(this.props.scale, null); }
 
 	render () {
 		return this.renderBase(
@@ -55,4 +56,8 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 	}
 }
 
-export default withStyles(FileCard.styles)(FileCard);
+const meta: GridCardExport = {
+	component: withStyles(FileCard.styles)(FileCard),
+	getSize (scale: number, width: Breakpoint) { return { width: scale, height: scale }; }
+}
+export default meta;

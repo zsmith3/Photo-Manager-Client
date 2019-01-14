@@ -1,4 +1,5 @@
-import { Card, CardActionArea, GridListTile } from "@material-ui/core";
+import { Card, CardActionArea } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import React from "react";
 import Hammer from "react-hammerjs";
 import { SelectMode } from ".";
@@ -108,21 +109,33 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 	 * @returns The fully rendered Card
 	 */
 	renderBase (content: JSX.Element) {
-		return <GridListTile>
-				<Hammer onPress={ this.onContextMenu }>
-					<div> {/* This <div> is needed for Hammer to bind event listeners */}
-						<Card className={ this.props.classes.card }
-							style={ { ...(this.getSize()), backgroundColor: this.props.selected ? "lightblue" : "white" } }
-							onClick={ this.onClick }
-							onDoubleClick={ () => this.state.model.open() }
-							onContextMenu={ this.onContextMenu }>
-							<div style={ { display: this.props.selected ? "block" : "none" } } className={ this.props.classes.border } />
-							<CardActionArea className={ this.props.classes.action }>
-								{ content }
-							</CardActionArea>
-						</Card>
-					</div>
-				</Hammer>
-			</GridListTile>;
+		return <Hammer onPress={ this.onContextMenu }>
+				<div> {/* This <div> is needed for Hammer to bind event listeners */}
+					<Card className={ this.props.classes.card }
+						style={ { ...(this.getSize()), backgroundColor: this.props.selected ? "lightblue" : "white" } }
+						onClick={ this.onClick }
+						onDoubleClick={ () => this.state.model.open() }
+						onContextMenu={ this.onContextMenu }>
+						<div style={ { display: this.props.selected ? "block" : "none" } } className={ this.props.classes.border } />
+						<CardActionArea className={ this.props.classes.action }>
+							{ content }
+						</CardActionArea>
+					</Card>
+				</div>
+			</Hammer>;
 	}
+}
+
+/** Interface providing GridCard with scaling information */
+export interface GridCardExport {
+	/** The actual component to render */
+	component: React.ComponentType<GridCardProps>
+
+	/**
+	 * Get the sizing of each GridCard in the given context
+	 * @param scale Current FilesContainer scale value
+	 * @param width Total screen width
+	 * @returns The width and height of the cards
+	 */
+	getSize (scale: number, width: Breakpoint): { width: number, height: number }
 }
