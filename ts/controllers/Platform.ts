@@ -11,8 +11,7 @@ export enum FileImgSizes {
 
 /** Sizes for Face image data requests */
 export enum FaceImgSizes {
-	Small = 0,
-	Standard = 1
+	Standard = 0
 }
 
 // TODO document this
@@ -85,7 +84,7 @@ class WebPlatform extends BasePlatform {
 				url = "api/images/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size];
 				break;
 			case "face":
-				url = "api/images/faces/" + object.id + "/" + ["40/", "200/"][size];
+				url = "api/images/faces/" + object.id + "/" + [""][size];
 				break;
 		}
 

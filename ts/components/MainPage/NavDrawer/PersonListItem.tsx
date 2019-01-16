@@ -1,6 +1,6 @@
 import { Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, withStyles, TextField, List, Radio, MenuList, ListSubheader } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { Platform } from "../../../controllers/Platform";
+import { Platform, FaceImgSizes } from "../../../controllers/Platform";
 import { Person, PersonGroup } from "../../../models";
 import { HoverIconButton, SimpleDialog, ListDialog, TextDialog, MountTrackedComponent } from "../../utils";
 import { Link } from "react-router-dom";
@@ -35,7 +35,7 @@ class PersonListItem extends MountTrackedComponent<{ personId: number, classes: 
 		Person.getById(props.personId).registerInstanceUpdateHandler((person: Person) => this.setState({person: person}));
 		this.state.person = Person.getById(props.personId);
 
-		if (this.state.person.thumbnail !== null) Platform.getImgSrc({ type: "face", id: this.state.person.thumbnail }, "/40/").then(src => this.setState({ thumbnailSrc: src }));
+		if (this.state.person.thumbnail !== null) Platform.getImgSrc({ id: this.state.person.thumbnail }, "face", FaceImgSizes.Standard, true).then(src => this.setState({ thumbnailSrc: src }));
 	}
 
 	menuClose = () => { this.setState({ openMenu: false}) }
