@@ -57,7 +57,7 @@ class WebPlatform extends BasePlatform {
 	mediaQueue = new MediaQueue()
 
 	urls = {
-		serverUrl: "http://192.168.1.150/fileserver/",
+		serverUrl: process.env.SERVER_URL,
 
 		getPageUrl (page, query) {
 			if (page == "index") page = "";
