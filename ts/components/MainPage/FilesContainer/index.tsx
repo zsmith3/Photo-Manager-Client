@@ -9,7 +9,7 @@ import { Platform } from "../../../controllers/Platform";
 import { Album, Face, FileObject, Folder, Person } from "../../../models";
 import { promiseChain } from "../../../utils";
 import { addressRootTypes } from "../../App";
-import { ListDialog, LocationManager, SimpleDialog } from "../../utils";
+import { ListDialog, LocationManager, SimpleDialog, MountTrackedComponent } from "../../utils";
 import { navDrawerWidth } from "../NavDrawer";
 import BaseGridCard, { GridCardExport } from "./BaseGridCard";
 import FaceCard from "./FaceCard";
@@ -57,7 +57,7 @@ type dataType = {
 }
 
 /** Grid-based container for displaying Files (and other models) */
-class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootId: number, searchQuery: string, offsetTop: number, classes: { container: string, contextMenuButton: string, scaleSlider: string, subheader: string, grid: string }, width: Breakpoint }> {
+class FilesContainer extends MountTrackedComponent<{ rootType: addressRootTypes, rootId: number, searchQuery: string, offsetTop: number, classes: { container: string, contextMenuButton: string, scaleSlider: string, subheader: string, grid: string }, width: Breakpoint }> {
 	static styles = (theme: Theme) => ({
 		container: {
 			margin: 5,
@@ -126,7 +126,7 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 
 		return new Promise((resolve, reject) => {
 			let complete = (data: dataType[]) => {
-				this.setState({
+				this.setStateSafe({
 					data: data.map(set => Object.assign(set, {
 						selection: [],
 						lastSelected: set.objectIds.length > 0 ? set.objectIds[0] : null,
@@ -219,6 +219,8 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 	 * @returns Fragment containing menu/dialogs
 	 */
 	private getPopups (): JSX.Element {
+		let selection = this.state.actionSelection;
+
 		switch (this.props.rootType) {
 			case "folders":
 				return <Fragment>
@@ -226,12 +228,12 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 					<Menu anchorReference="anchorPosition" anchorPosition={ this.state.menuAnchorPos } open={ this.state.openContextMenu } onClick={ this.menuClose } onClose={ this.menuClose }>
 						<MenuList subheader={
 							<ListSubheader style={ { lineHeight: "24px" } }>
-								{ `${ this.state.actionSelection.objectIds.length } ${ this.state.actionSelection.setId === 1 ? "folder" : "file" }(s)` }
+								{ `${ selection.objectIds.length } ${ selection.setId === 1 ? "folder" : "file" }(s)` }
 							</ListSubheader>
 						}>
-							{ this.state.actionSelection.setId === 2 &&
+							{/*  selection.setId === 2 &&
 							<MenuItem onClick={ () => this.dialogOpen("album") }><ListItemIcon><Icon>photo_album</Icon></ListItemIcon>Add to Album</MenuItem>
-							}
+							 */}
 						</MenuList>
 					</Menu>
 
@@ -240,7 +242,7 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 						open={ this.state.openDialogs.album } onClose={ () => this.dialogClose("album") }
 						title="Add file(s) to album" actionText="Add"
 						list={ Album.meta.objects.map(album => ({ id: album.id, name: album.path })) }
-						action={ (albumId: number) => Album.getById(albumId).addFiles(this.state.actionSelection.objectIds) }
+						action={ (albumId: number) => Album.getById(albumId).addFiles(selection.objectIds) }
 					/>
 				</Fragment>;
 			case "people":
@@ -249,11 +251,18 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 					<Menu anchorReference="anchorPosition" anchorPosition={ this.state.menuAnchorPos } open={ this.state.openContextMenu } onClick={ this.menuClose } onClose={ this.menuClose }>
 						<MenuList subheader={
 							<ListSubheader style={ { lineHeight: "24px" } }>
-								{ `${ this.state.actionSelection.objectIds.length } faces` }
+								{ `${ selection.objectIds.length } faces` }
 							</ListSubheader>
 						}>
-							<MenuItem onClick={ () => this.dialogOpen("person_confirm") }><ListItemIcon><Icon>check</Icon></ListItemIcon>Confirm Identification</MenuItem>
-							<MenuItem onClick={ () => this.dialogOpen("person_edit") }><ListItemIcon><Icon>edit</Icon></ListItemIcon>Edit Identification</MenuItem>
+							<MenuItem onClick={ () => this.dialogOpen("person_confirm") } disabled={ selection.objectIds.find(id => { let face = Face.getById(id); return face.personID !== 0 && face.status > 1; }) === undefined }>
+								<ListItemIcon><Icon>check</Icon></ListItemIcon>
+								Confirm Identification
+							</MenuItem>
+
+							<MenuItem onClick={ () => this.dialogOpen("person_edit") }>
+								<ListItemIcon><Icon>edit</Icon></ListItemIcon>
+								Set/Edit Identification
+							</MenuItem>
 						</MenuList>
 					</Menu>
 
@@ -261,8 +270,8 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 					<SimpleDialog
 						open={ this.state.openDialogs.person_confirm } onClose={ () => this.dialogClose("person_confirm") }
 						title="Confirm identification of face(s)" actionText="Confirm"
-						text={ `Are you sure you want to confirm identification of ${ this.state.actionSelection.objectIds.length } faces?` }
-						action={ () => promiseChain(this.state.actionSelection.objectIds, (resolve, reject, id) => Face.getById(id).setStatus(1).then(resolve).catch(reject)) }
+						text={ `Are you sure you want to confirm identification of ${ selection.objectIds.length } faces?` }
+						action={ () => promiseChain(selection.objectIds, (resolve, reject, id) => Face.getById(id).setStatus(1).then(resolve).catch(reject)) }
 					/>
 
 					{/* Change person dialog */}
@@ -270,7 +279,7 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 						open={ this.state.openDialogs.person_edit } onClose={ () => this.dialogClose("person_edit") }
 						title="Edit identification of face(s)" actionText="Change Person"
 						list={ Person.meta.objects.map(person => ({ id: person.id, name: person.full_name })) }
-						action={ (personId: number) =>  promiseChain(this.state.actionSelection.objectIds, (resolve, reject, id) => Face.getById(id).setPerson(personId).then(resolve).catch(reject)) }
+						action={ (personId: number) =>  promiseChain(selection.objectIds, (resolve, reject, id) => Face.getById(id).setPerson(personId).then(resolve).catch(reject)) }
 					/>
 				</Fragment>;
 		}
@@ -448,7 +457,7 @@ class FilesContainer extends React.Component<{ rootType: addressRootTypes, rootI
 		Platform.mediaQueue.reset();
 
 		// Update scaling on resize
-		window.addEventListener("resize", () => this.forceUpdate());
+		window.addEventListener("resize", () => { if (this.mounted) this.forceUpdate(); });
 
 		this.getData(props);
 	}

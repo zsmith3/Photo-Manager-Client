@@ -32,7 +32,7 @@ class PersonListItem extends MountTrackedComponent<{ personId: number, classes: 
 	constructor (props: { personId: number, classes: { avatar: string, image: string } }) {
 		super(props);
 
-		Person.getById(props.personId).registerInstanceUpdateHandler((person: Person) => this.setState({person: person}));
+		Person.getById(props.personId).registerInstanceUpdateHandler((person: Person) => this.setStateSafe({person: person}));
 		this.state.person = Person.getById(props.personId);
 
 		if (this.state.person.thumbnail !== null) Platform.getImgSrc({ id: this.state.person.thumbnail }, "face", FaceImgSizes.Standard, true).then(src => this.setState({ thumbnailSrc: src }));

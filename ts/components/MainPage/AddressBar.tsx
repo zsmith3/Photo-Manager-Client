@@ -2,7 +2,7 @@ import { Grid, Hidden, Icon, IconButton, InputAdornment, TextField, Theme, Typog
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
-import { Folder } from "../../models";
+import { Folder, Person } from "../../models";
 import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
 import { navDrawerWidth } from "./NavDrawer";
@@ -93,6 +93,9 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 			case "folders":
 				const folder = await Folder.loadObject<Folder>(props.rootId);
 				return folder.path;
+			case "people":
+				const person = await Person.loadObject<Person>(props.rootId);
+				return person.full_name;
 		}
 	}
 
