@@ -9,13 +9,13 @@ It has three main goals:
 
 Example use case: I want to be able to remotely synchronise the photos on my phone and my computer, and organise them on either one. But, I don't want the cost/privacy issues of uploading to a third-party site.
 
-See also the [Server](https://github.com/zsmith3/Photo-Manager-Server/) repository for the Django-based server-side code. The client does not yet function without a server to connect to.
+See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/) for the Django-based server-side code. This client does not yet function without a server to connect to.
 
 
 ## Installation
 
 1) Install NPM
-2) Clone this repository (`git clone https://github.com/zsmith3/Photo-Manager-Fileserver/`) and enter the directory (`cd Photo-Manager-Fileserver`)
+2) Clone this repository (`git clone https://github.com/zsmith3/Photo-Manager-Client/`) and enter the directory (`cd Photo-Manager-Client`)
 3) Install NPM dependencies (`npm install`)
 4) In order to build:
 	- Install Parcel Bundler globally (`npm install -g parcel-bundler`)
