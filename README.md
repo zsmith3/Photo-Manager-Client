@@ -39,9 +39,89 @@ These are the default parameter values, so this command is equivalent to just ru
 Note that when environment variables are changed (i.e. `platform` or `server`), you may need to clear the **.cache** directory for changes to be registered.
 
 
-## Features
+## Features/To-Do
 
-TODO
+Here is a list of existing features, as well as features which I intend to add in the future. This list may not be comprehensive.
+
+- [x] Sorting capabilities
+	- [ ] Albums
+		- [x] Albums can have (infinitely recursive) child albums
+			- [x] Files added to child albums are automatically included in parent albums
+		- [x] Files can be added to (multiple) albums
+	- [x] People
+		- [x] New files are scanned for contained faces
+		- [x] Faces can be manually identified as belonging to certain people
+		- [x] Predictions for people to which faces belong
+			- [ ] Run this automatically
+			- [x] Users can confirm predictions
+			- [ ] Allow users to reject predictions
+	- [ ] Geotags
+		- [x] Geotags are read from EXIF data
+		- [ ] Files should have a geotag, which includes co-ordinates, and an "area"
+		- [ ] Geotag areas should include a name, address, co-ordinates and area radius
+	- [ ] Feature tags
+- [x] Page components
+	- [x] Navigation drawer
+		- [ ] Lists albums
+			- [x] Shows a hierarchical list, with collapsible lists of child albums
+			- [x] Albums can be renamed, moved to different parents and removed
+			- [x] New albums can be added as child or root albums
+		- [x] Lists people
+			- [x] Shows a list of person groups, each with a collapsible list of people
+			- [x] Groups can be created renamed and removed
+			- [x] People can be created within a group, renamed, moved to a different group and removed
+			- [x] People can be opened
+		- [ ] List geotag areas
+		- [x] Persistent on large screens, temporary on small screens
+	- [x] Address bar
+		- [x] Shows current folder/person/album path
+		- [x] Has back, forward, "up" and "home" (root folders) buttons
+		- [x] Contains a search bar
+	- [x] Main files container
+		- [x] Items can be selected and modified (see Sorting capabilities)
+		- [ ] Show details for selected items
+		- [ ] Different views
+			- [ ] Map view
+			- [ ] Option to show files containing person or faces within folder
+	- [x] Open file
+		- [x] Image files can be displayed full screen
+			- [x] Images can be panned and zoomed
+			- [x] Users can move forwards and backwards through a list of images
+			- [ ] Display outlines of faces in images
+			- [ ] Show options menu for open images
+		- [ ] Allow other file types to be opened
+- [x] Navigation
+	- [x] 3 main hiearachies
+		- [x] Folders
+			- [x] Displays folders and files in separate lists
+			- [ ] Option to show all files in subfolders, rather than just immediate children
+		- [x] People
+			- [x] Displays faces for different people
+			- [ ] Optionally show files belonging to a person
+		- [ ] Albums
+	- [x] Filtering
+		- [x] Searching
+			- [x] Files
+				- [x] Found using file name, and names of related people, geotags, albums and folders
+			- [x] Folders
+				- [x] Found using folder name
+				- [ ] Find using name of any parent folder
+			- [ ] Allow searching of faces (via their file)
+			- [x] Searching within a folder returns results from all subfolders
+				- [ ] Option to choose whether or not to search all subfolders
+		- [ ] (*possibly*) More explicit filtering system
+- [ ] Cross-platform
+	- [x] Web
+	- [ ] Mobile application
+		- [ ] Use Cordova to package for mobile
+		- [ ] Use React-Native to build native application
+	- [ ] Desktop application
+		- [ ] Use Electron to package for desktop
+		- [ ] (*possibly*) Use Proton-Native to build native application
+	- [ ] Local (mobile and desktop) features
+		- [ ] Synchronise files to display images faster
+		- [ ] Synchronise full database to allow offline usage
+		- [ ] Allow fully local usage with local-only files
 
 
 ## Contributing
