@@ -20,6 +20,9 @@ See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/
 4) In order to build:
 	- Install Parcel Bundler globally (`npm install -g parcel-bundler`)
 	- Install [Powershell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
+5) Cordova:
+	- Enter the cordova directory (`cd cordova`) and run `cordova prepare` to install required platforms/plugins
+	- Install external requirements to build to certain platforms (e.g. see [here](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#installing-the-requirements) for Android)
 
 
 ## Building
@@ -37,6 +40,11 @@ Example:
 These are the default parameter values, so this command is equivalent to just running: `powershell ./build.ps1`.
 
 Note that when environment variables are changed (i.e. `platform` or `server`), you may need to clear the **.cache** directory for changes to be registered.
+
+
+### Cordova
+
+Run *./build.ps1* with `-platform "cordova"` and the correct server (note that `localhost` won't work, as this will connect to the IP of the phone/emulator). Then `cd cordova` and `cordova emulate android`.
 
 
 ## Features/To-Do

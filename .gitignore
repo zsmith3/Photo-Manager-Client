@@ -1,5 +1,15 @@
+# Config files
 .vscode
+jsconfig.json
+
+# Node modules
 node_modules/
+
+# Cache and build files
 .cache/
 dist/
-jsconfig.json
+
+# Cordova files
+cordova/platforms
+cordova/plugins
+cordova/www

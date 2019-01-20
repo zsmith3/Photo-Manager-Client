@@ -1,4 +1,10 @@
-param([string]$platform="browser", [string]$server="http://localhost/fileserver/", [string]$out="dist", [bool]$prod=$false)
+param([string]$platform="browser", [string]$server="http://localhost/fileserver/", [string]$out=$false, [bool]$prod=$false)
+
+# Set default output directory
+if ($out -eq $false) {
+	if ($platform -eq "cordova") { $out = "cordova/www" }
+	else { $out = "dist" }
+}
 
 # Setup environment variables for Parcel
 $env:BUILD_PLATFORM=$platform
