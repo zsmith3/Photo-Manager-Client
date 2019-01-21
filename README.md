@@ -21,30 +21,37 @@ See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/
 	- Install Parcel Bundler globally (`npm install -g parcel-bundler`)
 	- Install [Powershell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
 5) Cordova:
+	- Install Cordova globally (`npm install -g cordova`)
 	- Enter the cordova directory (`cd cordova`) and run `cordova prepare` to install required platforms/plugins
 	- Install external requirements to build to certain platforms (e.g. see [here](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#installing-the-requirements) for Android)
 
 
 ## Building
 
-The script *./build.ps1* can be used to build, with the following parameters:
-- `platform` - The platform to build for - `"browser"` or `"cordova"`
-- `server` - The back-end server URL to connect to
-- `out` - The directory to output to
+### Browser
+
+Use *./build_browser.ps1* to build for web browser, with the following parameters:
+- `server` (required) - The back-end server URL to connect to
+- `outDir` - The directory to output to
+- `publicUrl` - The (relative) public URL at which files will be hosted - e.g. */fileserver/*
+- `parcelMode` - (Development mode only) If set to `serve`, Parcer server will be started. If set to `watch`, no server will be launched.
 - `prod` - If true, build in production mode. If false, build for development.
 
-Example:
+Example (using default parameter values, except for `server`):
 
-`powershell ./build.ps1 -platform "browser" -server "http://localhost/fileserver/" -out "dist" -prod $false`
-
-These are the default parameter values, so this command is equivalent to just running: `powershell ./build.ps1`.
-
-Note that when environment variables are changed (i.e. `platform` or `server`), you may need to clear the **.cache** directory for changes to be registered.
-
+`powershell ./build_browser.ps1 -server "http://localhost/fileserver/" -outDir "dist" -publicUrl "/" -parcelMode "serve" -prod $false`
 
 ### Cordova
 
-Run *./build.ps1* with `-platform "cordova"` and the correct server (note that `localhost` won't work, as this will connect to the IP of the phone/emulator). Then `cd cordova` and `cordova emulate android`.
+Use *./build_cordova.ps1* to build source files to `cordova/www`, with the following parameters:
+- `server` (required) - The back-end server URL to connect to (note that `localhost` won't work, as this will connect to the IP of the phone/emulator)
+- `prod` - If true, build in production mode. If false, build for development.
+
+Example (again `prod` defaults to `$false`):
+
+`powershell ./build_cordova.ps1 -server "http://localhost/fileserver/" -prod $false`
+
+Then `cd cordova` and `cordova emulate android` (or other platform as required).
 
 
 ## Features/To-Do
@@ -118,10 +125,10 @@ Here is a list of existing features, as well as features which I intend to add i
 			- [x] Searching within a folder returns results from all subfolders
 				- [ ] Option to choose whether or not to search all subfolders
 		- [ ] (*possibly*) More explicit filtering system
-- [ ] Cross-platform
+- [x] Cross-platform
 	- [x] Web
-	- [ ] Mobile application
-		- [ ] Use Cordova to package for mobile
+	- [x] Mobile application
+		- [x] Use Cordova to package for mobile
 		- [ ] Use React-Native to build native application
 	- [ ] Desktop application
 		- [ ] Use Electron to package for desktop
