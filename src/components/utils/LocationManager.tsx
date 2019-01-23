@@ -1,5 +1,5 @@
 import React from "react";
-import { pruneUrlQuery, getPathnameFromUrl, getQueryFromUrl } from "../../utils";
+import { pruneUrlQuery, getPathnameFromUrl, getQueryFromUrl, trimStr } from "../../utils";
 import { History } from "history";
 
 /**
@@ -16,8 +16,9 @@ export default class LocationManager extends React.Component<{ history: History 
 	/** The current pathname of the page URL (or the URL which it is about to be redirected to) */
 	static get currentLocation (): string {
 		if (this.nextLocation === null) {
-			if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") return window.location.pathname;
-			else return getPathnameFromUrl(window.location.hash);
+			if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") {
+				return window.location.pathname.substr(trimStr(process.env.HOST_URL, "/", "r").length);
+			} else return getPathnameFromUrl(window.location.hash);
 		} else return getPathnameFromUrl(this.nextLocation);
 	}
 
