@@ -14,15 +14,6 @@ import RegisterPage from "./RegisterPage";
 export type addressRootTypes = ("folders" | "albums" | "people");
 
 
-// Hack to fix a bug
-declare global {
-	interface Window {
-		React: any
-	}
-}
-window.React = React;
-
-
 /** Main application class, to handle all views */
 export default class App extends React.Component {
 	/** Singleton instance of App class */

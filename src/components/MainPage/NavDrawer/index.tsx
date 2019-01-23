@@ -1,13 +1,6 @@
 import { Divider, Drawer, Hidden, Theme, withStyles } from "@material-ui/core";
-import $ from "jquery";
 import React, { Fragment } from "react";
-import { Album, GeoTagArea, Person, PersonGroup } from "../../../models";
-import { ImageLoader } from "../../utils";
 import PersonGroupList from "./PersonGroupList";
-
-
-window.__MUI_USE_NEXT_TYPOGRAPHY_VARIANTS__ = true;
-
 
 interface NavDrawerStyles {
 	toolbar
@@ -65,7 +58,7 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 			</Fragment>;
 	}
 
-	// Convert a permanent drawer to a temporary drawer
+	/* // Convert a permanent drawer to a temporary drawer
 	setTemporary () {
 		let aside = $("<aside></aside>").addClass("mdc-drawer mdc-drawer--temporary").insertBefore(this);
 		$(this).removeClass("mdc-drawer mdc-drawer--permanent mdc-elevation--z6").addClass("mdc-drawer__drawer").appendTo(aside);
@@ -280,12 +273,12 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 		if (shareLinks.length == 0) {
 			$("#links").html("<br />No Links");
 		}
-	}
+	} */
 }
 
-NavDrawer.onOpen = function () {
+/* NavDrawer.onOpen = function () {
 	$(this).find("mdc-slider").each(function () { let slider = this; setTimeout(function () { slider.resetAPI(); }, 200); });
-};
+}; */
 
 export default withStyles(NavDrawer.styles)(NavDrawer);
 

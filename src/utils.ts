@@ -1,4 +1,4 @@
-import msgpack from "msgpack-lite";
+import * as msgpack from "msgpack-lite";
 import { Platform } from "./controllers/Platform";
 
 // Type definitions for httpRequest parameters

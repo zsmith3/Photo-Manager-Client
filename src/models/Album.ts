@@ -1,7 +1,6 @@
-import App from "../components/App";
 import { Database, DBTables } from "../controllers/Database";
-import { Model, ModelMeta } from "./Model";
 import { promiseChain } from "../utils";
+import { Model, ModelMeta } from "./Model";
 
 
 /** Album model */
@@ -86,7 +85,7 @@ export class Album extends Model {
 	 * @param multiple Whether or not this is part of a larger operation. If true, album listings will not be updated after removal.
 	 * @returns Empty Promise object representing completion
 	 */
-	removeFile (file: { id: string }, multiple?: boolean): Promise<never> {
+	/* removeFile (file: { id: string }, multiple?: boolean): Promise<never> {
 		return new Promise((resolve, reject) => {
 			// TODO Database class
 			apiRequest("albums/" + this.id + "/files/" + file.id + "/", "DELETE").then(() => {
@@ -100,14 +99,14 @@ export class Album extends Model {
 				} else resolve();
 			}).catch(reject);
 		});
-	}
+	} */
 
 	/**
 	 * Remove multiple files from album
 	 * @param fileIDs List of IDs of files to be removed
 	 * @returns Empty Promise object representing completion
 	 */
-	removeFiles (fileIDs: string[]): Promise<never> {
+	/* removeFiles (fileIDs: string[]): Promise<never> {
 		return new Promise((fullResolve, fullReject) => {
 			promiseChain(fileIDs, (resolve, reject, fileID: string) => { this.removeFile({ id: fileID }, true).then(resolve).catch(reject); }).then(() => {
 				// TODO Database
@@ -118,13 +117,13 @@ export class Album extends Model {
 				}).catch(fullReject);
 			}).catch(fullReject);
 		});
-	}
+	} */
 
 	/**
 	 * Delete album from remote database
 	 * @returns Empty Promise object representing completion
 	 */
-	delete (): Promise<void> {
+	/* delete (): Promise<void> {
 		return new Promise((resolve, reject) => {
 			Database.delete(Album.meta.modelName, this.id).then(() => {
 				Album.deleteById(this.id);
@@ -133,7 +132,7 @@ export class Album extends Model {
 			}).catch(reject);
 		});
 		//TODO BUG - removing album seems to remove other album from display (but not actually, thankfully)
-	}
+	} */
 }
 // TODO will need to make some ammends to album api i think
 // 		and certainly to how they're accessed in JS/TS

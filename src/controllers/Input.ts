@@ -29,7 +29,7 @@ export const Input = {
 		else return false;
 	},
 
-	onEscape: function () {
+	/* onEscape: function () {
 		App.app.els.imageModal.hide();
 	},
 
@@ -45,7 +45,7 @@ export const Input = {
 
 	onArrowUp: function () { if (!App.app.els.imageModal.open) App.app.els.filesCont.moveSelection("y", -1); },
 
-	onArrowDown: function () { if (!App.app.els.imageModal.open) App.app.els.filesCont.moveSelection("y", 1); },
+	onArrowDown: function () { if (!App.app.els.imageModal.open) App.app.els.filesCont.moveSelection("y", 1); }, */
 
 	// TODO mobile stuff
 
@@ -65,9 +65,9 @@ export const Input = {
 		}
 	}, */
 
-	on0: function () { App.app.els.imageModal.setZoom("min", "min", "c", "c"); },
+	/* on0: function () { App.app.els.imageModal.setZoom("min", "min", "c", "c"); },
 
-	on1: function () { App.app.els.imageModal.setZoom("max", "max", "c", "c"); },
+	on1: function () { App.app.els.imageModal.setZoom("max", "max", "c", "c"); }, */
 
 	mousemove: function (event) {
 		Input.xPos = event.clientX;
@@ -84,7 +84,7 @@ export const Input = {
 		Input.touchesDown--;
 	},
 
-	click: function (event) {
+	/* click: function (event) {
 		let target = event.composedPath().filter(element => $(element).is("a"));
 		if (target.length > 0) {
 			target = target[0];
@@ -102,7 +102,7 @@ export const Input = {
 				}
 			}
 		}
-	}
+	} */
 };
 
 // Attach input events to window

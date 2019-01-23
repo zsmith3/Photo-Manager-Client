@@ -1,8 +1,5 @@
-import { Model, ModelMeta } from "./Model"
-import { Database, DBTables } from "../controllers/Database"
-import $ from "jquery";
-import App from "../components/App"
-import { FileObject } from ".";
+import { Database, DBTables } from "../controllers/Database";
+import { Model, ModelMeta } from "./Model";
 
 
 /** Geotag area model */
@@ -23,7 +20,7 @@ export class GeoTagArea extends Model {
 		return new Promise((resolve, reject) => {
 			Database.create(GeoTagArea.meta.modelName, dataObj).then(data => {
 				let newArea = GeoTagArea.addObject(data);
-				$("<option></option>").val(newArea.id).text(newArea.name).appendTo("#modal-geotag-form-area-title");
+				// $("<option></option>").val(newArea.id).text(newArea.name).appendTo("#modal-geotag-form-area-title");
 				resolve(newArea);
 			}).catch(reject);
 		});
@@ -88,7 +85,7 @@ export class GeoTag extends Model {
 	 * @param fileID ID of file to which to assign the geotag
 	 * @returns Promise object representing new geotag
 	 */
-	static create (newGeotag: object, fileID: string): Promise<GeoTag> {
+	/* static create (newGeotag: object, fileID: string): Promise<GeoTag> {
 		return new Promise((resolve, reject) => {
 			// TODO should create geotag then assign to file
 			Database.update(FileObject.meta.modelName, fileID, { "geotag": newGeotag }).then(data => {
@@ -98,12 +95,12 @@ export class GeoTag extends Model {
 				resolve(newGeotag);
 			}).catch(reject);
 		});
-	}
+	} */
 
 
 	// TODO document these methods
 
-	static modalOnAccept () {
+	/* static modalOnAccept () {
 		if ($("#modal-geotag-form-area-title").val() == "new") {
 			let newGta = {
 				name: $("#modal-geotag-form-area-title > mdc-text").val(),
@@ -132,7 +129,7 @@ export class GeoTag extends Model {
 			};
 			GeoTag.create(newGT, App.app.els.filesCont.selection[0]);
 		}
-	}
+	} */
 
 
 	id: number

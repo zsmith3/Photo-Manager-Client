@@ -1,10 +1,8 @@
-import { Model, ModelMeta } from "./Model"
-import { Database, DBTables } from "../controllers/Database"
-import { GeoTag } from "."
-import App from "../components/App"
-import { Platform, FileImgSizes } from "../controllers/Platform"
-import { ImageLoader } from "../controllers/ImageLoader"
+import { GeoTag } from ".";
 import { LocationManager } from "../components/utils";
+import { DBTables } from "../controllers/Database";
+import { FileImgSizes, Platform } from "../controllers/Platform";
+import { Model, ModelMeta } from "./Model";
 
 
 /** Possible values for File.type field */
@@ -19,7 +17,7 @@ export class FileObject extends Model {
 		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"],
 		specialProps: {
 			"geotag": {
-				deserialize: (file: FileObject, prop: object) => {
+				deserialize: (file: FileObject, prop: { id: number }) => {
 					if (prop === null) file.geotagID = null;
 					else file.geotagID = GeoTag.addObject(prop).id
 				}
@@ -147,16 +145,6 @@ export class FileObject extends Model {
 		}
 	}
 
-	/** FUNCTION DEPRECATED - TODO remove */
-	getSrc (index) {
-		// TODO remove this (and all uses)
-		if (index in this.data) {
-			return this.data[index];
-		} else {
-			return Platform.urls.serverUrl + "api/images/" + this.id + ImageLoader.imgSizes[index];
-		}
-	}
-
 	/**
 	 * Get the maximum dimensions of the file (for images)
 	 * when it is fit within the given width and height
@@ -179,7 +167,7 @@ export class FileObject extends Model {
 	 * @param type Boolean field to change
 	 * @param value The boolean value to set it to
 	 */
-	private setBool (type: ("is_starred" | "is_deleted"), value: boolean) {
+	/* private setBool (type: ("is_starred" | "is_deleted"), value: boolean) {
 		return new Promise((resolve, reject) => {
 			Database.update("files", this.id, { [type]: value }).then(() => {
 				this[type] = value;
@@ -197,5 +185,5 @@ export class FileObject extends Model {
 
 	markDelete () { return this.setBool("is_deleted", true); }
 
-	unmarkDelete () { return this.setBool("is_deleted", false); }
+	unmarkDelete () { return this.setBool("is_deleted", false); } */
 }
