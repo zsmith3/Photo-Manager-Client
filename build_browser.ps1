@@ -13,6 +13,7 @@ $entryPoint = "src/index.html"
 # Setup environment variables for Parcel
 $env:BUILD_PLATFORM = "browser"
 $env:SERVER_URL = $server
+$env:HOST_URL = $publicUrl
 
 # Build
 if ($prod) { parcel build $entryPoint --out-dir $outDir --public-url $publicUrl }

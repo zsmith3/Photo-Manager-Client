@@ -96,7 +96,7 @@ export default class App extends React.Component {
 				) } />
 			</MuiThemeProvider>;
 
-		if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") return <BrowserRouter>{ children }</BrowserRouter>;
+		if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") return <BrowserRouter basename={ process.env.HOST_URL }>{ children }</BrowserRouter>;
 		else return <HashRouter>{ children }</HashRouter>;
 	}
 }
