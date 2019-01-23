@@ -364,7 +364,7 @@ export class Model {
 			let stringForm = <string>this.constructor.meta.specialProps[prop];
 			if (methodForm.serialize && prop in this) {
 				methodForm.serialize(obj, this[prop]);
-			} else {
+			} else if (typeof stringForm === "string") {
 				obj[prop] = this[stringForm];
 			}
 		}
