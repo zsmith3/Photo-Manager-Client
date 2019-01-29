@@ -7,7 +7,7 @@ const fs = require("fs");
 const allConfig = require(Path.join(__dirname, "../build_config"));
 
 // Extract script args
-const argNames = [ "platform", "buildType", "server", "outDir", "publicUrl" ];
+const argNames = ["platform", "buildType", "server", "outDir", "publicUrl", "preScript"];
 const args = {};
 for (let i = 0; i < argNames.length; i++) {
 	if (i >= process.argv.length - 2) args[argNames[i]] = null;
@@ -59,6 +59,20 @@ function removeFullDir(path) {
 	if (fs.existsSync(cachePath)) removeFullDir(cachePath);
 
 	const bundler = new Bundler(entryFile, options);
+
+	bundler.on("buildEnd", () => {
+		// Write additional pre-script content
+		if (config.preScript) {
+			console.log("Writing pre-script content...")
+			const preScriptBuffer = fs.readFileSync(config.preScript);
+			const preScripthtml = preScriptBuffer.toString();
+			const bundlePath = Path.join(config.outDir, "index.html");
+			const bundleBuffer = fs.readFileSync(bundlePath);
+			const bundleHtml = bundleBuffer.toString();
+			const newHtml = bundleHtml.replace("<div id=\"pre-script\"></div>", preScripthtml);
+			fs.writeFileSync(bundlePath, newHtml);
+		}
+	});
 
 	console.log("Starting parcel...");
 

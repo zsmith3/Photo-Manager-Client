@@ -2,11 +2,13 @@ module.exports = {
     browser: {
         server: "https://localhost/fileserver/",
         outDir: "dist",
-        publicUrl: "/"
+        publicUrl: "/",
+        preScript: false
     },
     cordova: {
         server: "https://localhost/fileserver/",
         outDir: "cordova/www",
-        publicUrl: "./"
+        publicUrl: "./",
+        preScript: false
     }
 };
