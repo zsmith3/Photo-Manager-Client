@@ -1,5 +1,7 @@
 # Remote Photo Management System
 
+[![Build Status](https://travis-ci.com/zsmith3/Photo-Manager-Client.svg?branch=master)](https://travis-ci.com/zsmith3/Photo-Manager-Client)
+
 This project is a work in progress. It's not quite ready for any practical use yet.
 
 It has three main goals:
