@@ -21,6 +21,8 @@
     "react-virtualized": "^9.21.0"
   },
   "scripts": {
-    "test": "tsc"
+    "install": "node ./scripts/install",
+    "test": "tsc --target es2018",
+    "build": "node ./scripts/build"
   }
 }

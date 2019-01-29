@@ -1,3 +1,23 @@
 language: node_js
 node_js:
   - 10
+jobs:
+  include:
+    - stage: test
+      script: npm test
+    - stage: release
+      script: skip
+      before_deploy:
+        - mkdir dist
+        - git clone -b gh-pages --single-branch https://github.com/zsmith3/Photo-Manager-Client/ dist
+        - rm -rf dist/demo
+        - npm install
+        - npm run build browser production https://photo-manager-server.herokuapp.com/fileserver/ dist/demo /Photo-Manager-Client/demo/ scripts/gh-pages-extra.html
+      deploy:
+        provider: pages
+        local-dir: dist
+        keep-history: true
+        github_token: $GITHUB_TOKEN
+        skip_cleanup: true
+        on:
+          tags: true

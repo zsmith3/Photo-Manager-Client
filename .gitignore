@@ -1,6 +1,7 @@
 # Config files
 .vscode
 jsconfig.json
+build_config.js
 
 # Node modules
 node_modules/
