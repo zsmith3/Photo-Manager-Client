@@ -9,7 +9,7 @@ Example use case: I want to be able to remotely synchronise the photos on my pho
 
 # Demo
 
-This site also contains a [live working demo](./demo/) of the project in its current state. I've added a small set of sample images to play around with. You will need to create an account to log in, and can use this account token: "483d17a1f8cbf840727a88927f435c0cfaa2ac6829374dd44c2910d9c93a876d".
+This site also contains a [live working demo](./demo/) of the project in its current state. I've added a small set of sample images to play around with. You will need to create an account to log in, and can use this account token: "d913e65004239ed20ff93c450d613ddc26e7d34340b2a31261c77078aeff1fef".
 
 # More Information
 
