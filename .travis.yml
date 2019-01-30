@@ -12,7 +12,7 @@ jobs:
         - git clone -b gh-pages --single-branch https://github.com/zsmith3/Photo-Manager-Client/ dist
         - rm -rf dist/demo
         - npm install
-        - npm run build browser production https://photo-manager-server.herokuapp.com/fileserver/ dist/demo /Photo-Manager-Client/demo/ scripts/gh-pages-extra.html
+        - npm run build browser production https://photo-manager-server.herokuapp.com/fileserver/ dist/demo /Photo-Manager-Client/demo/ dist/extra-script.html
       deploy:
         provider: pages
         local-dir: dist

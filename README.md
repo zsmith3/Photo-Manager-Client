@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/zsmith3/Photo-Manager-Client.svg?branch=master)](https://travis-ci.com/zsmith3/Photo-Manager-Client)
 
-This project is a work in progress. It's not quite ready for any practical use yet.
+This project is a work in progress. It's not quite ready for any practical use yet. See [here](https://zsmith3.github.io/Photo-Manager-Client/demo/) for an up-to-date public demo.
 
 It has three main goals:
 - To provide a powerful photo management system (like, for example, Picasa)
@@ -16,13 +16,10 @@ See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/
 
 ## Installation
 
-1) Install NPM
+1) Install [NPM](https://nodejs.org/en/)
 2) Clone this repository (`git clone https://github.com/zsmith3/Photo-Manager-Client/`) and enter the directory (`cd Photo-Manager-Client`)
 3) Install NPM dependencies (`npm install`)
-4) In order to build:
-	- Install Parcel Bundler globally (`npm install -g parcel-bundler`)
-	- Install [Powershell](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6)
-5) Cordova:
+4) For Cordova:
 	- Install Cordova globally (`npm install -g cordova`)
 	- Enter the cordova directory (`cd cordova`) and run `cordova prepare` to install required platforms/plugins
 	- Install external requirements to build to certain platforms (e.g. see [here](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#installing-the-requirements) for Android)
@@ -30,30 +27,23 @@ See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/
 
 ## Building
 
-### Browser
+`npm run build` can be used to build the client, with various options:
+- `platform` (required) - The platform to build for (`"browser"` or `"cordova"`)
+- `buildType` (required) - The build environment (`"production"` or `"development"`)
+- `server` - The back-end server URL to connect to (should end in `"/"`)
+- `outDir` - The local directory to output build to
+- `publicUrl` - The (relative) public URL at which files will be hosted
+- `preScript` - The local path to an HTML file, containing any additional content which should be injected into the output `index.html` (before other scripts)
 
-Use *./build_browser.ps1* to build for web browser, with the following parameters:
-- `server` (required) - The back-end server URL to connect to
-- `outDir` - The directory to output to
-- `publicUrl` - The (relative) public URL at which files will be hosted - e.g. */fileserver/*
-- `parcelMode` - (Development mode only) If set to `serve`, Parcer server will be started. If set to `watch`, no server will be launched.
-- `prod` - If true, build in production mode. If false, build for development.
+The default values for non-required options can be found (and edited) in *./build_config.js*. This is a user-specific file, the defaults for which are found in *./scripts/default_build_config.js*. Since named arguments are not yet supported, all options must be given in order, and `null` can be used as a placeholder to skip unwanted arguments.
 
-Example (using default parameter values, except for `server`):
+Example Usage:
 
-`powershell ./build_browser.ps1 -server "http://localhost/fileserver/" -outDir "dist" -publicUrl "/" -parcelMode "serve" -prod $false`
+`npm run build browser development`
 
-### Cordova
+`npm run build browser production https:localhost/fileserver/ null null extra-script.html`
 
-Use *./build_cordova.ps1* to build source files to `cordova/www`, with the following parameters:
-- `server` (required) - The back-end server URL to connect to (note that `localhost` won't work, as this will connect to the IP of the phone/emulator)
-- `prod` - If true, build in production mode. If false, build for development.
-
-Example (again `prod` defaults to `$false`):
-
-`powershell ./build_cordova.ps1 -server "http://localhost/fileserver/" -prod $false`
-
-Then `cd cordova` and `cordova emulate android` (or other platform as required).
+In order to build/run Cordova, you will then need to `cd cordova` and run [the relevant Cordova build command](https://cordova.apache.org/docs/en/latest/guide/cli/#build-the-app).
 
 
 ## Features/To-Do
