@@ -1,6 +1,7 @@
 # Remote Photo Management System
 
 [![Build Status](https://travis-ci.com/zsmith3/Photo-Manager-Client.svg?branch=master)](https://travis-ci.com/zsmith3/Photo-Manager-Client)
+[![Code Style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
 This project is a work in progress. It's not quite ready for any practical use yet. See [here](https://zsmith3.github.io/Photo-Manager-Client/demo/) for an up-to-date public demo.
 

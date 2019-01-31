@@ -8,8 +8,19 @@ import { LocationManager } from "../utils";
 import { navDrawerWidth } from "./NavDrawer";
 
 /** Address bar element */
-class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: number, classes: { addressBar: string, address: string, search: string, searchIcon: string, searchShowIcon: string }, width: Breakpoint }> {
-	static height = 36
+class AddressBar extends React.Component<{
+	rootType: addressRootTypes;
+	rootId: number;
+	classes: {
+		addressBar: string;
+		address: string;
+		search: string;
+		searchIcon: string;
+		searchShowIcon: string;
+	};
+	width: Breakpoint;
+}> {
+	static height = 36;
 
 	static styles = (theme: Theme) => ({
 		addressBar: {
@@ -55,38 +66,34 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		}
 	});
 
-
 	/**
 	 * Determine whether two versions of `this.props` are the same
 	 * @param props1 The first version
 	 * @param props2 The second version
 	 * @returns Whether or not they are equal
 	 */
-	private static compareProps(props1: { rootType: addressRootTypes, rootId: number }, props2: { rootType: addressRootTypes, rootId: number }): boolean {
+	private static compareProps(props1: { rootType: addressRootTypes; rootId: number }, props2: { rootType: addressRootTypes; rootId: number }): boolean {
 		return props1.rootType === props2.rootType && props1.rootId === props2.rootId;
 	}
-
 
 	state = {
 		address: "/",
 		searchValue: "",
 		searchShown: false
-	}
+	};
 
-
-	constructor (props) {
+	constructor(props) {
 		super(props);
 
 		this.fetchAddress(props);
 	}
-
 
 	/**
 	 * Get the address to display, based on `this.props`
 	 * @param props The value of `this.props` to use
 	 * @returns Promise representing the address
 	 */
-	private async getAddress (props: { rootType: addressRootTypes, rootId: number }): Promise<string> {
+	private async getAddress(props: { rootType: addressRootTypes; rootId: number }): Promise<string> {
 		if (props.rootId === null) return "/";
 
 		switch (props.rootType) {
@@ -104,7 +111,7 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 	 * (calls `this.setState`)
 	 * @param props The value of `this.props` to use
 	 */
-	private fetchAddress (props: { rootType: addressRootTypes, rootId: number }) {
+	private fetchAddress(props: { rootType: addressRootTypes; rootId: number }) {
 		this.getAddress(props).then(address => {
 			if (AddressBar.compareProps(props, this.props)) {
 				this.setState({ address: address });
@@ -119,16 +126,15 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		switch (this.props.rootType) {
 			case "folders":
 				let folder = Folder.getById(this.props.rootId);
-				LocationManager.updateLocation("/folders/" + (folder.parentID ? `${ folder.parentID }/` : ""));
+				LocationManager.updateLocation("/folders/" + (folder.parentID ? `${folder.parentID}/` : ""));
 		}
+	};
+
+	private search() {
+		LocationManager.updateQuery({ search: this.state.searchValue });
 	}
 
-	private search () {
-		LocationManager.updateQuery({ "search": this.state.searchValue });
-	}
-
-
-	shouldComponentUpdate (nextProps) {
+	shouldComponentUpdate(nextProps) {
 		if (AddressBar.compareProps(this.props, nextProps)) {
 			// If props are unchanged, then state must have changed, so re-render
 			return true;
@@ -139,75 +145,79 @@ class AddressBar extends React.Component<{ rootType: addressRootTypes, rootId: n
 		}
 	}
 
-	render () {
+	render() {
 		let searchShown = isWidthUp("md", this.props.width) ? true : this.state.searchShown;
 
-		return <div className={this.props.classes.addressBar}>
-			{/* Grid is needed to avoid positioning of elements affecting each other */}
-			<Grid container>
-				{/* Navigation buttons */}
-				<Grid item>
-					<IconButton title="Back" onClick={ () => LocationManager.instance.props.history.goBack() }>
-						<Icon>arrow_back</Icon>
-					</IconButton>
-
-					<IconButton title="Forward" onClick={ () => LocationManager.instance.props.history.goForward() }>
-						<Icon>arrow_forward</Icon>
-					</IconButton>
-
-					<IconButton title="Up" onClick={ this.moveUp }>
-						<Icon>arrow_upward</Icon>
-					</IconButton>
-
-					<IconButton title="Return to root folders" onClick={ () => LocationManager.updateLocation("/folders/") }>
-						<Icon>home</Icon>
-					</IconButton>
-				</Grid>
-
-				{/* Page address (i.e. folder path) */}
-				<Grid item>
-					<Typography className={ this.props.classes.address }>{ this.state.address }</Typography>
-				</Grid>
-
-				{/* Placeholder to push following to right */}
-				<div style={ { flexGrow: 1 } } />
-
-				<Grid item>
-					{/* Button to show/hide search bar on mobile */}
-					<Hidden mdUp>
-						<IconButton className={ this.props.classes.searchShowIcon } onClick={ () => this.setState({ searchShown: true }) }>
-							<Icon>search</Icon>
+		return (
+			<div className={this.props.classes.addressBar}>
+				{/* Grid is needed to avoid positioning of elements affecting each other */}
+				<Grid container>
+					{/* Navigation buttons */}
+					<Grid item>
+						<IconButton title="Back" onClick={() => LocationManager.instance.props.history.goBack()}>
+							<Icon>arrow_back</Icon>
 						</IconButton>
-					</Hidden>
 
+						<IconButton title="Forward" onClick={() => LocationManager.instance.props.history.goForward()}>
+							<Icon>arrow_forward</Icon>
+						</IconButton>
 
-					{/* Search bar (with zoom effect for mobile) */}
-					<Zoom in={ searchShown }>
-						<TextField className={ this.props.classes.search }
-							placeholder="Search"
-							title="Search the current view for files"
-							defaultValue={ LocationManager.currentQuery.get("search") }
-							onKeyDown={ (event) => { if (event.key === "Enter") this.search(); } }
-							onChange={ (event) => this.state.searchValue = event.currentTarget.value }
-							InputProps={ {
-								startAdornment: (
-									<Hidden mdUp>
-										<InputAdornment className={ this.props.classes.searchIcon } position="start" onClick={ () => this.setState({ searchShown: false }) }>
-											<Icon>arrow_back</Icon>
+						<IconButton title="Up" onClick={this.moveUp}>
+							<Icon>arrow_upward</Icon>
+						</IconButton>
+
+						<IconButton title="Return to root folders" onClick={() => LocationManager.updateLocation("/folders/")}>
+							<Icon>home</Icon>
+						</IconButton>
+					</Grid>
+
+					{/* Page address (i.e. folder path) */}
+					<Grid item>
+						<Typography className={this.props.classes.address}>{this.state.address}</Typography>
+					</Grid>
+
+					{/* Placeholder to push following to right */}
+					<div style={{ flexGrow: 1 }} />
+
+					<Grid item>
+						{/* Button to show/hide search bar on mobile */}
+						<Hidden mdUp>
+							<IconButton className={this.props.classes.searchShowIcon} onClick={() => this.setState({ searchShown: true })}>
+								<Icon>search</Icon>
+							</IconButton>
+						</Hidden>
+
+						{/* Search bar (with zoom effect for mobile) */}
+						<Zoom in={searchShown}>
+							<TextField
+								className={this.props.classes.search}
+								placeholder="Search"
+								title="Search the current view for files"
+								defaultValue={LocationManager.currentQuery.get("search")}
+								onKeyDown={event => {
+									if (event.key === "Enter") this.search();
+								}}
+								onChange={event => (this.state.searchValue = event.currentTarget.value)}
+								InputProps={{
+									startAdornment: (
+										<Hidden mdUp>
+											<InputAdornment className={this.props.classes.searchIcon} position="start" onClick={() => this.setState({ searchShown: false })}>
+												<Icon>arrow_back</Icon>
+											</InputAdornment>
+										</Hidden>
+									),
+									endAdornment: (
+										<InputAdornment className={this.props.classes.searchIcon} position="end" onClick={() => this.search()}>
+											<Icon>search</Icon>
 										</InputAdornment>
-									</Hidden>
-								),
-								endAdornment: (
-									<InputAdornment className={ this.props.classes.searchIcon } position="end" onClick={ () => this.search() }>
-										<Icon>search</Icon>
-									</InputAdornment>
-								)
-							} } />
-					</Zoom>
+									)
+								}}
+							/>
+						</Zoom>
+					</Grid>
 				</Grid>
-			</Grid>
-
-		</div>;
+			</div>
+		);
 	}
 }
 

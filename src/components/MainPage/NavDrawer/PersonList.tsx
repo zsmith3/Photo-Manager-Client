@@ -5,12 +5,14 @@ import { MountTrackedComponent, TextDialog } from "../../utils";
 import PersonListItem from "./PersonListItem";
 
 /** List of Person instances (within a PersonGroup) */
-export default class PersonList extends MountTrackedComponent<{ groupId?: number }> {
+export default class PersonList extends MountTrackedComponent<{
+	groupId?: number;
+}> {
 	state = {
 		personIds: []
-	}
+	};
 
-	constructor (props) {
+	constructor(props) {
 		super(props);
 
 		Person.registerListUpdateHandler((people: Person[]) => {
@@ -19,11 +21,13 @@ export default class PersonList extends MountTrackedComponent<{ groupId?: number
 		});
 	}
 
-	render () {
-		return <List>
+	render() {
+		return (
+			<List>
 				{this.state.personIds.map(personId => (
 					<PersonListItem key={personId} personId={personId} />
 				))}
-			</List>;
+			</List>
+		);
 	}
 }

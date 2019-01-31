@@ -2,10 +2,9 @@ import * as msgpack from "msgpack-lite";
 import { Platform } from "./controllers/Platform";
 
 // Type definitions for httpRequest parameters
-export type httpMethodTypes = ("GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH");
-type xhrResponseTypes = ("" | "arraybuffer" | "blob" | "document" | "json" | "text");
-type fileReaderTypes = ("readAsArrayBuffer" | "readAsBinaryString" | "readAsDataURL" | "readAsText");
-
+export type httpMethodTypes = "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH";
+type xhrResponseTypes = "" | "arraybuffer" | "blob" | "document" | "json" | "text";
+type fileReaderTypes = "readAsArrayBuffer" | "readAsBinaryString" | "readAsDataURL" | "readAsText";
 
 /** Base HTTP requests function, with binary support
  * @param url Absolute URL of the request
@@ -16,7 +15,14 @@ type fileReaderTypes = ("readAsArrayBuffer" | "readAsBinaryString" | "readAsData
  * @param readerType FileReader method with which to read the response (default = "readAsArrayBuffer")
  * @returns Promise object representing response data
  */
-function httpRequest (url: string, type: httpMethodTypes = "GET", data: any = null, headers: {} = {}, responseType: xhrResponseTypes = "blob", readerType: fileReaderTypes = "readAsArrayBuffer"): Promise<any> {
+function httpRequest(
+	url: string,
+	type: httpMethodTypes = "GET",
+	data: any = null,
+	headers: {} = {},
+	responseType: xhrResponseTypes = "blob",
+	readerType: fileReaderTypes = "readAsArrayBuffer"
+): Promise<any> {
 	return new Promise((resolve, reject) => {
 		var xhr = new XMLHttpRequest();
 		xhr.open(type, url);
@@ -27,13 +33,13 @@ function httpRequest (url: string, type: httpMethodTypes = "GET", data: any = nu
 		for (let key in headers) xhr.setRequestHeader(key, headers[key]);
 		xhr.responseType = responseType;
 
-		xhr.onload = function () {
+		xhr.onload = function() {
 			var status = [200, 201, 204].includes(this.status);
 
 			if (this.response && this.response.size && responseType == "blob") {
 				let fileReader = new FileReader();
 
-				fileReader.onload = function () {
+				fileReader.onload = function() {
 					if (status) resolve(this.result);
 					else reject(this.result);
 				};
@@ -51,7 +57,6 @@ function httpRequest (url: string, type: httpMethodTypes = "GET", data: any = nu
 	});
 }
 
-
 /**
  * API requests function.
  * Uses MessagePack in production, JSON in development.
@@ -60,7 +65,7 @@ function httpRequest (url: string, type: httpMethodTypes = "GET", data: any = nu
  * @param data HTTP request body data
  * @returns Promise object representing API response
  */
-export function apiRequest (url: string, type?: httpMethodTypes, data?: any): Promise<any> {
+export function apiRequest(url: string, type?: httpMethodTypes, data?: any): Promise<any> {
 	var encData;
 	if (process.env.NODE_ENV === "production") {
 		if (data) encData = new Blob([msgpack.encode(data)]);
@@ -77,19 +82,20 @@ export function apiRequest (url: string, type?: httpMethodTypes, data?: any): Pr
 		let request: Promise<any>;
 		if (process.env.NODE_ENV === "production") request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers);
 		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json");
-		request.then(data => {
-			if (type == "DELETE") {
-				resolve();
-				return;
-			}
+		request
+			.then(data => {
+				if (type == "DELETE") {
+					resolve();
+					return;
+				}
 
-			decodeData(data, resolve, reject);
-		}).catch(function (error) {
-			decodeData(error, reject, reject);
-		});
+				decodeData(data, resolve, reject);
+			})
+			.catch(function(error) {
+				decodeData(error, reject, reject);
+			});
 	});
 }
-
 
 /**
  * Decode API data.
@@ -98,7 +104,7 @@ export function apiRequest (url: string, type?: httpMethodTypes, data?: any): Pr
  * @param onsuccess Function to run on successful decoding
  * @param onerror Function to run on error
  */
-function decodeData (data: any, onsuccess: (data: any) => void, onerror: (data: any) => void) {
+function decodeData(data: any, onsuccess: (data: any) => void, onerror: (data: any) => void) {
 	if (process.env.NODE_ENV === "production") {
 		try {
 			let byteArray = new Uint8Array(data);
@@ -112,15 +118,13 @@ function decodeData (data: any, onsuccess: (data: any) => void, onerror: (data: 
 	}
 }
 
-
 /**
  * Base64 data url requests function
  * @param url Request URL (relative to server root)
  */
-export function mediaRequest (url: string): Promise<string> {
+export function mediaRequest(url: string): Promise<string> {
 	return httpRequest(Platform.urls.serverUrl + url, "GET", null, null, "blob", "readAsDataURL");
 }
-
 
 // Modifications to the Promise prototype to add progress-tracking (for chain promises)
 
@@ -134,7 +138,7 @@ declare global {
 		 * @param data.doneCount Number of items completed
 		 * @param data.totalCount Number of items remaining
 		 */
-		onbeforeprogress: (data: { item: any, result: T, doneCount: number, totalCount: number }) => void
+		onbeforeprogress: (data: { item: any; result: T; doneCount: number; totalCount: number }) => void;
 
 		/**
 		 * Progress report run after completing each item
@@ -144,7 +148,7 @@ declare global {
 		 * @param data.doneCount Number of items completed
 		 * @param data.totalCount Number of items remaining
 		 */
-		onafterprogress: (data: { item: any, result: T, doneCount: number, totalCount: number }) => void
+		onafterprogress: (data: { item: any; result: T; doneCount: number; totalCount: number }) => void;
 
 		/**
 		 * Register a callback to be run upon progress events - NOTE .progress() must come before .then()
@@ -152,16 +156,15 @@ declare global {
 		 * @param before If true, the callback will be run before each item is started. If false, it will be run after each item is completed.
 		 * @returns Promise object representing the main chain promise
 		 */
-		progress: (callback: (data: { item: any, result: T, doneCount: number, totalCount: number }) => void, before: boolean) => Promise<T>
+		progress: (callback: (data: { item: any; result: T; doneCount: number; totalCount: number }) => void, before: boolean) => Promise<T>;
 	}
-};
+}
 
-Promise.prototype.progress = function (callback, before) {
+Promise.prototype.progress = function(callback, before) {
 	if (before) this.onbeforeprogress = callback;
 	else this.onafterprogress = callback;
 	return this;
 };
-
 
 /**
  * Trim a specific character from a string
@@ -169,7 +172,7 @@ Promise.prototype.progress = function (callback, before) {
  * @param char The character to remove
  * @param end Which end of the string to trim (defaults to both)
  */
-export function trimStr (str: string, char: string, end: ("l" | "r" | "lr" | "rl") = "lr") {
+export function trimStr(str: string, char: string, end: "l" | "r" | "lr" | "rl" = "lr") {
 	if (end.includes("l")) {
 		while (str.startsWith(char)) str = str.substr(1);
 	}
@@ -179,13 +182,12 @@ export function trimStr (str: string, char: string, end: ("l" | "r" | "lr" | "rl
 	return str;
 }
 
-
 /**
  * Remove empty items from a URL query string
  * @param query The query to prune
  * @returns The pruned query
  */
-export function pruneUrlQuery (query: URLSearchParams): URLSearchParams {
+export function pruneUrlQuery(query: URLSearchParams): URLSearchParams {
 	let newQuery = new URLSearchParams(query.toString());
 	let entries = newQuery.entries();
 	while (true) {
@@ -197,7 +199,6 @@ export function pruneUrlQuery (query: URLSearchParams): URLSearchParams {
 	return newQuery;
 }
 
-
 /**
  * Chain-execute a Promise-based function on a list of input objects
  * @param list List of objects upon which to execute the function
@@ -205,31 +206,51 @@ export function pruneUrlQuery (query: URLSearchParams): URLSearchParams {
  * @param result Initial value for the result, to be passed through each step in the chain execution
  * @returns Final result from chain execution
  */
-export function promiseChain<T, U, V> (list: T[], callback: (resolve: (data: U | void) => void, reject: (error: V) => void, item: T, accumulator: U) => void, result?: U): Promise<any> {
+export function promiseChain<T, U, V>(
+	list: T[],
+	callback: (resolve: (data: U | void) => void, reject: (error: V) => void, item: T, accumulator: U) => void,
+	result?: U
+): Promise<any> {
 	// TODO figure out error-catching with this
 	var done = 0;
 	var finalPromise = list.reduce((promiseChain: Promise<U>, item: T) => {
 		return promiseChain.then((accumulator: U) => {
-			if (finalPromise.onbeforeprogress) finalPromise.onbeforeprogress({ item: item, result: accumulator, doneCount: done, totalCount: list.length });
+			if (finalPromise.onbeforeprogress)
+				finalPromise.onbeforeprogress({
+					item: item,
+					result: accumulator,
+					doneCount: done,
+					totalCount: list.length
+				});
 			return new Promise((resolve, reject) => {
-				callback((data: U) => {
-					done++;
-					if (finalPromise.onafterprogress) finalPromise.onafterprogress({ item: item, result: data, doneCount: done, totalCount: list.length });
-					resolve(data);
-				}, reject, item, accumulator);
+				callback(
+					(data: U) => {
+						done++;
+						if (finalPromise.onafterprogress)
+							finalPromise.onafterprogress({
+								item: item,
+								result: data,
+								doneCount: done,
+								totalCount: list.length
+							});
+						resolve(data);
+					},
+					reject,
+					item,
+					accumulator
+				);
 			});
 		});
 	}, Promise.resolve(result));
 	return finalPromise;
 }
 
-
 /**
  * Extract base64 data URL from <img> element
  * @param img <img> element from which to extract the base64 data URL
  * @returns Data URL of the current image
  */
-function getBase64Image (img: HTMLImageElement): string {
+function getBase64Image(img: HTMLImageElement): string {
 	let canvas = document.createElement("canvas");
 	canvas.width = img.naturalWidth;
 	canvas.height = img.naturalHeight;
@@ -237,14 +258,13 @@ function getBase64Image (img: HTMLImageElement): string {
 	return canvas.toDataURL("image/jpeg");
 }
 
-
 /**
  * Extract rotated base64 data URL from img element
  * @param img <img> element to rotate
  * @param angle Angle (in degrees) of rotation
  * @returns Data URL of the rotated image
  */
-function getRotatedImage (img: HTMLImageElement, angle: number): string {
+function getRotatedImage(img: HTMLImageElement, angle: number): string {
 	let canvas = document.createElement("canvas");
 	let ctx = canvas.getContext("2d");
 
@@ -256,7 +276,7 @@ function getRotatedImage (img: HTMLImageElement, angle: number): string {
 		canvas.height = img.naturalHeight;
 	}
 
-	ctx.rotate(angle * Math.PI / 180);
+	ctx.rotate((angle * Math.PI) / 180);
 
 	if (angle == 90) ctx.drawImage(img, 0, -img.naturalHeight);
 	else if (angle == -90) ctx.drawImage(img, -img.naturalWidth, 0);
@@ -266,24 +286,21 @@ function getRotatedImage (img: HTMLImageElement, angle: number): string {
 	return canvas.toDataURL("image/jpeg");
 }
 
-
-
 /** Get the numerical (float) value from a CSS string value
  * @param styleStr The string, in format "{number}px"
  * @returns Numerical value of the CSS string
-*/
-function getStyleValue (styleStr: string): number {
+ */
+function getStyleValue(styleStr: string): number {
 	if (styleStr == "") return 0;
 	return parseFloat(styleStr.substring(0, styleStr.length - 2));
 }
-
 
 /**
  * Trim slashes from URL
  * @param url Un-formatted URL
  * @returns Trimmed URL
  */
-function trimUrl (url: string): string {
+function trimUrl(url: string): string {
 	url = url || "";
 	if (url.startsWith("/")) url = url.substr(1);
 	if (!url.includes("?")) {
@@ -293,7 +310,6 @@ function trimUrl (url: string): string {
 	return url;
 }
 
-
 /**
  * Add query parameters to an existing URL
  * @param oldUrl Main URL, possibly with existing query parameters
@@ -301,7 +317,7 @@ function trimUrl (url: string): string {
  * @param newQuery Object representing new query parameters to be added
  * @returns New URL, with query added
  */
-function getUrl (oldUrl?: string, keepQuery?: boolean, newQuery?: object): string {
+function getUrl(oldUrl?: string, keepQuery?: boolean, newQuery?: object): string {
 	oldUrl = oldUrl || Platform.urls.getCurrentAddress();
 	let qIndex = oldUrl.indexOf("?");
 	let queryParams: URLSearchParams, newUrl: string;
@@ -320,14 +336,13 @@ function getUrl (oldUrl?: string, keepQuery?: boolean, newQuery?: object): strin
 	return newUrl;
 }
 
-
 /**
  * Add an apendix to a URL
  * @param oldUrl URL to add to (with or without query string)
  * @param appendix Appendix to add
  * @returns New URL with appendix added
  */
-function addToUrl (oldUrl: string, appendix: string): string {
+function addToUrl(oldUrl: string, appendix: string): string {
 	if (!oldUrl.includes("?")) {
 		return oldUrl + appendix;
 	} else {
@@ -335,13 +350,12 @@ function addToUrl (oldUrl: string, appendix: string): string {
 	}
 }
 
-
 /**
  * Display a bytes size using metric prefixes
  * @param size Size measurement in bytes
  * @returns Display-formatted version with appropriate SI prefix
  */
-function displaySize (size: number): string {
+function displaySize(size: number): string {
 	const siPrefs = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei"];
 	let siBase = Math.floor(Math.floor(Math.log2(size)) / 10);
 	let siNum = (size / Math.pow(1024, siBase)).toPrecision(3);
@@ -352,25 +366,23 @@ function displaySize (size: number): string {
 	return siNum + " " + siPrefs[siBase] + "B";
 }
 
-
 /**
  * Replace an item with a backup default if it is undefined or null
  * @param first First-choice item
  * @param second Backup choice
  * @returns First item if it is defined and non-null, otherwise second item
  */
-function ifDefElse<T> (first: T, second: T): T {
+function ifDefElse<T>(first: T, second: T): T {
 	if (first === null || first === undefined) return second;
 	else return first;
 }
-
 
 /**
  * Extract the path, excluding search, from a URL
  * @param url URL with or without search
  * @returns Path-only URL
  */
-export function getPathnameFromUrl (url: string): string {
+export function getPathnameFromUrl(url: string): string {
 	if (url.includes("?")) return url.substr(0, url.indexOf("?"));
 	else return url;
 }
@@ -380,7 +392,7 @@ export function getPathnameFromUrl (url: string): string {
  * @param url URL with or without search
  * @returns Search params data
  */
-export function getQueryFromUrl (url: string): URLSearchParams {
+export function getQueryFromUrl(url: string): URLSearchParams {
 	if (url.includes("?")) return pruneUrlQuery(new URLSearchParams(url.substr(url.indexOf("?"))));
 	else return new URLSearchParams();
 }

@@ -8,13 +8,30 @@ import { ImageLoader, LocationManager } from "../../utils";
 import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 
-const platform: ("desktop" | "mobile") = "desktop";
+const platform: "desktop" | "mobile" = "desktop";
 // TODO set platform properly
 
-type modelType = ("file" | "face");
+type modelType = "file" | "face";
 
 /** Dialog to display and modify image file */
-class ImageModal extends React.Component<{ type: modelType, itemId: number, nextItemId: number, lastItemId: number, classes: { title: string, img: string, arrows: string, arrowsLandscape: string, arrowsPortrait: string, arrowIcon:string, arrowLeft: string, arrowRight: string, closeIcon: string }, width: Breakpoint }> {
+class ImageModal extends React.Component<{
+	type: modelType;
+	itemId: number;
+	nextItemId: number;
+	lastItemId: number;
+	classes: {
+		title: string;
+		img: string;
+		arrows: string;
+		arrowsLandscape: string;
+		arrowsPortrait: string;
+		arrowIcon: string;
+		arrowLeft: string;
+		arrowRight: string;
+		closeIcon: string;
+	};
+	width: Breakpoint;
+}> {
 	static styles = (theme: Theme) => ({
 		title: {
 			width: "60%",
@@ -37,7 +54,7 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 			}
 		},
 		arrowsLandscape: {
-			top: "calc(50vh - 20px)",
+			top: "calc(50vh - 20px)"
 		},
 		arrowsPortrait: {
 			bottom: 20
@@ -63,30 +80,41 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 			position: "absolute" as "absolute",
 			right: 5
 		}
-	})
-
+	});
 
 	/** Data about the current state of image drag/zoom */
 	dragging = { doneX: 0, doneY: 0, scaleDone: 1, resetTimeout: -1 };
 
 	/** Storage of the zoom/position state of previously opened files */
-	fileZoomStates = new Map<number, { maxW: ("min" | "max" | number), maxH: ("min" | "max" | number), xPos: ("c" | number), yPos: ("c" | number) }>()
+	fileZoomStates = new Map<
+		number,
+		{
+			maxW: "min" | "max" | number;
+			maxH: "min" | "max" | number;
+			xPos: "c" | number;
+			yPos: "c" | number;
+		}
+	>();
 
 	state = {
 		/** Current open file */
 		file: null as FileObject,
 
 		/** Size styling for the image element */
-		imgZoomStyle: null as { width: number, height: number, left: number, top: number }
-	}
-
+		imgZoomStyle: null as {
+			width: number;
+			height: number;
+			left: number;
+			top: number;
+		}
+	};
 
 	/**
 	 * Load an item into `this.state` to display
 	 * @param type The item type
 	 * @param itemId The item ID
 	 */
-	loadFile (type: modelType, itemId: number) {
+	loadFile(type: modelType, itemId: number) {
 		switch (type) {
 			case "file":
 				FileObject.loadObject(itemId).then(file => this.setState({ file: file }));
@@ -98,7 +126,7 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 	}
 
 	/** Close the modal */
-	close () {
+	close() {
 		Platform.mediaQueue.resume();
 		LocationManager.updateQuery({ file: "", face: "" });
 	}
@@ -107,11 +135,15 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 	 * Move forwards or backwards by one file
 	 * @param direction The direction to move
 	 */
-	switchFile (direction: ("last" | "next")) {
+	switchFile(direction: "last" | "next") {
 		if (direction === "last") {
-			LocationManager.updateQuery({ [this.props.type]: this.props.lastItemId.toString() });
+			LocationManager.updateQuery({
+				[this.props.type]: this.props.lastItemId.toString()
+			});
 		} else {
-			LocationManager.updateQuery({ [this.props.type]: this.props.nextItemId.toString() });
+			LocationManager.updateQuery({
+				[this.props.type]: this.props.nextItemId.toString()
+			});
 		}
 	}
 
@@ -122,7 +154,7 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 	 * @param xPos X position of the left edge of the image ("c" to horizontally centre the image)
 	 * @param yPos Y position of the top edge of the image	("c" to vertically centre the image)
 	 */
-	setZoom (maxW: ("min" | "max" | number), maxH: ("min" | "max" | number), xPos: ("c" | number), yPos: ("c" | number)) {
+	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number) {
 		// TODO need to get App.app.config.platform before this will work
 
 		let previousZoomState = this.fileZoomStates.get(this.state.file.id);
@@ -130,31 +162,38 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 		let verticalMargin = 20;
 
 		// Calculate bounding box
-		maxW = (maxW || previousZoomState.maxW) || "min";
-		maxH = (maxH || previousZoomState.maxH) || "min";
+		maxW = maxW || previousZoomState.maxW || "min";
+		maxH = maxH || previousZoomState.maxH || "min";
 		if (maxW == "max") maxW = this.state.file.width;
-		else if (maxW == "min") maxW = window.innerWidth - (isWidthUp("md", this.props.width) ? 300 : (window.innerWidth > window.innerHeight ? 150 : 0));
+		else if (maxW == "min") maxW = window.innerWidth - (isWidthUp("md", this.props.width) ? 300 : window.innerWidth > window.innerHeight ? 150 : 0);
 		if (maxH == "max") maxH = this.state.file.height;
 		else if (maxH == "min") maxH = window.innerHeight - toolBarHeight - verticalMargin;
 
 		// Calculate new size
 		let newWidth: number, newHeight: number;
 		if (maxW / maxH > this.state.file.width / this.state.file.height) {
-			newWidth = maxH * this.state.file.width / this.state.file.height;
+			newWidth = (maxH * this.state.file.width) / this.state.file.height;
 			newHeight = maxH;
 		} else {
 			newWidth = maxW;
-			newHeight = maxW * this.state.file.height / this.state.file.width;
+			newHeight = (maxW * this.state.file.height) / this.state.file.width;
 		}
 
 		// Calculate new position
-		if (xPos !== 0) xPos = (xPos || previousZoomState.xPos) || "c";
-		if (yPos !== 0) yPos = (yPos || previousZoomState.yPos) || "c";
+		if (xPos !== 0) xPos = xPos || previousZoomState.xPos || "c";
+		if (yPos !== 0) yPos = yPos || previousZoomState.yPos || "c";
 		if (xPos === "c") xPos = (window.innerWidth - newWidth) / 2;
 		if (yPos === "c") yPos = (window.innerHeight - newHeight + toolBarHeight) / 2;
 
 		// Update state
-		this.setState({ imgZoomStyle: { width: newWidth, height: newHeight, left: xPos, top: yPos } });
+		this.setState({
+			imgZoomStyle: {
+				width: newWidth,
+				height: newHeight,
+				left: xPos,
+				top: yPos
+			}
+		});
 
 		// Store persistent zoom state for this file
 		this.fileZoomStates.set(this.state.file.id, {
@@ -171,7 +210,7 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 	 * @param xPoint X co-ordinate of the centre of enlargement
 	 * @param yPoint Y co-ordinate of the centre of enlargement
 	 */
-	zoom (scale: number, xPoint: number, yPoint: number) {
+	zoom(scale: number, xPoint: number, yPoint: number) {
 		let oldX = this.state.imgZoomStyle.left;
 		let oldY = this.state.imgZoomStyle.top;
 		let newX = xPoint - (xPoint - oldX) * scale;
@@ -188,13 +227,15 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 	 * @param deltaX Total X distance dragged so far
 	 * @param deltaY Total Y distance dragged so far
 	 */
-	drag (deltaX: number, deltaY: number) {
+	drag(deltaX: number, deltaY: number) {
 		if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) return;
 
 		let newX = this.state.imgZoomStyle.left + deltaX - this.dragging.doneX;
 		let newY = this.state.imgZoomStyle.top + deltaY - this.dragging.doneY;
 
-		this.setState({ imgZoomStyle: { ...this.state.imgZoomStyle, left: newX, top: newY } });
+		this.setState({
+			imgZoomStyle: { ...this.state.imgZoomStyle, left: newX, top: newY }
+		});
 
 		this.dragging.doneX = deltaX;
 		this.dragging.doneY = deltaY;
@@ -204,31 +245,32 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 	}
 
 	/** Set a timeout to auto-reset the position/scale of the image if no new events are received */
-	setResetTimeout () {
+	setResetTimeout() {
 		window.clearTimeout(this.dragging.resetTimeout);
 
 		if (Input.isTouching) {
-			this.dragging.resetTimeout = window.setTimeout(() => { if (Input.touchesDown == 0) this.setZoom("min", "min", "c", "c"); }, 100);
+			this.dragging.resetTimeout = window.setTimeout(() => {
+				if (Input.touchesDown == 0) this.setZoom("min", "min", "c", "c");
+			}, 100);
 		}
 	}
-
 
 	/** Change the displayed image on mobile swipe events */
 	onSwipe = event => {
 		if (Input.isTouching && Math.abs(event.deltaX) > 300) {
 			let direction = event.deltaX > 0 ? "last" : "next";
-			if (direction === "last" && this.props.lastItemId !== null || direction === "next" && this.props.nextItemId !== null) {
+			if ((direction === "last" && this.props.lastItemId !== null) || (direction === "next" && this.props.nextItemId !== null)) {
 				this.switchFile(direction);
 			}
 
 			Input.touchesDown = 0;
 		}
-	}
+	};
 
 	/** Reset scaling on the start of pinch events */
 	onPinchStart = event => {
 		this.dragging.scaleDone = 1;
-	}
+	};
 
 	/** Zoom in/out on pinch events */
 	onPinch = event => {
@@ -236,7 +278,7 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 		this.dragging.scaleDone = event.scale;
 
 		this.setResetTimeout();
-	}
+	};
 
 	/** Move the image on pan events */
 	onPan = event => {
@@ -249,10 +291,9 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 		}
 
 		this.setResetTimeout();
-	}
+	};
 
-
-	constructor (props) {
+	constructor(props) {
 		super(props);
 
 		Platform.mediaQueue.pause();
@@ -260,7 +301,7 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 		this.loadFile(props.type, props.itemId);
 	}
 
-	shouldComponentUpdate (nextProps: { type: modelType, itemId: number }) {
+	shouldComponentUpdate(nextProps: { type: modelType; itemId: number }) {
 		if (this.props === nextProps) {
 			// If props are unchanged, then state must have changed, so re-render
 			return true;
@@ -271,47 +312,57 @@ class ImageModal extends React.Component<{ type: modelType, itemId: number, next
 		}
 	}
 
-	render () {
+	render() {
 		let arrowPosClass = window.innerWidth > window.innerHeight ? this.props.classes.arrowsLandscape : this.props.classes.arrowsPortrait;
 
-		return <Modal open={ true }>
+		return (
+			<Modal open={true}>
 				<div>
 					{/* Top bar */}
-					<AppBar style={ { background: "rgba(0, 0, 0, 0.8)" } }>
+					<AppBar style={{ background: "rgba(0, 0, 0, 0.8)" }}>
 						<Toolbar>
-							<Typography variant="h4" color="inherit" align="center" className={ this.props.classes.title }>{ this.state.file && this.state.file.name }</Typography>
+							<Typography variant="h4" color="inherit" align="center" className={this.props.classes.title}>
+								{this.state.file && this.state.file.name}
+							</Typography>
 
-							<IconButton onClick={ () => this.close() }>
-								<Icon className={ this.props.classes.closeIcon }>clear</Icon>
+							<IconButton onClick={() => this.close()}>
+								<Icon className={this.props.classes.closeIcon}>clear</Icon>
 							</IconButton>
 						</Toolbar>
 					</AppBar>
 
 					{/* Main image */}
-					<Hammer onSwipe={ this.onSwipe } onPinchStart={ this.onPinchStart } onPinch={ this.onPinch } onPan={ this.onPan } options={ { recognizers: { pinch: { enable: true } } } }>
-						<div onDoubleClick={ () => this.setZoom("min", "min", "c", "c") } onWheel={ event => this.zoom(1 - event.deltaY / 500, event.clientX, event.clientY) }>
-							{ this.state.file && <ImageLoader
-								model={ this.state.file }
-								maxSize={ FileImgSizes.Original }
-								maxFirstSize={ FileImgSizes.Large }
-								noQueue={ true }
-								className={ this.props.classes.img }
-								style={ this.state.imgZoomStyle }
-								onFirstLoad={ () => this.setZoom("min", "min", "c", "c") } /> }
+					<Hammer onSwipe={this.onSwipe} onPinchStart={this.onPinchStart} onPinch={this.onPinch} onPan={this.onPan} options={{ recognizers: { pinch: { enable: true } } }}>
+						<div onDoubleClick={() => this.setZoom("min", "min", "c", "c")} onWheel={event => this.zoom(1 - event.deltaY / 500, event.clientX, event.clientY)}>
+							{this.state.file && (
+								<ImageLoader
+									model={this.state.file}
+									maxSize={FileImgSizes.Original}
+									maxFirstSize={FileImgSizes.Large}
+									noQueue={true}
+									className={this.props.classes.img}
+									style={this.state.imgZoomStyle}
+									onFirstLoad={() => this.setZoom("min", "min", "c", "c")}
+								/>
+							)}
 						</div>
 					</Hammer>
 
 					{/* Arrows */}
-					{ this.props.lastItemId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowLeft].join(" ") } onClick={ () => this.switchFile("last") }>
-						<Icon className={ this.props.classes.arrowIcon }>keyboard_arrow_left</Icon>
-					</IconButton> }
-					{ this.props.nextItemId !== null && <IconButton className={ [this.props.classes.arrows, arrowPosClass, this.props.classes.arrowRight].join(" ") } onClick={ () => this.switchFile("next") }>
-						<Icon className={ this.props.classes.arrowIcon }>keyboard_arrow_right</Icon>
-					</IconButton> }
+					{this.props.lastItemId !== null && (
+						<IconButton className={[this.props.classes.arrows, arrowPosClass, this.props.classes.arrowLeft].join(" ")} onClick={() => this.switchFile("last")}>
+							<Icon className={this.props.classes.arrowIcon}>keyboard_arrow_left</Icon>
+						</IconButton>
+					)}
+					{this.props.nextItemId !== null && (
+						<IconButton className={[this.props.classes.arrows, arrowPosClass, this.props.classes.arrowRight].join(" ")} onClick={() => this.switchFile("next")}>
+							<Icon className={this.props.classes.arrowIcon}>keyboard_arrow_right</Icon>
+						</IconButton>
+					)}
 				</div>
-			</Modal>;
+			</Modal>
+		);
 	}
-
 
 	/* clearToolbarButtons () {
 		$(this).find("#im-icons-left").html("");

@@ -4,10 +4,8 @@ import { DBTables } from "../controllers/Database";
 import { FileImgSizes, Platform } from "../controllers/Platform";
 import { Model, ModelMeta } from "./Model";
 
-
 /** Possible values for File.type field */
-export type FileTypes = ("image" | "video" | "file")
-
+export type FileTypes = "image" | "video" | "file";
 
 /** File model */
 export class FileObject extends Model {
@@ -16,58 +14,57 @@ export class FileObject extends Model {
 		modelName: DBTables.File,
 		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"],
 		specialProps: {
-			"geotag": {
+			geotag: {
 				deserialize: (file: FileObject, prop: { id: number }) => {
 					if (prop === null) file.geotagID = null;
-					else file.geotagID = GeoTag.addObject(prop).id
+					else file.geotagID = GeoTag.addObject(prop).id;
 				}
 			}
 		}
 		// TODO serialize for this
-	})
-
+	});
 
 	/** File name */
-	name: string
+	name: string;
 
 	/** File path */
-	path: string
+	path: string;
 
 	/** File type (broad) */
-	type: FileTypes
+	type: FileTypes;
 
 	/** File format (extension) */
-	format: string
+	format: string;
 
 	/** File size (bytes) */
-	length: number
+	length: number;
 
 	/** File timestamp (date taken if available, otherwise date modified) */
-	timestamp: Date
+	timestamp: Date;
 
 	/** File width (if image or video) */
-	width: number
+	width: number;
 
 	/** File height (if image or video) */
-	height: number
+	height: number;
 
 	/** File orientation (if image) */
-	orientation: number
+	orientation: number;
 
 	/** File duration (if video) */
-	duration: number
+	duration: number;
 
 	/** Whether file is starred */
-	is_starred: boolean
+	is_starred: boolean;
 
 	/** Whether file is marked for deletion */
-	is_deleted: boolean
+	is_deleted: boolean;
 
 	/** Local storage of image data for file */
-	private imageData: Map<FileImgSizes, string> = new Map<FileImgSizes, string>()
+	private imageData: Map<FileImgSizes, string> = new Map<FileImgSizes, string>();
 
 	/** Information about state of file zoom/positioning in ImageModal (current session) */
-	zoom: object
+	zoom: object;
 
 	/** Parent ID (for File instances belonging to a Face) */
 	// parent?: number
@@ -75,19 +72,21 @@ export class FileObject extends Model {
 	// 	I think maybe use selection instead
 
 	/** File geotag ID */
-	private geotagID: number
+	private geotagID: number;
 
 	/** File geotag (if image) */
-	get geotag (): GeoTag { return GeoTag.getById(this.geotagID); }
+	get geotag(): GeoTag {
+		return GeoTag.getById(this.geotagID);
+	}
 
 	/** Material icon to use in place of image data */
-	imageMaterialIcon = "photo"
+	imageMaterialIcon = "photo";
 
 	/**
 	 * Construct a new FileObject instance
 	 * @param obj Data object from which to construct the new file instance
 	 */
-	constructor (obj: object) {
+	constructor(obj: object) {
 		super(obj);
 
 		if (this.orientation == 6 || this.orientation == 8) {
@@ -102,7 +101,7 @@ export class FileObject extends Model {
 	 * @param queue Whether to queue image loading
 	 * @returns Base64 data url for image
 	 */
-	async loadImgData (size: FileImgSizes, queue: boolean): Promise<string> {
+	async loadImgData(size: FileImgSizes, queue: boolean): Promise<string> {
 		if (this.type !== "image") return null;
 
 		let data = this.imageData.get(size);
@@ -120,7 +119,7 @@ export class FileObject extends Model {
 	 * @param size The maximum size to look for
 	 * @returns The best size found
 	 */
-	getBestImgSize (size: FileImgSizes): FileImgSizes {
+	getBestImgSize(size: FileImgSizes): FileImgSizes {
 		let bestInd = null as FileImgSizes;
 		let entries = this.imageData.entries();
 		while (true) {
@@ -139,9 +138,9 @@ export class FileObject extends Model {
 	 * If the file is an image, it is opened in the image modal.
 	 * For other types no action is taken.
 	 */
-	open () {
+	open() {
 		if (this.type == "image") {
-			LocationManager.updateQuery({ "file": this.id.toString() });
+			LocationManager.updateQuery({ file: this.id.toString() });
 		}
 	}
 
@@ -153,11 +152,11 @@ export class FileObject extends Model {
 	 * @param maxH Height of the bounding box
 	 * @returns [Width of the image at that size, Height of the image at that size]
 	 */
-	getSize (maxW: number, maxH: number): [number, number] {
+	getSize(maxW: number, maxH: number): [number, number] {
 		if (this.width / this.height < maxW / maxH) {
-			return [this.width * maxH / this.height, maxH];
+			return [(this.width * maxH) / this.height, maxH];
 		} else {
-			return [maxW, this.height * maxW / this.width];
+			return [maxW, (this.height * maxW) / this.width];
 		}
 	}
 

@@ -9,5 +9,5 @@ if (!fs.existsSync(dest)) {
 	fs.copyFileSync(src, dest);
 	console.log("Copied default build config file.");
 } else {
-	console.log("Build config file already exists.")
+	console.log("Build config file already exists.");
 }

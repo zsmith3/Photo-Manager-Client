@@ -7,7 +7,7 @@ const fs = require("fs");
 const allConfig = require(Path.join(__dirname, "../build_config"));
 
 // Extract script args
-const argNames = ["platform", "buildType", "server", "outDir", "publicUrl", "preScript"];
+const argNames = ["platform", "buildType", "server", "outDir", "publicUrl", "preScript", "serveType"];
 const args = {};
 for (let i = 0; i < argNames.length; i++) {
 	if (i >= process.argv.length - 2) args[argNames[i]] = null;
@@ -21,8 +21,8 @@ for (let i = 0; i < argNames.length; i++) {
 const entryFile = Path.join(__dirname, "../src/index.html");
 
 // Require build platform
-if (args.platform === null) throw "No platform specified."
-if (args.buildType === null) throw "No build type specified."
+if (args.platform === null) throw "No platform specified.";
+if (args.buildType === null) throw "No build type specified.";
 
 // Set platform config from args
 const config = allConfig[args.platform];
@@ -38,8 +38,7 @@ process.env.HOST_URL = config.publicUrl;
 const options = {
 	outDir: config.outDir,
 	publicUrl: config.publicUrl,
-	hmr: false,
-
+	hmr: false
 };
 
 // Function to remove a full directory structure
@@ -63,18 +62,19 @@ function removeFullDir(path) {
 	bundler.on("buildEnd", () => {
 		// Write additional pre-script content
 		if (config.preScript) {
-			console.log("Writing pre-script content...")
+			console.log("Writing pre-script content...");
 			const preScriptBuffer = fs.readFileSync(config.preScript);
 			const preScripthtml = preScriptBuffer.toString();
 			const bundlePath = Path.join(config.outDir, "index.html");
 			const bundleBuffer = fs.readFileSync(bundlePath);
 			const bundleHtml = bundleBuffer.toString();
-			const newHtml = bundleHtml.replace("<div id=\"pre-script\"></div>", preScripthtml);
+			const newHtml = bundleHtml.replace('<div id="pre-script"></div>', preScripthtml);
 			fs.writeFileSync(bundlePath, newHtml);
 		}
 	});
 
 	console.log("Starting parcel...");
 
-	await bundler.bundle();
+	if (args.buildType === "development" && config.serveType === "serve") await bundler.serve();
+	else await bundler.bundle();
 })();

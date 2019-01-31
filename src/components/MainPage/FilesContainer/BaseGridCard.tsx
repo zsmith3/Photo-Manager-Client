@@ -10,22 +10,22 @@ import { MountTrackedComponent } from "../../utils";
 /** Type for BaseGridCard props  */
 export interface GridCardProps {
 	/** ID of the associated model instance */
-	modelId: number,
+	modelId: number;
 
 	/** Scale of the card */
-	scale: number,
+	scale: number;
 
 	/** Whether the card is selected */
-	selected: boolean,
+	selected: boolean;
 
 	/** (Touch only) Whether to select on tap (rather than opening) */
-	selectOnTap: boolean,
+	selectOnTap: boolean;
 
 	/** Handler function to select item */
-	onSelect: (modelId: number, mode: SelectMode) => void,
+	onSelect: (modelId: number, mode: SelectMode) => void;
 
 	/** Handler function to open the context menu */
-	onMenu: (modelId: number, anchorPos: { top: number, left: number }) => void,
+	onMenu: (modelId: number, anchorPos: { top: number; left: number }) => void;
 }
 
 /**
@@ -34,9 +34,19 @@ export interface GridCardProps {
  * @template S Additional styling classes
  * @template P Additional props
  */
-export default abstract class BaseGridCard<M extends (Model & { open: () => any }), S={}, P={}> extends MountTrackedComponent<GridCardProps & P & { classes: ({ border: string, card: string, action: string, content?: string } & S) }> {
+export default abstract class BaseGridCard<M extends Model & { open: () => any }, S = {}, P = {}> extends MountTrackedComponent<
+	GridCardProps &
+		P & {
+			classes: {
+				border: string;
+				card: string;
+				action: string;
+				content?: string;
+			} & S;
+		}
+> {
 	/** The margin on each side of GridCards */
-	static margin = 5
+	static margin = 5;
 
 	/** Default styles */
 	static styles: any = {
@@ -55,22 +65,23 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 		action: {
 			cursor: "default"
 		}
-	}
-
+	};
 
 	state = {
 		model: null as M
-	}
+	};
 
 	/** (Touch only) The timestamp at which this item was last selected (used to ignore extraneous click events) */
-	selectResetTime: number = 0
-
+	selectResetTime: number = 0;
 
 	/**
 	 * Get the size of this Card
 	 * @returns The width and height styles of the Card
 	 */
-	protected abstract getSize (): { width: number | string, height: number | string }
+	protected abstract getSize(): {
+		width: number | string;
+		height: number | string;
+	};
 
 	/** Select this item on click */
 	onClick = (event: React.MouseEvent) => {
@@ -81,8 +92,8 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 		if (Input.isTouching) {
 			if (this.props.selectOnTap) this.props.onSelect(this.props.modelId, SelectMode.Toggle);
 			else this.state.model.open();
-		} else this.props.onSelect(this.props.modelId, event.shiftKey ? SelectMode.Extend : (event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace));
-	}
+		} else this.props.onSelect(this.props.modelId, event.shiftKey ? SelectMode.Extend : event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace);
+	};
 
 	/** Open context menu on right-click */
 	onContextMenu = (event: React.MouseEvent) => {
@@ -95,9 +106,12 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 		if (Input.isTouching) {
 			this.props.onSelect(this.props.modelId, SelectMode.Replace);
 			this.selectResetTime = Date.now();
-		} else this.props.onMenu(this.props.modelId, { top: event.clientY, left: event.clientX });
-	}
-
+		} else
+			this.props.onMenu(this.props.modelId, {
+				top: event.clientY,
+				left: event.clientX
+			});
+	};
 
 	shouldComponentUpdate(nextProps, nextState) {
 		return nextState !== this.state || nextProps.modelId !== this.props.modelId || nextProps.selected !== this.props.selected || nextProps.scale !== this.props.scale;
@@ -108,28 +122,35 @@ export default abstract class BaseGridCard<M extends (Model & { open: () => any 
 	 * @param content The inner content to render
 	 * @returns The fully rendered Card
 	 */
-	renderBase (content: JSX.Element) {
-		return <Hammer onPress={ this.onContextMenu }>
-				<div> {/* This <div> is needed for Hammer to bind event listeners */}
-					<Card className={ this.props.classes.card }
-						style={ { ...(this.getSize()), backgroundColor: this.props.selected ? "lightblue" : "white" } }
-						onClick={ this.onClick }
-						onDoubleClick={ () => this.state.model.open() }
-						onContextMenu={ this.onContextMenu }>
-						<div style={ { display: this.props.selected ? "block" : "none" } } className={ this.props.classes.border } />
-						<CardActionArea className={ this.props.classes.action }>
-							{ content }
-						</CardActionArea>
+	renderBase(content: JSX.Element) {
+		return (
+			<Hammer onPress={this.onContextMenu}>
+				<div>
+					{" "}
+					{/* This <div> is needed for Hammer to bind event listeners */}
+					<Card
+						className={this.props.classes.card}
+						style={{
+							...this.getSize(),
+							backgroundColor: this.props.selected ? "lightblue" : "white"
+						}}
+						onClick={this.onClick}
+						onDoubleClick={() => this.state.model.open()}
+						onContextMenu={this.onContextMenu}
+					>
+						<div style={{ display: this.props.selected ? "block" : "none" }} className={this.props.classes.border} />
+						<CardActionArea className={this.props.classes.action}>{content}</CardActionArea>
 					</Card>
 				</div>
-			</Hammer>;
+			</Hammer>
+		);
 	}
 }
 
 /** Interface providing GridCard with scaling information */
 export interface GridCardExport {
 	/** The actual component to render */
-	component: React.ComponentType<GridCardProps>
+	component: React.ComponentType<GridCardProps>;
 
 	/**
 	 * Get the sizing of each GridCard in the given context
@@ -137,5 +158,5 @@ export interface GridCardExport {
 	 * @param width Total screen width
 	 * @returns The width and height of the cards
 	 */
-	getSize (scale: number, width: Breakpoint): { width: number, height: number }
+	getSize(scale: number, width: Breakpoint): { width: number; height: number };
 }

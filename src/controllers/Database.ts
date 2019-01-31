@@ -23,7 +23,7 @@ abstract class BaseDatabase {
 	 * @param query ID of requested model instance, or array of filter queries
 	 * @returns Promise representing fetched model instance data
 	 */
-	abstract get (table: DBTables, query?: (number | FilterType[])): Promise<any>
+	abstract get(table: DBTables, query?: number | FilterType[]): Promise<any>;
 
 	/**
 	 * Create new model instance
@@ -31,7 +31,7 @@ abstract class BaseDatabase {
 	 * @param data Data object from which to create new instance
 	 * @returns Promise representing new model instance data
 	 */
-	abstract create (table: DBTables, data: any): Promise<any>
+	abstract create(table: DBTables, data: any): Promise<any>;
 
 	/**
 	 * Update existing model instance
@@ -40,7 +40,7 @@ abstract class BaseDatabase {
 	 * @param data Data object from which to update instance
 	 * @returns Promise representing updated model instance data
 	 */
-	abstract update (table: DBTables, id: number, data: any): Promise<any>
+	abstract update(table: DBTables, id: number, data: any): Promise<any>;
 
 	/**
 	 * Delete model instance from table by ID
@@ -48,8 +48,7 @@ abstract class BaseDatabase {
 	 * @param id ID of model instance to delete
 	 * @returns Promise representing completion
 	 */
-	abstract delete (table: DBTables, id: number): Promise<any>
-
+	abstract delete(table: DBTables, id: number): Promise<any>;
 
 	/** Authorisation-related functions */
 	auth: {
@@ -57,7 +56,7 @@ abstract class BaseDatabase {
 		 * Determine whether the user is authorised to access the database
 		 * @returns Promise representing whether or not user is authorised
 		 */
-		checkAuth (): Promise<boolean>
+		checkAuth(): Promise<boolean>;
 
 		/**
 		 * Log the user in (using localStorage)
@@ -66,20 +65,19 @@ abstract class BaseDatabase {
 		 * @param remain_in Whether to remain logged in
 		 * @returns Promise representing completion
 		 */
-		logIn (username: string, password: string, remain_in: boolean): Promise<void>
+		logIn(username: string, password: string, remain_in: boolean): Promise<void>;
 
 		/** Log the user out (from localStorage) */
-		logOut (): void
+		logOut(): void;
 
 		/**
 		 * Create a new user account
 		 * @param data New user data to pass to the API
 		 * @returns Promise representing completion
 		 */
-		register (data: { first_name: string, last_name: string, username: string, email: string, password: string, confirm_password: string, token: string }): Promise<any>
-	}
-};
-
+		register(data: { first_name: string; last_name: string; username: string; email: string; password: string; confirm_password: string; token: string }): Promise<any>;
+	};
+}
 
 /** Database interface for web application */
 class WebDatabase extends BaseDatabase {
@@ -91,20 +89,20 @@ class WebDatabase extends BaseDatabase {
 	 * @param data HTTP request body data
 	 * @returns Promise representing response data
 	 */
-	private request (type: httpMethodTypes, table: string, id?: number, data?: any): Promise<any> {
-		let path = table + "/" + ((id || id === 0) ? (id + "/") : "");
+	private request(type: httpMethodTypes, table: string, id?: number, data?: any): Promise<any> {
+		let path = table + "/" + (id || id === 0 ? id + "/" : "");
 
 		return apiRequest(path, type, data);
 	}
 
 	// Interfaces to specific request methods
 
-	get (table: DBTables, query?: (number | FilterType[])): Promise<any> {
+	get(table: DBTables, query?: number | FilterType[]): Promise<any> {
 		if (query instanceof Array) {
-			let filterToQuery = (filter: FilterType) => filter.field + (filter.type === "exact" ? "" : `__${ filter.type }`) + `=${ encodeURI(filter.value) }`;
+			let filterToQuery = (filter: FilterType) => filter.field + (filter.type === "exact" ? "" : `__${filter.type}`) + `=${encodeURI(filter.value)}`;
 			let queryStrings = query.map(filterToQuery);
 			let queryString = (queryStrings.length ? "?" : "") + queryStrings.join("&");
-			return apiRequest(`${ table }/${ queryString }`, "GET");
+			return apiRequest(`${table}/${queryString}`, "GET");
 		} else if (typeof query === "number") {
 			return this.request("GET", table, query);
 		} else {
@@ -112,58 +110,65 @@ class WebDatabase extends BaseDatabase {
 		}
 	}
 
-	create (table: DBTables, data: any): Promise<any> {
+	create(table: DBTables, data: any): Promise<any> {
 		return this.request("POST", table, null, data);
 	}
 
-	update (table: DBTables, id: number, data: any): Promise<any> {
+	update(table: DBTables, id: number, data: any): Promise<any> {
 		return this.request("PATCH", table, id, data);
 	}
 
-	delete (table: DBTables, id: number): Promise<any> {
+	delete(table: DBTables, id: number): Promise<any> {
 		return this.request("DELETE", table, id);
 	}
 
 	auth = {
-		checkAuth (): Promise<boolean> {
-			return new Promise((resolve) => {
-				apiRequest("membership/status/").then(data => {
-					if (data.authenticated) {
-						window.sessionStorage.setItem("csrf_token", data.csrf_token);
+		checkAuth(): Promise<boolean> {
+			return new Promise(resolve => {
+				apiRequest("membership/status/")
+					.then(data => {
+						if (data.authenticated) {
+							window.sessionStorage.setItem("csrf_token", data.csrf_token);
 
-						resolve(true);
-					} else {
+							resolve(true);
+						} else {
+							Database.auth.logOut();
+							resolve(false);
+						}
+					})
+					.catch(() => {
 						Database.auth.logOut();
 						resolve(false);
-					}
-				}).catch(() => {
-					Database.auth.logOut();
-					resolve(false);
-				});
+					});
 			});
 		},
 
-		logIn (username: string, password: string, remain_in: boolean): Promise<void> {
+		logIn(username: string, password: string, remain_in: boolean): Promise<void> {
 			return new Promise((resolve, reject) => {
-				apiRequest("membership/login/", "POST", { username: username, password: password }).then(data => {
-					if (remain_in) window.localStorage.setItem("jwtToken", data.token);
-					else window.sessionStorage.setItem("jwtToken", data.token);
+				apiRequest("membership/login/", "POST", {
+					username: username,
+					password: password
+				})
+					.then(data => {
+						if (remain_in) window.localStorage.setItem("jwtToken", data.token);
+						else window.sessionStorage.setItem("jwtToken", data.token);
 
-					resolve();
-				}).catch(reject);
+						resolve();
+					})
+					.catch(reject);
 			});
 		},
 
-		logOut (): void {
+		logOut(): void {
 			window.sessionStorage.removeItem("jwtToken");
 			window.localStorage.removeItem("jwtToken");
 			if (LocationManager.currentLocation != "/register") LocationManager.updateLocation("/login");
 		},
 
-		register (data: { first_name: string, last_name: string, username: string, email: string, password: string, confirm_password: string, token: string }): Promise<any> {
+		register(data: { first_name: string; last_name: string; username: string; email: string; password: string; confirm_password: string; token: string }): Promise<any> {
 			return apiRequest("membership/register/", "POST", data);
 		}
-	}
-};
+	};
+}
 
 export const Database = new WebDatabase();

@@ -7,7 +7,7 @@ export const Input = {
 	isTouching: false,
 
 	// Register pressed key
-	keydown: function (event) {
+	keydown: function(event) {
 		if (event.key == " ") event.key = "Space";
 
 		Input.keysDown[event.key] = true;
@@ -18,13 +18,17 @@ export const Input = {
 	},
 
 	// Remove pressed key
-	keyup: function (event) { Input.keysDown[event.key] = false; },
+	keyup: function(event) {
+		Input.keysDown[event.key] = false;
+	},
 
 	// Clear all pressed keys
-	clearKeysDown: function () { for (var key in Input.keysDown) Input.keysDown[key] = false; },
+	clearKeysDown: function() {
+		for (var key in Input.keysDown) Input.keysDown[key] = false;
+	},
 
 	// Test if a key is down
-	isDown: function (key) {
+	isDown: function(key) {
 		if (key in Input.keysDown) return Input.keysDown[key];
 		else return false;
 	},
@@ -69,20 +73,20 @@ export const Input = {
 
 	on1: function () { App.app.els.imageModal.setZoom("max", "max", "c", "c"); }, */
 
-	mousemove: function (event) {
+	mousemove: function(event) {
 		Input.xPos = event.clientX;
 		Input.yPos = event.clientY;
 		// App.app.els.imageModal.drag(event);
 	},
 
-	touchstart: function (event) {
+	touchstart: function(event) {
 		Input.isTouching = true;
 		Input.touchesDown++;
 	},
 
-	touchend: function (event) {
+	touchend: function(event) {
 		Input.touchesDown--;
-	},
+	}
 
 	/* click: function (event) {
 		let target = event.composedPath().filter(element => $(element).is("a"));

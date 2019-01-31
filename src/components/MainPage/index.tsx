@@ -11,16 +11,19 @@ import AppBar from "./AppBar";
 import FilesContainer from "./FilesContainer";
 import NavDrawer, { navDrawerWidth } from "./NavDrawer";
 
-
 interface MainPageStyles {
-	rightOfNavDrawer
-	toolbar
-	mainContent
+	rightOfNavDrawer;
+	toolbar;
+	mainContent;
 }
 
 /** The Main (file browser) page */
-class MainPage extends React.Component<{ classes: MainPageStyles, width: Breakpoint, location: Location<any> }> {
-	static styles: ((theme: Theme) => MainPageStyles) = (theme: Theme) => ({
+class MainPage extends React.Component<{
+	classes: MainPageStyles;
+	width: Breakpoint;
+	location: Location<any>;
+}> {
+	static styles: (theme: Theme) => MainPageStyles = (theme: Theme) => ({
 		rightOfNavDrawer: {
 			[theme.breakpoints.up("md")]: {
 				marginLeft: navDrawerWidth
@@ -32,14 +35,15 @@ class MainPage extends React.Component<{ classes: MainPageStyles, width: Breakpo
 		}
 	});
 
-	render () {
+	render() {
 		// Extract data from URL
 		let addressParts = trimStr(this.props.location.pathname, "/").split("/");
 		let addressRootType = addressParts[0] as addressRootTypes;
 		let addressRootId: number;
 		if (addressParts.length > 1) {
 			addressRootId = parseInt(addressParts[1]);
-			if (addressRootId === NaN) {} // TODO
+			if (addressRootId === NaN) {
+			} // TODO
 		} else addressRootId = null;
 
 		// Sizing
@@ -49,26 +53,28 @@ class MainPage extends React.Component<{ classes: MainPageStyles, width: Breakpo
 		else toolbarHeight = 56;
 		let fcOffsetTop = toolbarHeight + addressBarHeight;
 
-		return <Fragment>
+		return (
+			<Fragment>
 				{/* NavDrawer (floated left) */}
 				<NavDrawer />
 
 				{/* Main body of the page */}
-				<div className={ this.props.classes.rightOfNavDrawer }>
+				<div className={this.props.classes.rightOfNavDrawer}>
 					{/* AppBar (fixed top) */}
 					<AppBar />
 
 					{/* Main content of the page */}
-					<div className={ this.props.classes.mainContent }>
+					<div className={this.props.classes.mainContent}>
 						{/* Placeholder of AppBar height */}
-						<div className={ this.props.classes.toolbar } />
+						<div className={this.props.classes.toolbar} />
 
-						<AddressBar rootType={ addressRootType } rootId={ addressRootId } />
+						<AddressBar rootType={addressRootType} rootId={addressRootId} />
 
-						<FilesContainer rootType={ addressRootType } rootId={ addressRootId } searchQuery={ LocationManager.currentQuery.get("search") } offsetTop={ fcOffsetTop } />
+						<FilesContainer rootType={addressRootType} rootId={addressRootId} searchQuery={LocationManager.currentQuery.get("search")} offsetTop={fcOffsetTop} />
 					</div>
 				</div>
 			</Fragment>
+		);
 	}
 }
 

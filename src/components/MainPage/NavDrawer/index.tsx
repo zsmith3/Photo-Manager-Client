@@ -3,16 +3,15 @@ import React, { Fragment } from "react";
 import PersonGroupList from "./PersonGroupList";
 
 interface NavDrawerStyles {
-	toolbar
-	drawer
+	toolbar;
+	drawer;
 }
-
 
 // Navigation drawer class
 class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 	static drawerWidth = 240;
 
-	static styles: ((theme: Theme) => NavDrawerStyles) = (theme: Theme) => ({
+	static styles: (theme: Theme) => NavDrawerStyles = (theme: Theme) => ({
 		toolbar: theme.mixins.toolbar,
 		drawer: {
 			width: NavDrawer.drawerWidth,
@@ -23,16 +22,17 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 
 	state = {
 		mobileOpen: false
-	}
+	};
 
-	constructor (props) {
+	constructor(props) {
 		super(props);
 
 		navDrawerInstance = this;
 	}
 
-	render () {
-		const drawer = <div className={this.props.classes.drawer} tabIndex={0} role="button" onKeyDown={() => this.setState({mobileOpen: false})}>
+	render() {
+		const drawer = (
+			<div className={this.props.classes.drawer} tabIndex={0} role="button" onKeyDown={() => this.setState({ mobileOpen: false })}>
 				<div className={this.props.classes.toolbar} />
 
 				<Divider />
@@ -42,20 +42,23 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles }> {
 				<Divider />
 
 				<PersonGroupList />
-			</div>;
+			</div>
+		);
 
-		return <Fragment>
+		return (
+			<Fragment>
 				<Hidden mdUp implementation="css">
-					<Drawer variant="temporary" open={this.state.mobileOpen} onClose={() => this.setState({mobileOpen: false})} ModalProps={ { keepMounted: true } }>
-						{ drawer }
+					<Drawer variant="temporary" open={this.state.mobileOpen} onClose={() => this.setState({ mobileOpen: false })} ModalProps={{ keepMounted: true }}>
+						{drawer}
 					</Drawer>
 				</Hidden>
 				<Hidden smDown implementation="css">
 					<Drawer variant="permanent" open>
-						{ drawer }
+						{drawer}
 					</Drawer>
 				</Hidden>
-			</Fragment>;
+			</Fragment>
+		);
 	}
 
 	/* // Convert a permanent drawer to a temporary drawer

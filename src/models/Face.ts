@@ -4,7 +4,6 @@ import { FaceImgSizes, Platform } from "../controllers/Platform";
 import { Model, ModelMeta } from "./Model";
 import { LocationManager } from "../components/utils";
 
-
 /** Face model */
 export class Face extends Model {
 	/** Face model metadata */
@@ -12,8 +11,8 @@ export class Face extends Model {
 		modelName: DBTables.Face,
 		props: ["id", "rect_x", "rect_y", "rect_w", "rect_h", "status"],
 		specialProps: {
-			"person": "personID",
-			"file": {
+			person: "personID",
+			file: {
 				deserialize: (face: Face, prop: { id: number }) => {
 					face.fileID = FileObject.addObject(prop).id;
 				}
@@ -21,42 +20,44 @@ export class Face extends Model {
 		}
 	});
 
-
-	id: number
+	id: number;
 
 	/** X co-ordinate of centre of face bounding box */
-	rect_x: number
+	rect_x: number;
 
 	/** Y co-ordinate of centre of face bounding box */
-	rect_y: number
+	rect_y: number;
 
 	/** Width of face bounding box */
-	rect_w: number
+	rect_w: number;
 
 	/** Height of face bounding box */
-	rect_h: number
+	rect_h: number;
 
 	/** Identification status of face */
-	status: (0 | 1 | 2 | 3 | 4 | 5)
+	status: 0 | 1 | 2 | 3 | 4 | 5;
 
 	/** ID of Person assigned to face */
-	personID: number
+	personID: number;
 
 	/** Person assigned to face */
-	get person (): Person { return Person.getById(this.personID); }
+	get person(): Person {
+		return Person.getById(this.personID);
+	}
 
 	/** ID of image file in which face is found */
-	fileID: number
+	fileID: number;
 
 	/** Image file in which face is found */
-	get file (): FileObject { return FileObject.getById(this.fileID); }
+	get file(): FileObject {
+		return FileObject.getById(this.fileID);
+	}
 
 	/** Local storage of image data for face */
-	imageData: Map<FaceImgSizes, string> = new Map<FaceImgSizes, string>()
+	imageData: Map<FaceImgSizes, string> = new Map<FaceImgSizes, string>();
 
 	/** Material icon to use in place of image data */
-	imageMaterialIcon = "face"
-
+	imageMaterialIcon = "face";
 
 	/**
 	 * Get (and load if needed) image data for this face
@@ -64,7 +65,7 @@ export class Face extends Model {
 	 * @param queue Whether to queue image loading
 	 * @returns Base64 data url for image
 	 */
-	async loadImgData (size: FaceImgSizes, queue: boolean): Promise<string> {
+	async loadImgData(size: FaceImgSizes, queue: boolean): Promise<string> {
 		let data = this.imageData.get(size);
 		if (data) return data;
 		else {
@@ -80,7 +81,7 @@ export class Face extends Model {
 	 * @param size The maximum size to look for
 	 * @returns The best size found
 	 */
-	getBestImgSize (size: FaceImgSizes): FaceImgSizes {
+	getBestImgSize(size: FaceImgSizes): FaceImgSizes {
 		let bestInd = null as FaceImgSizes;
 		let entries = this.imageData.entries();
 		while (true) {
@@ -94,8 +95,8 @@ export class Face extends Model {
 	}
 
 	/** Open the image file to which the face belongs */
-	open (): void {
-		LocationManager.updateQuery({ "face": this.id.toString() });
+	open(): void {
+		LocationManager.updateQuery({ face: this.id.toString() });
 	}
 
 	/**
@@ -103,7 +104,7 @@ export class Face extends Model {
 	 * @param personId ID of the person to assign
 	 * @returns Promise object representing completion
 	 */
-	async setPerson (personID: number): Promise<void> {
+	async setPerson(personID: number): Promise<void> {
 		let oldPerson = this.person;
 		await this.updateSave({ person: personID, status: 1 });
 		oldPerson.update({ face_count: oldPerson.face_count - 1 });
@@ -117,7 +118,7 @@ export class Face extends Model {
 	 * @param status Status to set to
 	 * @returns Promise object representing completion
 	 */
-	setStatus (status: (0 | 1 | 2 | 3 | 4 | 5)): Promise<void> {
+	setStatus(status: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
 		return this.updateSave({ status: status });
 	}
 }

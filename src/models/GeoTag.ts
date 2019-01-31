@@ -1,7 +1,6 @@
 import { Database, DBTables } from "../controllers/Database";
 import { Model, ModelMeta } from "./Model";
 
-
 /** Geotag area model */
 export class GeoTagArea extends Model {
 	/** Geotag area model metadata */
@@ -10,47 +9,46 @@ export class GeoTagArea extends Model {
 		props: ["id", "name", "address", "latitude", "longitude", "radius"]
 	});
 
-
 	/**
 	 * Create new GeoTagArea model instance and add to remote database
 	 * @param dataObj Data object from which to create GeoTagArea
 	 * @returns Promise object representing new GeoTagArea
 	 */
-	static create (dataObj: { name: string }): Promise<GeoTagArea> {
+	static create(dataObj: { name: string }): Promise<GeoTagArea> {
 		return new Promise((resolve, reject) => {
-			Database.create(GeoTagArea.meta.modelName, dataObj).then(data => {
-				let newArea = GeoTagArea.addObject(data);
-				// $("<option></option>").val(newArea.id).text(newArea.name).appendTo("#modal-geotag-form-area-title");
-				resolve(newArea);
-			}).catch(reject);
+			Database.create(GeoTagArea.meta.modelName, dataObj)
+				.then(data => {
+					let newArea = GeoTagArea.addObject(data);
+					// $("<option></option>").val(newArea.id).text(newArea.name).appendTo("#modal-geotag-form-area-title");
+					resolve(newArea);
+				})
+				.catch(reject);
 		});
-	};
+	}
 
-
-	id: number
+	id: number;
 
 	/** Name of the GeoTagArea */
-	name: string
+	name: string;
 
 	/** Address of the GeoTagArea */
-	address: string
+	address: string;
 
 	/** Latitude co-ordinate of area centre */
-	latitude: number
+	latitude: number;
 
 	/** Longitude co-ordinate of area centre */
-	longitude: number
+	longitude: number;
 
 	/** Radius of area from centre */
-	radius: number
+	radius: number;
 	// TODO find out unit and add to doc comment
-
 
 	/**
 	 * Get a display-formatted version of area
 	 * @returns Formatted name and address of the area
 	 */
-	getString () {
+	getString() {
 		return "<span>" + this.name + "</span>\n\n<i style='font-size: 12px;'>" + this.address + "</i>";
 	}
 
@@ -58,9 +56,12 @@ export class GeoTagArea extends Model {
 	 * Save edits to area
 	 * @returns Promise object representing updated area
 	 */
-	save () {
+	save() {
 		return new Promise((resolve, reject) => {
-			Database.update(GeoTagArea.meta.modelName, this.id, { name: this.name, address: this.address }).then(data => {
+			Database.update(GeoTagArea.meta.modelName, this.id, {
+				name: this.name,
+				address: this.address
+			}).then(data => {
 				this.update(data);
 				resolve(this);
 			});
@@ -68,16 +69,14 @@ export class GeoTagArea extends Model {
 	}
 }
 
-
 /** Geotag model */
 export class GeoTag extends Model {
 	/** Geotag model metadata */
 	static meta = new ModelMeta<GeoTag>({
 		modelName: DBTables.GeoTag,
 		props: ["id", "latitude", "longitude"],
-		specialProps: { "area": "areaID" }
-	})
-
+		specialProps: { area: "areaID" }
+	});
 
 	/**
 	 * Create a new geotag and add to remote database
@@ -96,7 +95,6 @@ export class GeoTag extends Model {
 			}).catch(reject);
 		});
 	} */
-
 
 	// TODO document these methods
 
@@ -131,35 +129,33 @@ export class GeoTag extends Model {
 		}
 	} */
 
-
-	id: number
+	id: number;
 
 	/** Latitude co-ordinate */
-	latitude: number
+	latitude: number;
 
 	/** Longitude co-ordinate */
-	longitude: number
+	longitude: number;
 
 	/** ID of GeoTagArea to which geotag belongs (may be null) */
-	private areaID: number
+	private areaID: number;
 
 	/** GeoTagArea to which geotag belongs (may be null) */
-	get area () {
+	get area() {
 		if (this.areaID === null) return null;
 		else return GeoTagArea.getById(this.areaID);
 	}
-
 
 	/**
 	 * Get a display-formatted version of the geotag
 	 * @param noArea If true, the GeoTagArea will not be included
 	 * @returns Formatted latitude and longitude (+ optionally GeoTagArea name and address) of geotag
 	 */
-	getString (noArea) {
+	getString(noArea) {
 		if (this.area && !noArea) {
 			return this.area.getString() + "\n\n" + this.getString(true);
 		} else {
-			return "<i style='font-size: 13px;'>(" + (Math.round(this.latitude * 100) / 100) + ", " + (Math.round(this.longitude * 100) / 100) + ")</i>";
+			return "<i style='font-size: 13px;'>(" + Math.round(this.latitude * 100) / 100 + ", " + Math.round(this.longitude * 100) / 100 + ")</i>";
 		}
 	}
 }

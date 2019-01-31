@@ -6,17 +6,21 @@ import React from "react";
  */
 export default class MountTrackedComponent<P> extends React.Component<P> {
 	/** Whether the component has mounted yet (and so whether setState can be called) */
-	mounted = false
+	mounted = false;
 
-	componentDidMount () { this.mounted = true; }
+	componentDidMount() {
+		this.mounted = true;
+	}
 
-	componentWillUnmount () { this.mounted = false; }
+	componentWillUnmount() {
+		this.mounted = false;
+	}
 
 	/**
 	 * Set the state of the component regardless of whether it has been mounted yet
 	 * @param state The state object to set to
 	 */
-	setStateSafe (state: {}) {
+	setStateSafe(state: {}) {
 		if (this.mounted) this.setState(state);
 		else if (this.state) Object.assign(this.state, state);
 		else this.state = state;

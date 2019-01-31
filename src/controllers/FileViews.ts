@@ -1,7 +1,7 @@
 abstract class View {
-	extractData (data) {
+	extractData(data) {
 		if (App.app.data.objectType == "files") {
-			if (data.constructor == Array) data = {folders: data};
+			if (data.constructor == Array) data = { folders: data };
 			data.folders = data.folders || [];
 			data.files = data.files || [];
 		}
@@ -9,15 +9,19 @@ abstract class View {
 		return data;
 	}
 
-	getFiles (data) {
+	getFiles(data) {
 		var files;
-		if (App.app.data.objectType == "faces") files = {folders: {}, files: data.faces};
-		else files = {folders: FileObject.createFromList(data.folders), files: data.files};
+		if (App.app.data.objectType == "faces") files = { folders: {}, files: data.faces };
+		else
+			files = {
+				folders: FileObject.createFromList(data.folders),
+				files: data.files
+			};
 
 		return files;
 	}
 
-	refresh (data) {
+	refresh(data) {
 		data = this.extractData(data);
 
 		App.app.refreshMetadata(data);
@@ -29,17 +33,17 @@ abstract class View {
 	}
 
 	// Overridden
-	addFiles (data) {}
-	abstract checkRange (start, end): boolean
-	refreshDisplay () {}
-	refreshPage (fpp, page) {}
+	addFiles(data) {}
+	abstract checkRange(start, end): boolean;
+	refreshDisplay() {}
+	refreshPage(fpp, page) {}
 	// TODO make all abstract and implement on mapview
 	// 	some may not be needed on mapview, in which case
 	//	add type guarding in App.ts
 }
 
 class FilesView extends View {
-	refresh (data) {
+	refresh(data) {
 		var files = super.refresh(data);
 
 		$("#filesContainer").css("display", "");
@@ -52,11 +56,11 @@ class FilesView extends View {
 		App.app.fetchPageFiles();
 	}
 
-	refreshDisplay () {
+	refreshDisplay() {
 		App.app.els.filesCont.displayFull();
 	}
 
-	refreshPage (fpp, page) {
+	refreshPage(fpp, page) {
 		App.app.els.sortBar.refreshPagination(App.app.data.objectCount);
 
 		App.app.els.filesCont.displayInitial(fpp, page);
@@ -65,7 +69,7 @@ class FilesView extends View {
 		App.app.fetchPageFiles();
 	}
 
-	addFiles (data) {
+	addFiles(data) {
 		var files;
 		if (App.app.data.objectType == "faces") files = Face.createFromList(data);
 		else files = FileObject.createFromList(data);
@@ -73,7 +77,7 @@ class FilesView extends View {
 		App.app.els.filesCont.addFiles(files);
 	}
 
-	checkRange (start, end) {
+	checkRange(start, end) {
 		return App.app.els.filesCont.checkRange(start, end);
 	}
 }
@@ -91,7 +95,7 @@ class PeopleView extends View {
 } */
 
 class MapView extends View {
-	refresh (data) {
+	refresh(data) {
 		var files = super.refresh(data);
 		for (var id in files) if (!files[id].geotag) delete files[id];
 
@@ -104,5 +108,7 @@ class MapView extends View {
 	}
 
 	// TODO implement
-	checkRange (start, end): boolean { return false; }
+	checkRange(start, end): boolean {
+		return false;
+	}
 }

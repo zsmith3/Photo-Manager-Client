@@ -1,7 +1,6 @@
 import { Database, DBTables } from "../controllers/Database";
 import { FileObject } from "./FileObject";
 
-
 /** Options for ModelMeta.loadState */
 enum ModelLoadStates {
 	notLoaded = 0,
@@ -10,45 +9,52 @@ enum ModelLoadStates {
 }
 
 /** Type for use in filtering Model queries */
-export type FilterType = { field: string, type: ("exact" | "in" | "isnull"), value: any };
+export type FilterType = {
+	field: string;
+	type: "exact" | "in" | "isnull";
+	value: any;
+};
 
 /** Type for use in specialProps */
-type SpecialPropMethod = { deserialize? (instance: Model, prop: any): void, serialize? (obj: {}, prop: any): void }
+type SpecialPropMethod = {
+	deserialize?(instance: Model, prop: any): void;
+	serialize?(obj: {}, prop: any): void;
+};
 
 /** Class to store static metadata for Model classes */
 export class ModelMeta<M extends Model> {
 	/** List of instances of the model */
-	objects: M[] = []
+	objects: M[] = [];
 
 	/** Name of the database table associated with the model */
-	modelName: DBTables
+	modelName: DBTables;
 
 	/** List of standard properties (with one-to-one mappings to database properties) */
-	props: string[]
+	props: string[];
 
 	/** List of special properties (where mapping from database to local is more complex) */
-	specialProps: { [key: string]: (SpecialPropMethod | string) } = null
+	specialProps: { [key: string]: SpecialPropMethod | string } = null;
 
 	/** Handler functions to be called when the objects list is updated */
-	listUpdateHandlers: ((models: M[]) => void)[] = []
+	listUpdateHandlers: ((models: M[]) => void)[] = [];
 
 	/** Current Promise object representing the loading of all instances from the database */
-	loadingPromise: Promise<M[]> = null
+	loadingPromise: Promise<M[]> = null;
 
 	/** The current state of loading of all instances from the database */
-	loadAllState: ModelLoadStates = ModelLoadStates.notLoaded
+	loadAllState: ModelLoadStates = ModelLoadStates.notLoaded;
 
 	/** The current state of loading of specific instances from the database */
-	loadStates: Map<number, ModelLoadStates> = new Map()
+	loadStates: Map<number, ModelLoadStates> = new Map();
 
 	/** Handler functions to run when specific instances are loaded */
-	loadHandlers: Map<number, ((model: M) => void)[]> = new Map()
+	loadHandlers: Map<number, ((model: M) => void)[]> = new Map();
 
 	/**
 	 * ModelMeta constructor
 	 * @param data Data object containing values for properties of ModelMeta instance
 	 */
-	constructor (data: { modelName: DBTables, props: string[], specialProps?: { [key: string]: (SpecialPropMethod | string) } }) {
+	constructor(data: { modelName: DBTables; props: string[]; specialProps?: { [key: string]: SpecialPropMethod | string } }) {
 		for (let prop in data) this[prop] = data[prop];
 	}
 
@@ -57,29 +63,35 @@ export class ModelMeta<M extends Model> {
 	 * @param id ID to insert at
 	 * @param callback Callback to add
 	 */
-	addIdLoadHandler (id: number, callback: (model: M) => void) {
+	addIdLoadHandler(id: number, callback: (model: M) => void) {
 		let list = this.loadHandlers.get(id);
 		if (list) list.push(callback);
 		else this.loadHandlers.set(id, [callback]);
 	}
 }
 
-
 /** Base Model class */
 export class Model {
 	/** Metadata for the Model type */
-	static meta: ModelMeta<Model>
+	static meta: ModelMeta<Model>;
 
 	// Hack to allow for usage in "this.constructor"
 	"constructor": { meta: ModelMeta<Model> };
-
 
 	/**
 	 * Add a new model instance to the local list (from the API)
 	 * @param obj Data representing new instance of model
 	 * @returns Created instance of model
 	 */
-	static addObject<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, handleListUpdate(): void }, obj: { id: number }, handleUpdate=true): M {
+	static addObject<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			handleListUpdate(): void;
+		},
+		obj: { id: number },
+		handleUpdate = true
+	): M {
 		let object = this.meta.objects.find(object => object.id === obj.id);
 		if (object) object.update(obj);
 		else object = new this(obj);
@@ -95,7 +107,14 @@ export class Model {
 	 * Append new model instances to the local list (from the API)
 	 * @param list List of objects representing new instances of model
 	 */
-	static addObjects<M extends Model> (this: { new (...args: any[]): M, addObject (obj: object, handleUpdate: boolean): void, handleListUpdate (): void }, list: object[]): void {
+	static addObjects<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			addObject(obj: object, handleUpdate: boolean): void;
+			handleListUpdate(): void;
+		},
+		list: object[]
+	): void {
 		list.forEach(item => this.addObject(item, false));
 
 		this.handleListUpdate();
@@ -106,7 +125,14 @@ export class Model {
 	 * @param list List of objects representing new instances of model
 	 * @returns List of created model instances
 	 */
-	static setObjects<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObjects (list: object[]): void }, list: object[]): M[] {
+	static setObjects<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			addObjects(list: object[]): void;
+		},
+		list: object[]
+	): M[] {
 		this.meta.objects = [];
 		this.addObjects(list);
 		return this.meta.objects;
@@ -116,7 +142,7 @@ export class Model {
 	 * Update a selection of the local model instances
 	 * @param list List of objects representing updated instances of model
 	 */
-	static updateObjects<M extends Model> (this: { new (...args: any[]): M, getById (id: number): M }, list: { id: number }[]): void {
+	static updateObjects<M extends Model>(this: { new (...args: any[]): M; getById(id: number): M }, list: { id: number }[]): void {
 		list.forEach(item => this.getById(item.id).update(item));
 	}
 
@@ -125,8 +151,8 @@ export class Model {
 	 * @param id ID of requested model instance
 	 * @returns Model instance with specified ID
 	 */
-	static getById<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M> }, id: number): M {
-		let item = this.meta.objects.find(obj => ("id" in obj && obj.id == id));
+	static getById<M extends Model>(this: { new (...args: any[]): M; meta: ModelMeta<M> }, id: number): M {
+		let item = this.meta.objects.find(obj => "id" in obj && obj.id == id);
 		if (item === undefined) {
 			// console.error(`Model not found: ${this.meta.modelName} ${id}`);
 			return null;
@@ -139,7 +165,14 @@ export class Model {
 	 * Delete a model instance from the local list from its ID
 	 * @param id ID of model instance to delete
 	 */
-	static deleteById<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, handleListUpdate(): void }, id: number): void {
+	static deleteById<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			handleListUpdate(): void;
+		},
+		id: number
+	): void {
 		for (let i in this.meta.objects) {
 			if (this.meta.objects[i].id == id) delete this.meta.objects[i];
 		}
@@ -151,7 +184,14 @@ export class Model {
 	 * Register handler function to be executed when model list is updated
 	 * @param callback Handler function, taking the model list as an argument
 	 */
-	static registerListUpdateHandler<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, loadAll (): Promise<M[]> }, callback: (models: M[]) => void): Promise<M[]> {
+	static registerListUpdateHandler<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			loadAll(): Promise<M[]>;
+		},
+		callback: (models: M[]) => void
+	): Promise<M[]> {
 		this.meta.listUpdateHandlers.push(callback);
 
 		if (this.meta.loadAllState === ModelLoadStates.loaded) {
@@ -165,7 +205,16 @@ export class Model {
 	 * @param id ID of model instance
 	 * @param callback Handler function, taking the model instance as an argument
 	 */
-	static registerIdLoadHandler<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, getById (id: number): M, loadObject (id: number, refresh?: boolean): Promise<M> }, id: number, callback: (model: M) => void): void {
+	static registerIdLoadHandler<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			getById(id: number): M;
+			loadObject(id: number, refresh?: boolean): Promise<M>;
+		},
+		id: number,
+		callback: (model: M) => void
+	): void {
 		switch (this.meta.loadStates.get(id)) {
 			case ModelLoadStates.loaded:
 				callback(this.getById(id));
@@ -183,15 +232,17 @@ export class Model {
 	 * Load all instances of this Model type
 	 * @returns Promise representing loaded model instances
 	 * */
-	static loadAll<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, setObjects (list: object[]): M[] }): Promise<M[]> {
+	static loadAll<M extends Model>(this: { new (...args: any[]): M; meta: ModelMeta<M>; setObjects(list: object[]): M[] }): Promise<M[]> {
 		if (this.meta.loadAllState !== ModelLoadStates.loading) {
 			this.meta.loadAllState = ModelLoadStates.loading;
 			this.meta.loadingPromise = new Promise((resolve, reject) => {
-				Database.get(this.meta.modelName).then(data => {
-					this.meta.loadAllState = ModelLoadStates.loaded;
-					resolve(this.setObjects(data));
-					delete this.meta.loadingPromise;
-				}).catch(reject);
+				Database.get(this.meta.modelName)
+					.then(data => {
+						this.meta.loadAllState = ModelLoadStates.loaded;
+						resolve(this.setObjects(data));
+						delete this.meta.loadingPromise;
+					})
+					.catch(reject);
 			});
 		}
 
@@ -203,16 +254,28 @@ export class Model {
 	 * @param filters A set of filters to apply to the model query
 	 * @returns Promise representing loaded model instances
 	 */
-	static loadFiltered<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObjects (list: object[]): void }, filters: (FilterType[] | { [field: string]: any })): Promise<M[]> {
+	static loadFiltered<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			addObjects(list: object[]): void;
+		},
+		filters: FilterType[] | { [field: string]: any }
+	): Promise<M[]> {
 		let filtersArray: FilterType[];
 		if (filters instanceof Array) filtersArray = filters;
-		else filtersArray = Object.keys(filters).map(field => (filters[field] === null ? { field: field, type: "isnull" as "isnull", value: true } : { field: field, type: "exact" as "exact", value: filters[field] }));
+		else
+			filtersArray = Object.keys(filters).map(field =>
+				filters[field] === null ? { field: field, type: "isnull" as "isnull", value: true } : { field: field, type: "exact" as "exact", value: filters[field] }
+			);
 
 		return new Promise((resolve, reject) => {
-			Database.get(this.meta.modelName, filtersArray).then(data => {
-				this.addObjects(data);
-				resolve(this.meta.objects.filter(model => data.map(obj => obj.id).includes(model.id)));
-			}).catch(reject);
+			Database.get(this.meta.modelName, filtersArray)
+				.then(data => {
+					this.addObjects(data);
+					resolve(this.meta.objects.filter(model => data.map(obj => obj.id).includes(model.id)));
+				})
+				.catch(reject);
 		});
 	}
 
@@ -222,33 +285,44 @@ export class Model {
 	 * @param refresh If true, all models will be reloaded, even those already present locally (default = false)
 	 * @returns Promise representing loaded model instances
 	 */
-	static loadIds<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObjects (list: object[]): void, getById (id: number): M }, ids: number[], refresh=false): Promise<M[]> {
+	static loadIds<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			addObjects(list: object[]): void;
+			getById(id: number): M;
+		},
+		ids: number[],
+		refresh = false
+	): Promise<M[]> {
 		return new Promise((resolve, reject) => {
 			let remainingIds: number[];
 			if (refresh) remainingIds = ids.filter(id => (this.meta.loadStates.get(id) || ModelLoadStates.notLoaded) === ModelLoadStates.notLoaded);
 			else remainingIds = ids;
 
 			remainingIds.forEach(id => this.meta.loadStates.set(id, ModelLoadStates.loading));
-			(remainingIds.length ? Database.get(this.meta.modelName, [{ field: "id", type: "in", value: remainingIds }]) : Promise.resolve([])).then(data => {
-				this.addObjects(data);
+			(remainingIds.length ? Database.get(this.meta.modelName, [{ field: "id", type: "in", value: remainingIds }]) : Promise.resolve([]))
+				.then(data => {
+					this.addObjects(data);
 
-				// Listen for all requested objects to be loaded
+					// Listen for all requested objects to be loaded
 
-				let fn = () => {
-					if (ids.filter(id => this.meta.loadStates.get(id) === ModelLoadStates.loading).length === 0) {
-						resolve(this.meta.objects.filter(file => ids.includes(file.id)));
-						return true;
-					} else return false;
-				}
+					let fn = () => {
+						if (ids.filter(id => this.meta.loadStates.get(id) === ModelLoadStates.loading).length === 0) {
+							resolve(this.meta.objects.filter(file => ids.includes(file.id)));
+							return true;
+						} else return false;
+					};
 
-				if (!fn()) {
-					ids.forEach(id => {
-						if (this.meta.loadStates.get(id) === ModelLoadStates.loading) {
-							this.meta.addIdLoadHandler(id, fn);
-						}
-					});
-				}
-			}).catch(reject);
+					if (!fn()) {
+						ids.forEach(id => {
+							if (this.meta.loadStates.get(id) === ModelLoadStates.loading) {
+								this.meta.addIdLoadHandler(id, fn);
+							}
+						});
+					}
+				})
+				.catch(reject);
 			// TODO add some mechanism to register when objects have already been requested
 		});
 	}
@@ -259,17 +333,29 @@ export class Model {
 	 * @param refresh If true, the model data will be reloaded, even if it is already present locally (default = false)
 	 * @returns Promise representing loaded model instance
 	 */
-	static loadObject<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M>, addObject (obj: object): M, getById (id: number): M }, id: number, refresh=false): Promise<M> {
+	static loadObject<M extends Model>(
+		this: {
+			new (...args: any[]): M;
+			meta: ModelMeta<M>;
+			addObject(obj: object): M;
+			getById(id: number): M;
+		},
+		id: number,
+		refresh = false
+	): Promise<M> {
 		return new Promise((resolve, reject) => {
 			if (!id && id !== 0) reject("No ID given");
 
 			if ((this.meta.loadStates.get(id) === ModelLoadStates.loaded || this.meta.loadAllState === ModelLoadStates.loaded) && !refresh) resolve(this.getById(id));
-			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading || this.meta.loadAllState === ModelLoadStates.loading) this.meta.addIdLoadHandler(id, model => resolve(model));
+			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading || this.meta.loadAllState === ModelLoadStates.loading)
+				this.meta.addIdLoadHandler(id, model => resolve(model));
 			else {
-				Database.get(this.meta.modelName, id).then(data => {
-					let object = this.addObject(data);
-					resolve(object);
-				}).catch(reject);
+				Database.get(this.meta.modelName, id)
+					.then(data => {
+						let object = this.addObject(data);
+						resolve(object);
+					})
+					.catch(reject);
 			}
 		});
 	}
@@ -277,23 +363,21 @@ export class Model {
 	/**
 	 * Execute update handler functions on model list (to be run whenever model list updated)
 	 */
-	static handleListUpdate<M extends Model> (this: { new (...args: any[]): M, meta: ModelMeta<M> }) {
+	static handleListUpdate<M extends Model>(this: { new (...args: any[]): M; meta: ModelMeta<M> }) {
 		this.meta.listUpdateHandlers.forEach((callback: (models: M[]) => void) => callback(this.meta.objects));
 	}
 
-
 	/** ID property for all models */
-	id: number
+	id: number;
 
 	/** Handler functions for model instance update */
-	private updateHandlers: ((model: Model) => void)[] = []
-
+	private updateHandlers: ((model: Model) => void)[] = [];
 
 	/**
 	 * Construct a new Model instance (overridden)
 	 * @param obj Data object from which to construct the new model instance
 	 */
-	constructor (obj: object) {
+	constructor(obj: object) {
 		this.update(obj);
 
 		this.constructor.meta.objects.push(this);
@@ -311,7 +395,7 @@ export class Model {
 	 * @param obj Data object from which to update model instance
 	 * @param handleUpdate Whether to run update handler functions (default = true)
 	 */
-	update (obj: object, handleUpdate=true): void {
+	update(obj: object, handleUpdate = true): void {
 		// Assign properties
 		for (let property in obj) {
 			if (this.constructor.meta.specialProps !== null && property in this.constructor.meta.specialProps) {
@@ -328,8 +412,10 @@ export class Model {
 		}
 
 		// Check for problems in data object shape
-		let missedProps = this.constructor.meta.props.filter((prop) => !(prop in obj));
-		let extraProps = Object.keys(obj).filter((prop) => !this.constructor.meta.props.includes(prop) && (this.constructor.meta.specialProps === null || !(prop in this.constructor.meta.specialProps)));
+		let missedProps = this.constructor.meta.props.filter(prop => !(prop in obj));
+		let extraProps = Object.keys(obj).filter(
+			prop => !this.constructor.meta.props.includes(prop) && (this.constructor.meta.specialProps === null || !(prop in this.constructor.meta.specialProps))
+		);
 		if (missedProps.length > 0) console.warn(`Missed properties on data for ${this.constructor.meta.modelName} ${this.id}: ${missedProps.join(", ")}`);
 		if (extraProps.length > 0) console.warn(`Extra properties on data for ${this.constructor.meta.modelName} ${this.id}: ${extraProps.join(", ")}`);
 
@@ -342,7 +428,7 @@ export class Model {
 	 * @param obj Data object from which to update model instance
 	 * @returns Promise object representing completion
 	 */
-	async updateSave (obj: object): Promise<void> {
+	async updateSave(obj: object): Promise<void> {
 		this.update(obj, true);
 		const data = await this.save();
 		return this.update(data);
@@ -352,7 +438,7 @@ export class Model {
 	 * Save local model instance changes to the database
 	 * @returns Promise object representing completion
 	 */
-	save (): Promise<any> {
+	save(): Promise<any> {
 		let obj = {};
 
 		this.constructor.meta.props.forEach(prop => {
@@ -376,7 +462,7 @@ export class Model {
 	 * Register handler function to be executed when this model instance is updated
 	 * @param callback Handler function, taking the model as an argument
 	 */
-	registerInstanceUpdateHandler<M extends Model> (this: M, callback: (model: M) => void) {
+	registerInstanceUpdateHandler<M extends Model>(this: M, callback: (model: M) => void) {
 		this.updateHandlers.push(callback);
 	}
 }
