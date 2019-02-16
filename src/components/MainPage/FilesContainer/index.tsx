@@ -9,13 +9,12 @@ import { Platform } from "../../../controllers/Platform";
 import { Album, Face, FileObject, Folder, Person } from "../../../models";
 import { promiseChain } from "../../../utils";
 import { addressRootTypes } from "../../App";
-import { ListDialog, LocationManager, SimpleDialog, MountTrackedComponent } from "../../utils";
+import { ListDialog, LocationManager, MountTrackedComponent, SimpleDialog } from "../../utils";
 import { navDrawerWidth } from "../NavDrawer";
-import BaseGridCard, { GridCardExport } from "./BaseGridCard";
-import FaceCard from "./FaceCard";
-import FileCard from "./FileCard";
-import FolderCard from "./FolderCard";
+import BaseGridCard from "./BaseGridCard";
 import ImageModal from "./ImageModal";
+import ObjectSet, { objectSetDataType } from "./ObjectSet";
+import { Link } from "react-router-dom";
 
 /** Different object selection modes */
 export enum SelectMode {
@@ -29,37 +28,12 @@ export enum SelectMode {
 	Extend = 2
 }
 
-/** Type for stored data in FilesContainer */
-type dataType = {
-	/** ID to identify this set of objects */
-	id: number;
-
-	/** Display name for object set */
-	name: string;
-
-	/** IDs of Model instances to display */
-	objectIds: number[];
-
-	/** GridCard component to display for each instance */
-	card: GridCardExport;
-
-	/** List of IDs of selected objects */
-	selection?: number[];
-
-	/** ID of last selected object */
-	lastSelected?: number;
-
-	/** `this.select` bound to this object set, for caching */
-	onSelect?: (modelId: number, mode: SelectMode) => void;
-
-	/** `this.menuOpen` bound to this object set, for caching */
-	onMenu?: (modelId: number, anchorPos: { top: number; left: number }) => void;
-};
-
 /** Grid-based container for displaying Files (and other models) */
 class FilesContainer extends MountTrackedComponent<{
 	rootType: addressRootTypes;
 	rootId: number;
+	page: number;
+	pageSize: number;
 	searchQuery: string;
 	offsetTop: number;
 	classes: {
@@ -101,7 +75,7 @@ class FilesContainer extends MountTrackedComponent<{
 
 	state = {
 		/** Data to be displayed, as a list of object sets */
-		data: [] as dataType[],
+		data: [] as ObjectSet[],
 
 		/** Whether data for the current set of props has been loaded */
 		dataLoaded: false,
@@ -135,56 +109,26 @@ class FilesContainer extends MountTrackedComponent<{
 	private getData(props?: { rootType: addressRootTypes; rootId: number; searchQuery: string }): Promise<void> {
 		props = props || this.props;
 
+		// TODO store in this.state
+		// and set from inputs
+
 		return new Promise((resolve, reject) => {
-			let complete = (data: dataType[]) => {
-				this.setStateSafe({
-					data: data.map(set =>
-						Object.assign(set, {
-							selection: [],
-							lastSelected: set.objectIds.length > 0 ? set.objectIds[0] : null,
-							onSelect: this.select.bind(this, set.id),
-							onMenu: this.menuOpen.bind(this, set.id)
-						})
-					),
-					dataLoaded: true
-				});
+			let complete = (data: (objectSetDataType | objectSetDataType[])) => {
+				if (!(data instanceof Array)) data = [data];
+				let finalData = data.map(setData => new ObjectSet(setData));
+				this.setStateSafe({ data: finalData, dataLoaded: true });
 				resolve();
 			};
 
 			switch (props.rootType) {
 				case "folders":
-					if (props.rootId === null) {
-						Folder.loadFiltered<Folder>({ parent: null }).then(folders => {
-							complete([
-								{
-									id: 1,
-									name: "Folders",
-									objectIds: folders.map(folder => folder.id),
-									card: FolderCard
-								}
-							]);
-						});
-					} else {
+					if (props.rootId === null) Folder.loadFiltered<Folder>({ parent: null }).then(complete);
+					else {
 						Folder.loadObject<Folder>(props.rootId)
 							.then(folder => {
 								folder
-									.getContents(props.searchQuery)
-									.then(data => {
-										complete([
-											{
-												id: 1,
-												name: "Folders",
-												objectIds: data.folders.map(folder => folder.id),
-												card: FolderCard
-											},
-											{
-												id: 2,
-												name: "Files",
-												objectIds: data.files.map(file => file.id),
-												card: FileCard
-											}
-										]);
-									})
+									.getContents(props.page, props.pageSize, props.searchQuery)
+									.then(data => complete([ data.folders, data.files]))
 									.catch(reject);
 							})
 							.catch(reject);
@@ -193,7 +137,7 @@ class FilesContainer extends MountTrackedComponent<{
 				case "people":
 					Person.loadObject<Person>(props.rootId)
 						.then(person => {
-							let fn = (faces: Face[]) =>
+							/* let fn = (faces: Face[]) =>
 								complete([
 									{
 										id: 1,
@@ -201,12 +145,26 @@ class FilesContainer extends MountTrackedComponent<{
 										objectIds: faces.map(face => face.id),
 										card: FaceCard
 									}
-								]);
+								]); */
 							person
-								.getFaces()
-								.then(fn)
+								.getFaces(props.page, props.pageSize)
+								.then(complete)
 								.catch(reject);
-							person.faceListUpdateHandlers.push(fn);
+							// TODO with both Person.getFaces and Folder.getContents
+							// 	pass in page, page_size
+							//	and return count, objects
+							//	then figure out how pages work in the context
+							//	of FilesContainer and this method
+							// Possible model:
+							// 	3 levels:
+							//		- Outer manager, which chooses which view to use
+							//		- View, which fetches correct files and chooses which display
+							//		- Display, which actually shows files
+							// 	e.g. same display could be used for all gridlist formats,
+							// 	but perhaps a different view or something
+
+							//person.faceListUpdateHandlers.push(fn);
+							// TODO rework this
 						})
 						.catch(reject);
 					break;
@@ -466,7 +424,8 @@ class FilesContainer extends MountTrackedComponent<{
 	/** Get the total available display height for container */
 	getTotalHeight(): number {
 		const sliderHeight = 20;
-		return window.innerHeight - this.props.offsetTop - sliderHeight;
+		const paginationHeight = 73;
+		return window.innerHeight - this.props.offsetTop - sliderHeight - paginationHeight;
 	}
 
 	/** Get default/range for scale, based on root type */
@@ -531,6 +490,22 @@ class FilesContainer extends MountTrackedComponent<{
 		);
 	}
 
+	renderPagination (totalCount: number) {
+		let currentPage = this.props.page;
+		let pageSize = this.props.pageSize;
+		let maxPage = Math.ceil(totalCount / pageSize);
+
+		let pages: string[] = [];
+		for (var i = Math.max(1, currentPage - 2); i <= Math.min(maxPage, currentPage + 2); i++) pages.push(i.toString());
+		return (
+			<div style={{ padding: 20 }}>
+				{ currentPage > 1 && <Link to={LocationManager.getUpdatedQueryLocation({ page: "1" })}>{"<<"}</Link> }
+				{ pages.map(page => <Link key={page} to={LocationManager.getUpdatedQueryLocation({ page: page })} style={ parseInt(page) === currentPage ? { marginLeft: 5, color: "black", cursor: "default" } : { marginLeft: 5 }}>{page}</Link>) }
+				{ currentPage < maxPage && <Link to={LocationManager.getUpdatedQueryLocation({ page: maxPage.toString() })} style={{ marginLeft: 5 }}>{">>"}</Link> }
+			</div>
+		);
+	}
+
 	// Component methods
 
 	constructor(props: { rootType: addressRootTypes; rootId: number; searchQuery: string; offsetTop: number; classes: any; width: Breakpoint }) {
@@ -549,7 +524,7 @@ class FilesContainer extends MountTrackedComponent<{
 
 	shouldComponentUpdate(nextProps: { rootType: addressRootTypes; rootId: number; searchQuery: string }) {
 		// If the view has changed, load new view
-		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId || nextProps.searchQuery !== this.props.searchQuery) {
+		if (nextProps.rootType !== this.props.rootType || nextProps.rootId !== this.props.rootId || nextProps.searchQuery !== this.props.searchQuery || nextProps.page !== this.props.page || nextProps.pageSize !== this.props.pageSize) {
 			// Reset state
 			this.state.dataLoaded = false;
 			this.state.currentScale = null;
@@ -570,10 +545,16 @@ class FilesContainer extends MountTrackedComponent<{
 		let selectOnTap = Input.isTouching && this.state.data.filter(set => set.selection.length > 0).length > 0;
 
 		if (this.state.dataLoaded) {
+			// TODO this works (technically)
+			// time to neaten everything up
+
 			return (
 				<Fragment>
 					{/* Scaling slider */}
 					{this.getScaleSlider()}
+
+					{/* Pagination controls */}
+					{this.renderPagination((this.state.data.find(set => set.paginated) || this.state.data[0]).totalCount)}
 
 					{/* Main display grid */}
 					<div className={this.props.classes.container} style={{ height: this.getTotalHeight() }} onClick={() => this.selectAll(false)}>
@@ -585,8 +566,8 @@ class FilesContainer extends MountTrackedComponent<{
 									modelId={objectId}
 									selected={objectSet.selection.includes(objectId)}
 									selectOnTap={selectOnTap}
-									onSelect={objectSet.onSelect}
-									onMenu={objectSet.onMenu}
+									onSelect={this.select.bind(this, objectSet.id)}
+									onMenu={this.menuOpen.bind(this, objectSet.id)}
 									scale={this.getCurrentScale()}
 								/>
 							));
@@ -613,10 +594,7 @@ class FilesContainer extends MountTrackedComponent<{
 													<IconButton
 														onClick={event => {
 															event.stopPropagation();
-															objectSet.onMenu(null, {
-																left: event.clientX,
-																top: event.clientY
-															});
+															this.menuOpen(objectSet.id, null, { left: event.clientX, top: event.clientY });
 														}}
 													>
 														<Icon>more_vert</Icon>

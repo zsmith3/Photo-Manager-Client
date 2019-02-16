@@ -42,11 +42,12 @@ export default class LocationManager extends React.Component<{
 	}
 
 	/**
-	 * Update the query string of the page
+	 * Update the query string (without applying updates)
 	 * @param newData Key-value pairs (as object) to add to the query
 	 * @param replace Whether to remove the existing query first (default = false)
+	 * @returns The new page location based on updates
 	 */
-	static updateQuery(newData: { [key: string]: string }, replace = false): void {
+	static getUpdatedQueryLocation(newData: { [key: string]: string }, replace = false): string {
 		let newQuery: URLSearchParams;
 		if (replace) newQuery = new URLSearchParams();
 		else newQuery = this.currentQuery;
@@ -56,6 +57,16 @@ export default class LocationManager extends React.Component<{
 		let newQueryStr = pruneUrlQuery(newQuery).toString();
 		let nextLocation = this.currentLocation + (newQueryStr.length > 0 ? "?" : "") + newQueryStr;
 
+		return nextLocation;
+	}
+
+	/**
+	 * Update the query string of the page
+	 * @param newData Key-value pairs (as object) to add to the query
+	 * @param replace Whether to remove the existing query first (default = false)
+	 */
+	static updateQuery(newData: { [key: string]: string }, replace = false): void {
+		let nextLocation = this.getUpdatedQueryLocation(newData, replace);
 		this.updateLocation(nextLocation);
 	}
 

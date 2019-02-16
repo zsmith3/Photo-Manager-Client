@@ -111,14 +111,21 @@ export class Person extends Model {
 		return PersonGroup.getById(this.groupID);
 	}
 
-	// /** IDs of faces identified as belonging to person */
-	// private faceIds: number[]
+	/** IDs of faces identified as belonging to person */
+	private faceIds: number[]
 
 	/** Handler functions to be run when associated faces are updated */
 	faceListUpdateHandlers: ((faces: Face[]) => void)[] = [];
 
 	/** Whether faces have been loaded yet */
 	loadedFaces: boolean;
+
+	constructor (obj) {
+		super(obj);
+
+		this.faceIds = new Array(this.face_count);
+		this.faceIds.fill(null);
+	}
 
 	/**
 	 * Delete person from remote database
@@ -140,14 +147,13 @@ export class Person extends Model {
 	 * Load faces identified as belonging to person
 	 * @returns Promise representing faces loaded
 	 */
-	async getFaces(): Promise<Face[]> {
-		if (this.loadedFaces) return Face.meta.objects.filter(face => face.personID === this.id);
-		// this.faceIds.map(id => Face.getById(id));
-		else {
-			const faces = await Face.loadFiltered({ person: this.id });
-			this.loadedFaces = true;
-			return faces;
-		}
+	async getFaces(page: number, page_size: number): Promise<{ count: number, objects: Face[] }> {
+		let pageIds = this.faceIds.slice((page - 1) * page_size, page * page_size);
+		if (pageIds.every(id => id !== null)) return { count: this.face_count, objects: pageIds.map(id => Face.getById(id)) };
+
+		const faces = await Face.loadFiltered<Face>({ person: this.id }, page, page_size);
+		this.faceIds.splice((page - 1) * page_size, page_size, ...(faces.objects.map(face => face.id)));
+		return faces;
 	}
 
 	/**
@@ -155,7 +161,8 @@ export class Person extends Model {
 	 * @returns Promise representing completion
 	 */
 	async handleFaceListUpdate() {
-		const faces = await this.getFaces();
-		this.faceListUpdateHandlers.forEach(callback => callback(faces));
+		// TODO this will need to be reworked
+		// const faces = await this.getFaces();
+		// this.faceListUpdateHandlers.forEach(callback => callback(faces));
 	}
 }

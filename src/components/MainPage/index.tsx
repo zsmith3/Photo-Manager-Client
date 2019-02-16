@@ -45,6 +45,8 @@ class MainPage extends React.Component<{
 			if (addressRootId === NaN) {
 			} // TODO
 		} else addressRootId = null;
+		let addressPage = parseInt(LocationManager.currentQuery.get("page")) || 1;
+		let addressPageSize = parseInt(LocationManager.currentQuery.get("page_size")) || 100;
 
 		// Sizing
 		let toolbarHeight: number;
@@ -70,7 +72,7 @@ class MainPage extends React.Component<{
 
 						<AddressBar rootType={addressRootType} rootId={addressRootId} />
 
-						<FilesContainer rootType={addressRootType} rootId={addressRootId} searchQuery={LocationManager.currentQuery.get("search")} offsetTop={fcOffsetTop} />
+						<FilesContainer rootType={addressRootType} rootId={addressRootId} page={addressPage} pageSize={addressPageSize} searchQuery={LocationManager.currentQuery.get("search")} offsetTop={fcOffsetTop} />
 					</div>
 				</div>
 			</Fragment>

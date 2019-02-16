@@ -97,10 +97,11 @@ class WebDatabase extends BaseDatabase {
 
 	// Interfaces to specific request methods
 
-	get(table: DBTables, query?: number | FilterType[]): Promise<any> {
+	get(table: DBTables, query?: number | FilterType[], page?: number, page_size?: number): Promise<any> {
 		if (query instanceof Array) {
-			let filterToQuery = (filter: FilterType) => filter.field + (filter.type === "exact" ? "" : `__${filter.type}`) + `=${encodeURI(filter.value)}`;
-			let queryStrings = query.map(filterToQuery);
+			let queryStrings = query.map((filter: FilterType) => filter.field + (filter.type === "exact" ? "" : `__${filter.type}`) + `=${encodeURI(filter.value)}`);
+			if (page || page === 0) queryStrings.push(`page=${page}`);
+			if (page_size) queryStrings.push(`page_size=${page_size}`);
 			let queryString = (queryStrings.length ? "?" : "") + queryStrings.join("&");
 			return apiRequest(`${table}/${queryString}`, "GET");
 		} else if (typeof query === "number") {

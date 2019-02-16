@@ -260,8 +260,8 @@ export class Model {
 			meta: ModelMeta<M>;
 			addObjects(list: object[]): void;
 		},
-		filters: FilterType[] | { [field: string]: any }
-	): Promise<M[]> {
+		filters: FilterType[] | { [field: string]: any }, page?: number, page_size?: number
+	): Promise<{ count: number, objects: M[] }> {
 		let filtersArray: FilterType[];
 		if (filters instanceof Array) filtersArray = filters;
 		else
@@ -269,11 +269,23 @@ export class Model {
 				filters[field] === null ? { field: field, type: "isnull" as "isnull", value: true } : { field: field, type: "exact" as "exact", value: filters[field] }
 			);
 
+		// TODO document all modified functions (parameters)
+
 		return new Promise((resolve, reject) => {
-			Database.get(this.meta.modelName, filtersArray)
+			Database.get(this.meta.modelName, filtersArray, page, page_size)
 				.then(data => {
-					this.addObjects(data);
-					resolve(this.meta.objects.filter(model => data.map(obj => obj.id).includes(model.id)));
+					let objects: any[], count: number;
+					if (data instanceof Array) {
+						objects = data;
+						count = data.length;
+					} else {
+						objects = data.results;
+						count = data.count;
+					}
+
+					this.addObjects(objects);
+					let dataIds = objects.map(obj => obj.id);
+					resolve({ count: count, objects: this.meta.objects.filter(model => dataIds.includes(model.id)) });
 				})
 				.catch(reject);
 		});
