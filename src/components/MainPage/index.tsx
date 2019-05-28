@@ -8,22 +8,12 @@ import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
 import AddressBar, { addressBarHeight } from "./AddressBar";
 import AppBar from "./AppBar";
-import FilesContainer from "./FilesContainer";
+import MainView from "./MainView";
 import NavDrawer, { navDrawerWidth } from "./NavDrawer";
 
-interface MainPageStyles {
-	rightOfNavDrawer;
-	toolbar;
-	mainContent;
-}
-
 /** The Main (file browser) page */
-class MainPage extends React.Component<{
-	classes: MainPageStyles;
-	width: Breakpoint;
-	location: Location<any>;
-}> {
-	static styles: (theme: Theme) => MainPageStyles = (theme: Theme) => ({
+class MainPage extends React.Component<{ classes: { rightOfNavDrawer: string; toolbar: string; mainContent: string }; width: Breakpoint; location: Location<any> }> {
+	static styles = (theme: Theme) => ({
 		rightOfNavDrawer: {
 			[theme.breakpoints.up("md")]: {
 				marginLeft: navDrawerWidth
@@ -31,7 +21,7 @@ class MainPage extends React.Component<{
 		},
 		toolbar: theme.mixins.toolbar,
 		mainContent: {
-			overflowX: "hidden"
+			overflowX: "hidden" as "hidden"
 		}
 	});
 
@@ -53,7 +43,8 @@ class MainPage extends React.Component<{
 		if (isWidthUp("md", this.props.width)) toolbarHeight = 64;
 		else if (window.innerWidth > window.innerHeight) toolbarHeight = 48;
 		else toolbarHeight = 56;
-		let fcOffsetTop = toolbarHeight + addressBarHeight;
+		let mainViewHeight = window.innerHeight - toolbarHeight - addressBarHeight;
+		let mainViewWidth = window.innerWidth - (isWidthUp("md", this.props.width) ? navDrawerWidth : 0);
 
 		return (
 			<Fragment>
@@ -70,9 +61,19 @@ class MainPage extends React.Component<{
 						{/* Placeholder of AppBar height */}
 						<div className={this.props.classes.toolbar} />
 
+						{/* Address bar (with navigation and searching) */}
 						<AddressBar rootType={addressRootType} rootId={addressRootId} />
 
-						<FilesContainer rootType={addressRootType} rootId={addressRootId} page={addressPage} pageSize={addressPageSize} searchQuery={LocationManager.currentQuery.get("search")} offsetTop={fcOffsetTop} />
+						{/* Main content of the page */}
+						<MainView
+							rootType={addressRootType}
+							rootId={addressRootId}
+							page={addressPage}
+							pageSize={addressPageSize}
+							searchQuery={LocationManager.currentQuery.get("search")}
+							totalWidth={mainViewWidth}
+							totalHeight={mainViewHeight}
+						/>
 					</div>
 				</div>
 			</Fragment>

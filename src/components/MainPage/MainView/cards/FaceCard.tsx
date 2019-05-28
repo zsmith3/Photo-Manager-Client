@@ -1,9 +1,8 @@
 import { Typography, withStyles } from "@material-ui/core";
-import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import React, { Fragment } from "react";
-import { FaceImgSizes } from "../../../controllers/Platform";
-import { Face } from "../../../models";
-import { ImageLoader } from "../../utils";
+import { FaceImgSizes } from "../../../../controllers/Platform";
+import { Face } from "../../../../models";
+import { ImageLoader } from "../../../utils";
 import BaseGridCard, { GridCardExport, GridCardProps } from "./BaseGridCard";
 
 /** GridCard for Face model */
@@ -31,12 +30,13 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 	constructor(props: GridCardProps & { classes: any }) {
 		super(props);
 
-		Face.getById(props.modelId).registerInstanceUpdateHandler((face: Face) => this.setStateSafe({ model: face }));
-		this.state.model = Face.getById(props.modelId);
+		let face = Face.getById(props.modelId);
+		this.state.model = face;
+		face.registerInstanceUpdateHandler((face: Face) => this.setStateSafe({ model: face }));
 	}
 
 	protected getSize() {
-		return meta.getSize(this.props.scale, null);
+		return meta.getDesiredSize(this.props.scale);
 	}
 
 	render() {
@@ -55,8 +55,10 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 
 const meta: GridCardExport = {
 	component: withStyles(FaceCard.styles)(FaceCard),
-	getSize(scale: number, width: Breakpoint) {
+	modelType: "face",
+	getDesiredSize(scale: number) {
 		return { width: scale, height: (scale * 5) / 4 };
-	}
+	},
+	scaleConfig: { max: 160, min: 40, default: 80 }
 };
 export default meta;

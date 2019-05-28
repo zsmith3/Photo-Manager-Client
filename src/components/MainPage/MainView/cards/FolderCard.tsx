@@ -2,8 +2,7 @@ import { CardContent, Grid, Icon, Theme, Typography, withStyles, withWidth } fro
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
-import { Folder } from "../../../models";
-import { navDrawerWidth } from "../NavDrawer";
+import { Folder } from "../../../../models";
 import BaseGridCard, { GridCardExport, GridCardProps } from "./BaseGridCard";
 
 /** GridCard for Folder model */
@@ -40,12 +39,13 @@ class FolderCard extends BaseGridCard<Folder, { icon: string; smallIcon: string;
 	constructor(props: GridCardProps & { width: Breakpoint; classes: any }) {
 		super(props);
 
+		let folder = Folder.getById(props.modelId);
+		this.state.model = folder;
 		Folder.getById(props.modelId).registerInstanceUpdateHandler((folder: Folder) => this.setStateSafe({ model: folder }));
-		this.state.model = Folder.getById(props.modelId);
 	}
 
 	protected getSize() {
-		return meta.getSize(null, this.props.width);
+		return { width: this.props.scale, height: isWidthUp("md", this.props.width) ? 73 : 60 };
 	}
 
 	render() {
@@ -54,6 +54,7 @@ class FolderCard extends BaseGridCard<Folder, { icon: string; smallIcon: string;
 		return this.renderBase(
 			<CardContent className={this.props.classes.content}>
 				<Grid container spacing={8}>
+					{/* Folder icon */}
 					<Grid item xs={hasLongName && isWidthDown("sm", this.props.width) ? 2 : 4}>
 						<Icon
 							color="action"
@@ -64,9 +65,12 @@ class FolderCard extends BaseGridCard<Folder, { icon: string; smallIcon: string;
 					</Grid>
 
 					<Grid item xs={8}>
+						{/* Folder name */}
 						<Typography variant={hasLongName ? "body2" : "subtitle1"} className={this.props.classes.title} style={{ lineHeight: hasLongName ? 1.1 : "36px" }}>
 							{this.state.model.name}
 						</Typography>
+
+						{/* File count */}
 						<Typography variant="caption" color="textSecondary">
 							{this.state.model.file_count} files
 						</Typography>
@@ -79,14 +83,10 @@ class FolderCard extends BaseGridCard<Folder, { icon: string; smallIcon: string;
 
 const meta: GridCardExport = {
 	component: withWidth()(withStyles(FolderCard.styles)(FolderCard)),
-	getSize(scale: number, width: Breakpoint) {
-		const padding = 10;
-		let margin = BaseGridCard.margin * 2;
-		let desiredScale = isWidthUp("md", width) ? 200 : 150;
-		let totalWidth = window.innerWidth - (isWidthUp("md", width) ? navDrawerWidth : 0) - padding;
-		let count = Math.max(Math.floor(totalWidth / (desiredScale + margin)), 1);
-		let actualScale = totalWidth / count - margin;
-		return { width: actualScale, height: isWidthUp("md", width) ? 73 : 60 };
-	}
+	getDesiredSize(scale: number, screenWidth: Breakpoint) {
+		let lg = isWidthUp("md", screenWidth);
+		return { width: lg ? 200 : 150, height: lg ? 73 : 60 };
+	},
+	scaleConfig: null
 };
 export default meta;

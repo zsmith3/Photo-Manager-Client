@@ -1,10 +1,9 @@
 import { CardContent, Icon, Typography, withStyles } from "@material-ui/core";
-import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import React, { Fragment } from "react";
-import { FileImgSizes } from "../../../controllers/Platform";
-import { FileObject } from "../../../models";
-import { FileTypes } from "../../../models/FileObject";
-import { ImageLoader } from "../../utils";
+import { FileImgSizes } from "../../../../controllers/Platform";
+import { FileObject } from "../../../../models";
+import { FileTypes } from "../../../../models/FileObject";
+import { ImageLoader } from "../../../utils";
 import BaseGridCard, { GridCardExport, GridCardProps } from "./BaseGridCard";
 
 /** GridCard for File model */
@@ -30,18 +29,20 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 	constructor(props: GridCardProps & { classes: any }) {
 		super(props);
 
-		FileObject.getById(props.modelId).registerInstanceUpdateHandler((file: FileObject) => this.setStateSafe({ model: file }));
-		this.state.model = FileObject.getById(props.modelId);
+		let file = FileObject.getById(props.modelId);
+		this.state.model = file;
+		file.registerInstanceUpdateHandler((file: FileObject) => this.setStateSafe({ model: file }));
 	}
 
 	protected getSize() {
-		return meta.getSize(this.props.scale, null);
+		return meta.getDesiredSize(this.props.scale);
 	}
 
 	render() {
 		return this.renderBase(
 			<Fragment>
 				{this.state.model.type === "image" ? (
+					/* Thumbnail for image files */
 					<ImageLoader
 						model={this.state.model}
 						maxSize={FileImgSizes.Small}
@@ -52,6 +53,7 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 						}}
 					/>
 				) : (
+					/* File type icon for other types */
 					<Icon
 						style={{
 							width: this.props.scale,
@@ -63,6 +65,7 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 						{FileCard.fileTypeIcons.get(this.state.model.type)}
 					</Icon>
 				)}
+				{/* File name */}
 				<CardContent className={this.props.classes.content} style={{ height: this.props.scale / 3 }}>
 					<Typography variant="body2" align="center">
 						{this.state.model.name}
@@ -75,8 +78,10 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 
 const meta: GridCardExport = {
 	component: withStyles(FileCard.styles)(FileCard),
-	getSize(scale: number, width: Breakpoint) {
+	modelType: "file",
+	getDesiredSize(scale: number) {
 		return { width: scale, height: scale };
-	}
+	},
+	scaleConfig: { max: 300, min: 50, default: 150 }
 };
 export default meta;

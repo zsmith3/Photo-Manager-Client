@@ -76,7 +76,7 @@ Here is a list of existing features, as well as features which I intend to add i
 			- [x] New albums can be added as child or root albums
 		- [x] Lists people
 			- [x] Shows a list of person groups, each with a collapsible list of people
-			- [x] Groups can be created renamed and removed
+			- [x] Groups can be created, renamed and removed
 			- [x] People can be created within a group, renamed, moved to a different group and removed
 			- [x] People can be opened
 		- [ ] List geotag areas

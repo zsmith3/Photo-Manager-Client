@@ -1,4 +1,5 @@
 export { Model } from "./Model";
+export { default as RootModel } from "./RootModel";
 
 export { Album } from "./Album";
 export { Face } from "./Face";

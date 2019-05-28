@@ -1,8 +1,8 @@
 import { FileObject, Person } from ".";
+import { LocationManager } from "../components/utils";
 import { DBTables } from "../controllers/Database";
 import { FaceImgSizes, Platform } from "../controllers/Platform";
 import { Model, ModelMeta } from "./Model";
-import { LocationManager } from "../components/utils";
 
 /** Face model */
 export class Face extends Model {
@@ -108,9 +108,9 @@ export class Face extends Model {
 		let oldPerson = this.person;
 		await this.updateSave({ person: personID, status: 1 });
 		oldPerson.update({ face_count: oldPerson.face_count - 1 });
-		if (oldPerson.loadedFaces) oldPerson.handleFaceListUpdate();
+		//if (oldPerson.loadedFaces) oldPerson.handleFaceListUpdate();
 		this.person.update({ face_count: this.person.face_count + 1 });
-		if (this.person.loadedFaces) this.person.handleFaceListUpdate();
+		//if (this.person.loadedFaces) this.person.handleFaceListUpdate();
 	}
 
 	/**

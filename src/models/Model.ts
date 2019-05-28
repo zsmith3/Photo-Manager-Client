@@ -1,5 +1,4 @@
 import { Database, DBTables } from "../controllers/Database";
-import { FileObject } from "./FileObject";
 
 /** Options for ModelMeta.loadState */
 enum ModelLoadStates {
@@ -260,8 +259,10 @@ export class Model {
 			meta: ModelMeta<M>;
 			addObjects(list: object[]): void;
 		},
-		filters: FilterType[] | { [field: string]: any }, page?: number, page_size?: number
-	): Promise<{ count: number, objects: M[] }> {
+		filters: FilterType[] | { [field: string]: any },
+		page?: number,
+		page_size?: number
+	): Promise<{ count: number; objects: M[] }> {
 		let filtersArray: FilterType[];
 		if (filters instanceof Array) filtersArray = filters;
 		else

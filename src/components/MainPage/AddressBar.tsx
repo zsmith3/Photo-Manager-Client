@@ -7,8 +7,8 @@ import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
 import { navDrawerWidth } from "./NavDrawer";
 
-/** Address bar element */
-class AddressBar extends React.Component<{
+/** Props for AddressBar */
+interface AddressBarProps {
 	rootType: addressRootTypes;
 	rootId: number;
 	classes: {
@@ -19,7 +19,18 @@ class AddressBar extends React.Component<{
 		searchShowIcon: string;
 	};
 	width: Breakpoint;
-}> {
+}
+
+/** State for AddressBar */
+interface AddressBarState {
+	address: string;
+	searchValue: string;
+	searchShown: boolean;
+}
+
+/** Address bar component */
+class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
+	/** Total height of the AddressBar */
 	static height = 36;
 
 	static styles = (theme: Theme) => ({
@@ -66,21 +77,21 @@ class AddressBar extends React.Component<{
 		}
 	});
 
+	state: AddressBarState = {
+		address: "/",
+		searchValue: "",
+		searchShown: false
+	};
+
 	/**
 	 * Determine whether two versions of `this.props` are the same
 	 * @param props1 The first version
 	 * @param props2 The second version
 	 * @returns Whether or not they are equal
 	 */
-	private static compareProps(props1: { rootType: addressRootTypes; rootId: number }, props2: { rootType: addressRootTypes; rootId: number }): boolean {
+	private static compareProps(props1: AddressBarProps, props2: AddressBarProps): boolean {
 		return props1.rootType === props2.rootType && props1.rootId === props2.rootId;
 	}
-
-	state = {
-		address: "/",
-		searchValue: "",
-		searchShown: false
-	};
 
 	constructor(props) {
 		super(props);
@@ -93,7 +104,7 @@ class AddressBar extends React.Component<{
 	 * @param props The value of `this.props` to use
 	 * @returns Promise representing the address
 	 */
-	private async getAddress(props: { rootType: addressRootTypes; rootId: number }): Promise<string> {
+	private async getAddress(props: AddressBarProps): Promise<string> {
 		if (props.rootId === null) return "/";
 
 		switch (props.rootType) {
@@ -111,7 +122,7 @@ class AddressBar extends React.Component<{
 	 * (calls `this.setState`)
 	 * @param props The value of `this.props` to use
 	 */
-	private fetchAddress(props: { rootType: addressRootTypes; rootId: number }) {
+	private fetchAddress(props: AddressBarProps) {
 		this.getAddress(props).then(address => {
 			if (AddressBar.compareProps(props, this.props)) {
 				this.setState({ address: address });
@@ -130,11 +141,12 @@ class AddressBar extends React.Component<{
 		}
 	};
 
+	/** Update the URL to search for the current search input value */
 	private search() {
 		LocationManager.updateQuery({ search: this.state.searchValue });
 	}
 
-	shouldComponentUpdate(nextProps) {
+	shouldComponentUpdate(nextProps: AddressBarProps) {
 		if (AddressBar.compareProps(this.props, nextProps)) {
 			// If props are unchanged, then state must have changed, so re-render
 			return true;
@@ -223,4 +235,5 @@ class AddressBar extends React.Component<{
 
 export default withWidth()(withStyles(AddressBar.styles)(AddressBar));
 
+/** Height occupied by the AddressBar component */
 export const addressBarHeight = AddressBar.height;

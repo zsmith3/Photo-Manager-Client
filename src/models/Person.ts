@@ -1,7 +1,8 @@
-import { Model, ModelMeta } from "./Model";
+import FaceCard from "../components/MainPage/MainView/cards/FaceCard";
 import { Database, DBTables } from "../controllers/Database";
-import App from "../components/App";
 import { Face } from "./Face";
+import { Model, ModelMeta } from "./Model";
+import RootModel from "./RootModel";
 
 /** Person Group model */
 export class PersonGroup extends Model {
@@ -61,13 +62,21 @@ export class PersonGroup extends Model {
 }
 
 /** Person model */
-export class Person extends Model {
+export class Person extends RootModel {
 	/** Person model metadata */
 	static meta = new ModelMeta<Person>({
 		modelName: DBTables.Person,
 		props: ["id", "full_name", "face_count", "thumbnail"],
 		specialProps: { group: "groupID" }
 	});
+
+	static rootModelMeta = {
+		contentsName: "Faces",
+		contentsCard: FaceCard,
+		contentsFilterParam: "person",
+		contentsClass: Face,
+		hasRoots: false
+	};
 
 	/**
 	 * Create a new Person and add to the remote database
@@ -111,20 +120,11 @@ export class Person extends Model {
 		return PersonGroup.getById(this.groupID);
 	}
 
-	/** IDs of faces identified as belonging to person */
-	private faceIds: number[]
-
 	/** Handler functions to be run when associated faces are updated */
 	faceListUpdateHandlers: ((faces: Face[]) => void)[] = [];
 
-	/** Whether faces have been loaded yet */
-	loadedFaces: boolean;
-
-	constructor (obj) {
+	constructor(obj) {
 		super(obj);
-
-		this.faceIds = new Array(this.face_count);
-		this.faceIds.fill(null);
 	}
 
 	/**
@@ -141,19 +141,6 @@ export class Person extends Model {
 				})
 				.catch(reject);
 		});
-	}
-
-	/**
-	 * Load faces identified as belonging to person
-	 * @returns Promise representing faces loaded
-	 */
-	async getFaces(page: number, page_size: number): Promise<{ count: number, objects: Face[] }> {
-		let pageIds = this.faceIds.slice((page - 1) * page_size, page * page_size);
-		if (pageIds.every(id => id !== null)) return { count: this.face_count, objects: pageIds.map(id => Face.getById(id)) };
-
-		const faces = await Face.loadFiltered<Face>({ person: this.id }, page, page_size);
-		this.faceIds.splice((page - 1) * page_size, page_size, ...(faces.objects.map(face => face.id)));
-		return faces;
 	}
 
 	/**
