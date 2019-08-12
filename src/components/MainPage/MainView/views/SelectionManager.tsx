@@ -28,7 +28,7 @@ const openModelConfigs = {
 
 		/** Function to determine whether an adjacent model can/should be opened */
 		filter: (currentId: number, newId: number) => boolean;
-	}
+	};
 };
 
 /** Manager for item selection/opening in all Views */

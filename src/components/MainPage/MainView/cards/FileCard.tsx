@@ -29,9 +29,7 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 	constructor(props: GridCardProps & { classes: any }) {
 		super(props);
 
-		let file = FileObject.getById(props.modelId);
-		this.state.model = file;
-		file.registerInstanceUpdateHandler((file: FileObject) => this.setStateSafe({ model: file }));
+		this.updateHandler = FileObject.getById(props.modelId).updateHandlers.register((file: FileObject) => this.setStateSafe({ model: file }));
 	}
 
 	protected getSize() {

@@ -30,9 +30,7 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 	constructor(props: GridCardProps & { classes: any }) {
 		super(props);
 
-		let face = Face.getById(props.modelId);
-		this.state.model = face;
-		face.registerInstanceUpdateHandler((face: Face) => this.setStateSafe({ model: face }));
+		this.updateHandler = Face.getById(props.modelId).updateHandlers.register((face: Face) => this.setStateSafe({ model: face }));
 	}
 
 	protected getSize() {

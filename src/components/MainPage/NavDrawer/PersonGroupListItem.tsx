@@ -20,8 +20,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 	constructor(props: { groupId: number }) {
 		super(props);
 
-		PersonGroup.getById(props.groupId).registerInstanceUpdateHandler((group: PersonGroup) => this.setState({ group: group }));
-		this.state.group = PersonGroup.getById(props.groupId);
+		this.updateHandler = PersonGroup.getById(props.groupId).updateHandlers.register((group: PersonGroup) => this.setStateSafe({ group: group }));
 	}
 
 	menuClose = () => {
@@ -35,6 +34,10 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 	dialogOpen = type => this.setState({ ["openDialog" + type]: true });
 
 	dialogClose = type => this.setStateSafe({ ["openDialog" + type]: false, loading: false });
+
+	shouldComponentUpdate(nextProps, nextState) {
+		return this.props.groupId !== nextProps.groupId || this.state !== nextState;
+	}
 
 	render() {
 		let Fragment = React.Fragment;

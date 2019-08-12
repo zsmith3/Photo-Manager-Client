@@ -396,3 +396,97 @@ export function getQueryFromUrl(url: string): URLSearchParams {
 	if (url.includes("?")) return pruneUrlQuery(new URLSearchParams(url.substr(url.indexOf("?"))));
 	else return new URLSearchParams();
 }
+
+/** Type for complex handler function */
+type handleFnType = (contentData: any, successHandler: (data: any) => void, errorHandler: (error: any) => void) => void;
+
+/** Class for update handler functions */
+export class UpdateHandler {
+	/** ID (for removal from list) */
+	id: number;
+
+	/** Standard handler function */
+	successHandler: (data: any) => void;
+
+	/** Handler function if data fetch fails */
+	errorHandler?: (error: any) => void;
+
+	/** Data about content to fetch */
+	contentData?: any;
+
+	/** Function to handle fetching data and running handlers */
+	handleFn?: handleFnType;
+
+	/** List to which this handler belongs */
+	list: UpdateHandlerList;
+
+	/** Whether handler is currently subscribed to */
+	registered: boolean;
+
+	constructor(
+		id: number,
+		handlerData: { successHandler: (data: any) => void; errorHandler?: (error: any) => void; contentData?: any; handleFn?: handleFnType },
+		list: UpdateHandlerList
+	) {
+		this.id = id;
+		this.successHandler = handlerData.successHandler;
+		this.errorHandler = handlerData.errorHandler;
+		this.contentData = handlerData.contentData;
+		this.handleFn = handlerData.handleFn;
+		this.list = list;
+		this.registered = true;
+	}
+
+	/** Handle/invoke update */
+	handle(data?: any) {
+		if (this.handleFn) this.handleFn(this.contentData, this.successHandler, this.errorHandler);
+		else this.successHandler(data);
+	}
+
+	/** Remove this handler */
+	unregister() {
+		this.list.unregister(this.id);
+		this.registered = false;
+	}
+}
+
+/** List of update handlers for some data */
+export class UpdateHandlerList {
+	/** ID of last handler added */
+	lastID: number = 0;
+
+	/** List of handler objects */
+	list: UpdateHandler[] = [];
+
+	/** (Optional) function to handle fetching data and running handlers */
+	private handleFn?: handleFnType;
+
+	/** Most recent value of data */
+	lastData: any;
+
+	constructor(data: any, handleFn?: handleFnType) {
+		this.lastData = data;
+		this.handleFn = handleFn;
+	}
+
+	/** Register new update handler */
+	register(successHandler: (data: any) => void, errorHandler?: (error: any) => void, contentData?: any) {
+		this.lastID++;
+		let updateHandler = new UpdateHandler(this.lastID, { successHandler: successHandler, errorHandler: errorHandler, contentData: contentData, handleFn: this.handleFn }, this);
+		this.list.push(updateHandler);
+		updateHandler.handle(this.lastData);
+		return updateHandler;
+	}
+
+	/** Unregister existing update handler */
+	unregister(id: number) {
+		this.list.splice(this.list.findIndex(item => item.id == id));
+	}
+
+	/** Handle/invoke an update to the data */
+	handle(data?: any) {
+		data = data || this.lastData;
+		this.list.forEach(item => item.handle(data));
+		this.lastData = data;
+	}
+}

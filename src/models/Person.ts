@@ -135,21 +135,13 @@ export class Person extends RootModel {
 		return new Promise((resolve, reject) => {
 			Database.delete(Person.meta.modelName, this.id)
 				.then(() => {
-					// App.app.els.navDrawer.deletePerson(this);
+					let unknownPerson = Person.getById(0);
+					unknownPerson.update({ face_count: unknownPerson.face_count + this.face_count });
+					unknownPerson.resetData();
 					Person.deleteById(this.id);
 					resolve();
 				})
 				.catch(reject);
 		});
-	}
-
-	/**
-	 * Run handler functions when associated face list is updated
-	 * @returns Promise representing completion
-	 */
-	async handleFaceListUpdate() {
-		// TODO this will need to be reworked
-		// const faces = await this.getFaces();
-		// this.faceListUpdateHandlers.forEach(callback => callback(faces));
 	}
 }

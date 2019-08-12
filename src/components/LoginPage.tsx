@@ -53,7 +53,7 @@ class LoginPage extends React.Component<{
 		let Fragment = React.Fragment;
 		return (
 			<Fragment>
-				<Grid container spacing={24}>
+				<Grid container spacing={10}>
 					<Grid item xs={12} className={this.props.classes.center}>
 						<Typography variant={isWidthUp("sm", this.props.width) ? "h3" : "h4"} component="h1">
 							Photo Manager/Fileserver

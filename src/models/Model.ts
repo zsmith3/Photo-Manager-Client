@@ -1,4 +1,5 @@
 import { Database, DBTables } from "../controllers/Database";
+import { UpdateHandlerList } from "../utils";
 
 /** Options for ModelMeta.loadState */
 enum ModelLoadStates {
@@ -35,7 +36,7 @@ export class ModelMeta<M extends Model> {
 	specialProps: { [key: string]: SpecialPropMethod | string } = null;
 
 	/** Handler functions to be called when the objects list is updated */
-	listUpdateHandlers: ((models: M[]) => void)[] = [];
+	listUpdateHandlers: UpdateHandlerList = new UpdateHandlerList([]);
 
 	/** Current Promise object representing the loading of all instances from the database */
 	loadingPromise: Promise<M[]> = null;
@@ -74,8 +75,8 @@ export class Model {
 	/** Metadata for the Model type */
 	static meta: ModelMeta<Model>;
 
-	// Hack to allow for usage in "this.constructor"
-	"constructor": { meta: ModelMeta<Model> };
+	// Hack to access "this.constructor"
+	class: typeof Model;
 
 	/**
 	 * Add a new model instance to the local list (from the API)
@@ -86,7 +87,6 @@ export class Model {
 		this: {
 			new (...args: any[]): M;
 			meta: ModelMeta<M>;
-			handleListUpdate(): void;
 		},
 		obj: { id: number },
 		handleUpdate = true
@@ -97,7 +97,7 @@ export class Model {
 
 		this.meta.loadStates.set(obj.id, ModelLoadStates.loaded);
 
-		if (handleUpdate) this.handleListUpdate();
+		if (handleUpdate) this.meta.listUpdateHandlers.handle(this.meta.objects);
 
 		return object;
 	}
@@ -110,13 +110,13 @@ export class Model {
 		this: {
 			new (...args: any[]): M;
 			addObject(obj: object, handleUpdate: boolean): void;
-			handleListUpdate(): void;
+			meta: ModelMeta<M>;
 		},
 		list: object[]
 	): void {
 		list.forEach(item => this.addObject(item, false));
 
-		this.handleListUpdate();
+		this.meta.listUpdateHandlers.handle(this.meta.objects);
 	}
 
 	/**
@@ -168,7 +168,6 @@ export class Model {
 		this: {
 			new (...args: any[]): M;
 			meta: ModelMeta<M>;
-			handleListUpdate(): void;
 		},
 		id: number
 	): void {
@@ -176,7 +175,7 @@ export class Model {
 			if (this.meta.objects[i].id == id) delete this.meta.objects[i];
 		}
 
-		this.handleListUpdate();
+		this.meta.listUpdateHandlers.handle(this.meta.objects);
 	}
 
 	/**
@@ -191,7 +190,7 @@ export class Model {
 		},
 		callback: (models: M[]) => void
 	): Promise<M[]> {
-		this.meta.listUpdateHandlers.push(callback);
+		this.meta.listUpdateHandlers.register(callback);
 
 		if (this.meta.loadAllState === ModelLoadStates.loaded) {
 			callback(this.meta.objects);
@@ -373,33 +372,31 @@ export class Model {
 		});
 	}
 
-	/**
-	 * Execute update handler functions on model list (to be run whenever model list updated)
-	 */
-	static handleListUpdate<M extends Model>(this: { new (...args: any[]): M; meta: ModelMeta<M> }) {
-		this.meta.listUpdateHandlers.forEach((callback: (models: M[]) => void) => callback(this.meta.objects));
-	}
-
 	/** ID property for all models */
 	id: number;
 
 	/** Handler functions for model instance update */
-	private updateHandlers: ((model: Model) => void)[] = [];
+	updateHandlers: UpdateHandlerList;
 
 	/**
 	 * Construct a new Model instance (overridden)
 	 * @param obj Data object from which to construct the new model instance
 	 */
 	constructor(obj: object) {
+		// Typescript hack
+		this.class = this.constructor as typeof Model;
+
+		this.updateHandlers = new UpdateHandlerList(this);
+
 		this.update(obj);
 
-		this.constructor.meta.objects.push(this);
+		this.class.meta.objects.push(this);
 
 		// Execute on-load handler functions
-		let loadHandlers = this.constructor.meta.loadHandlers.get(this.id);
+		let loadHandlers = this.class.meta.loadHandlers.get(this.id);
 		if (loadHandlers) {
 			loadHandlers.forEach(callback => callback(this));
-			this.constructor.meta.loadHandlers.set(this.id, []);
+			this.class.meta.loadHandlers.set(this.id, []);
 		}
 	}
 
@@ -411,29 +408,27 @@ export class Model {
 	update(obj: object, handleUpdate = true): void {
 		// Assign properties
 		for (let property in obj) {
-			if (this.constructor.meta.specialProps !== null && property in this.constructor.meta.specialProps) {
-				let methodForm = <SpecialPropMethod>this.constructor.meta.specialProps[property];
-				let stringForm = <string>this.constructor.meta.specialProps[property];
+			if (this.class.meta.specialProps !== null && property in this.class.meta.specialProps) {
+				let methodForm = <SpecialPropMethod>this.class.meta.specialProps[property];
+				let stringForm = <string>this.class.meta.specialProps[property];
 				if (methodForm.deserialize) {
 					methodForm.deserialize(this, obj[property]);
 				} else {
 					this[stringForm] = obj[property];
 				}
-			} else if (this.constructor.meta.props.includes(property)) {
+			} else if (this.class.meta.props.includes(property)) {
 				this[property] = obj[property];
 			}
 		}
 
 		// Check for problems in data object shape
-		let missedProps = this.constructor.meta.props.filter(prop => !(prop in obj));
-		let extraProps = Object.keys(obj).filter(
-			prop => !this.constructor.meta.props.includes(prop) && (this.constructor.meta.specialProps === null || !(prop in this.constructor.meta.specialProps))
-		);
-		if (missedProps.length > 0) console.warn(`Missed properties on data for ${this.constructor.meta.modelName} ${this.id}: ${missedProps.join(", ")}`);
-		if (extraProps.length > 0) console.warn(`Extra properties on data for ${this.constructor.meta.modelName} ${this.id}: ${extraProps.join(", ")}`);
+		let missedProps = this.class.meta.props.filter(prop => !(prop in obj));
+		let extraProps = Object.keys(obj).filter(prop => !this.class.meta.props.includes(prop) && (this.class.meta.specialProps === null || !(prop in this.class.meta.specialProps)));
+		if (missedProps.length > 0) console.warn(`Missed properties on data for ${this.class.meta.modelName} ${this.id}: ${missedProps.join(", ")}`);
+		if (extraProps.length > 0) console.warn(`Extra properties on data for ${this.class.meta.modelName} ${this.id}: ${extraProps.join(", ")}`);
 
 		// Trigger model update handlers
-		if (handleUpdate) this.updateHandlers.forEach((callback: (model: Model) => void) => callback(this));
+		if (handleUpdate) this.updateHandlers.handle(this);
 	}
 
 	/**
@@ -454,13 +449,13 @@ export class Model {
 	save(): Promise<any> {
 		let obj = {};
 
-		this.constructor.meta.props.forEach(prop => {
+		this.class.meta.props.forEach(prop => {
 			if (prop in this) obj[prop] = this[prop];
 		});
 
-		for (let prop in this.constructor.meta.specialProps) {
-			let methodForm = <SpecialPropMethod>this.constructor.meta.specialProps[prop];
-			let stringForm = <string>this.constructor.meta.specialProps[prop];
+		for (let prop in this.class.meta.specialProps) {
+			let methodForm = <SpecialPropMethod>this.class.meta.specialProps[prop];
+			let stringForm = <string>this.class.meta.specialProps[prop];
 			if (methodForm.serialize && prop in this) {
 				methodForm.serialize(obj, this[prop]);
 			} else if (typeof stringForm === "string") {
@@ -468,14 +463,6 @@ export class Model {
 			}
 		}
 
-		return Database.update(this.constructor.meta.modelName, this.id, obj);
-	}
-
-	/**
-	 * Register handler function to be executed when this model instance is updated
-	 * @param callback Handler function, taking the model as an argument
-	 */
-	registerInstanceUpdateHandler<M extends Model>(this: M, callback: (model: M) => void) {
-		this.updateHandlers.push(callback);
+		return Database.update(this.class.meta.modelName, this.id, obj);
 	}
 }

@@ -16,8 +16,9 @@ export default class PersonList extends MountTrackedComponent<{
 		super(props);
 
 		Person.registerListUpdateHandler((people: Person[]) => {
-			let personIds = people.filter((person: Person) => this.props.groupId === undefined || person.group.id === this.props.groupId).map((person: Person) => person.id);
-			this.setStateSafe({ personIds: personIds });
+			this.setStateSafe({
+				personIds: people.filter((person: Person) => this.props.groupId === undefined || person.group.id === this.props.groupId).map((person: Person) => person.id)
+			});
 		});
 	}
 

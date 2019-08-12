@@ -22,9 +22,6 @@ export default class App extends React.Component {
 
 	/** MUI theme override */
 	static theme = createMuiTheme({
-		typography: {
-			useNextVariants: true
-		},
 		overrides: {
 			MuiIconButton: {
 				root: {
@@ -84,9 +81,7 @@ export default class App extends React.Component {
 							<Route path="/login" component={LoginPage} />
 							<Route path="/register" component={RegisterPage} />
 
-							{["/folders/", "/people/"].map(path => (
-								<Route key={path} path={path} render={() => <MainPage location={props.location} />} />
-							))}
+							<Route path={["/folders/", "/people/"]} render={() => <MainPage location={props.location} />} />
 						</LocationManager>
 					)}
 				/>

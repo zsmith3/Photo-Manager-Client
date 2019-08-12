@@ -6,6 +6,7 @@ import { addressRootTypes } from "../../../App";
 import ImageModal from "../ImageModal";
 import ActionManager from "./ActionManager";
 import SelectionManager from "./SelectionManager";
+import { MountTrackedComponent } from "../../../utils";
 
 /** Props shared between ViewContainer and View */
 export interface ViewProps {
@@ -27,7 +28,7 @@ export interface ViewState {
 }
 
 /** Base View class to display main page content */
-export default abstract class View<S extends ViewState, P extends { classes?: any } = {}> extends React.Component<ViewProps & P, S> {
+export default abstract class View<S extends ViewState, P extends { classes?: any } = {}> extends MountTrackedComponent<ViewProps & P, S> {
 	state = {
 		dataLoaded: false,
 		selection: [],
@@ -55,6 +56,7 @@ export default abstract class View<S extends ViewState, P extends { classes?: an
 	}
 
 	render() {
+		console.log("render", this.state);
 		if (this.state.dataLoaded) {
 			// ID of item open in ImageModal
 			let openItem = this.selectionManager.getOpenItem();

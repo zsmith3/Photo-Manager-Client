@@ -54,8 +54,8 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 	/** The Model to use as a root (the container - e.g. Folder, Person, Album) */
 	static rootModelClass: typeof RootModel;
 
-	// Typescript hack
-	"constructor": { rootModelClass: typeof RootModel };
+	// Hack to access "this.class"
+	class: typeof GridView;
 
 	/** Manager for GridCard scaling */
 	scaleManager: ScaleManager;
@@ -65,6 +65,8 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 
 	constructor(props: ViewProps & GridViewProps) {
 		super(props);
+
+		this.class = this.constructor as typeof GridView;
 
 		this.getData(props);
 
@@ -80,19 +82,23 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 	private async getData(props: ViewProps) {
 		if (props.rootId === null) {
 			// Load base root objects
-			const data = await this.constructor.rootModelClass.getAbsoluteRoots();
+			const data = await this.class.rootModelClass.getAbsoluteRoots();
 			this.setState({ data: data, dataLoaded: true });
 		} else {
 			// Load children of chosen root object
-			const rootObject = await this.constructor.rootModelClass.loadObject<RootModel>(props.rootId);
+			const rootObject = await this.class.rootModelClass.loadObject<RootModel>(props.rootId);
 
-			try {
-				const data = await rootObject.getContents(props.page, props.pageSize, props.searchQuery);
-				this.setState({ data: data, dataLoaded: true });
-			} catch (error) {
-				if (error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
-				else throw error;
-			}
+			if (this.updateHandler) this.updateHandler.unregister();
+			this.updateHandler = rootObject.registerContentsUpdateHandler(
+				props.page,
+				props.pageSize,
+				props.searchQuery,
+				data => this.setState({ data: data, dataLoaded: true }),
+				error => {
+					if ("detail" in error && error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
+					else throw error;
+				}
+			);
 		}
 	}
 

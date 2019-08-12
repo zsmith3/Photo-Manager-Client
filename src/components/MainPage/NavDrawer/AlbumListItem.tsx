@@ -17,8 +17,7 @@ export default class AlbumListItem extends MountTrackedComponent<{
 		openDialogNew: false,
 		openDialogParent: false,
 		openDialogRemove: false,
-		loading: false,
-		parentUpdateID: null as number
+		loading: false
 	};
 
 	updates: {
@@ -29,9 +28,7 @@ export default class AlbumListItem extends MountTrackedComponent<{
 	constructor(props: { albumId: number; indent?: number }) {
 		super(props);
 
-		Album.getById(props.albumId).registerInstanceUpdateHandler((album: Album) => this.setStateSafe({ album: album }));
-		this.state.album = Album.getById(props.albumId);
-		this.state.parentUpdateID = this.state.album.parent !== null ? this.state.album.parent.id : null;
+		this.updateHandler = Album.getById(props.albumId).updateHandlers.register((album: Album) => this.setStateSafe({ album: album }));
 
 		this.updates = {
 			subName: "",
@@ -50,6 +47,10 @@ export default class AlbumListItem extends MountTrackedComponent<{
 	dialogOpen = type => this.setState({ ["openDialog" + type]: true });
 
 	dialogClose = type => this.setStateSafe({ ["openDialog" + type]: false, loading: false });
+
+	shouldComponentUpdate(nextProps, nextState) {
+		return this.props.albumId !== nextProps.albumId || this.props.indent !== nextProps.indent || this.state !== nextState;
+	}
 
 	render() {
 		let Fragment = React.Fragment;
@@ -152,7 +153,7 @@ export default class AlbumListItem extends MountTrackedComponent<{
 						action={(parentId: number) =>
 							Album.getById(this.props.albumId)
 								.updateSave({ parent: parentId })
-								.then(() => Album.handleListUpdate())
+								.then(() => Album.meta.listUpdateHandlers.handle())
 						}
 					/>
 

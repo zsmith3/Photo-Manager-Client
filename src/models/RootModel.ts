@@ -1,13 +1,14 @@
 import { Model } from ".";
 import { GridCardExport } from "../components/MainPage/MainView/cards/BaseGridCard";
 import { ModelMeta } from "./Model";
+import { UpdateHandlerList } from "../utils";
 
 /** Data type for roots/contents object sets */
 export type objectSetType = { name?: string; card?: GridCardExport; count?: number; objectIds: number[] };
 
 export default class RootModel extends Model {
 	// Typescript hacks
-	"constructor": typeof RootModel;
+	class: typeof RootModel;
 	static meta: ModelMeta<RootModel>;
 
 	/** Metadata for behaviour as a root */
@@ -50,13 +51,23 @@ export default class RootModel extends Model {
 	/** List of contents objects for each search term (`null` key for no search) */
 	private contents = new Map<string, { count: number; objectIds: number[] }>();
 
+	/** Handler functions to run when the roots/contents are updated */
+	private contentsUpdateHandlers: UpdateHandlerList = new UpdateHandlerList(null, async (contentData: any, success: (data: any) => void, error: (error: any) => void) => {
+		try {
+			const data = await this.getContents(contentData.page, contentData.pageSize, contentData.searchQuery);
+			success(data);
+		} catch (err) {
+			error(err);
+		}
+	});
+
 	/**
 	 * Retrieve or load child root objects
 	 * @param searchQuery Current search query
 	 * @returns IDs of root objects found
 	 */
 	private async getRoots(searchQuery?: string): Promise<objectSetType | null> {
-		if (!this.constructor.rootModelMeta.hasRoots) return null;
+		if (!this.class.rootModelMeta.hasRoots) return null;
 		searchQuery = searchQuery || null;
 
 		// Get from previously loaded roots
@@ -64,7 +75,7 @@ export default class RootModel extends Model {
 		if (existingRootIds !== undefined) return { objectIds: existingRootIds };
 
 		// Load from server
-		const rootsData = await this.constructor.loadFiltered({ [this.constructor.rootModelMeta.rootsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}) });
+		const rootsData = await this.class.loadFiltered({ [this.class.rootModelMeta.rootsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}) });
 
 		// Save to stored roots
 		let objectIds = rootsData.objects.map(object => object.id);
@@ -92,8 +103,8 @@ export default class RootModel extends Model {
 		}
 
 		// Load from server
-		const contentsData = await this.constructor.rootModelMeta.contentsClass.loadFiltered(
-			{ [this.constructor.rootModelMeta.contentsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}) },
+		const contentsData = await this.class.rootModelMeta.contentsClass.loadFiltered(
+			{ [this.class.rootModelMeta.contentsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}) },
 			page,
 			pageSize
 		);
@@ -120,14 +131,45 @@ export default class RootModel extends Model {
 	async getContents(page: number, pageSize: number, searchQuery?: string): Promise<{ roots: objectSetType | null; contents: objectSetType }> {
 		var roots = await this.getRoots(searchQuery);
 		if (roots !== null) {
-			roots.name = this.constructor.rootModelMeta.rootsName;
-			roots.card = this.constructor.rootModelMeta.rootsCard;
+			roots.name = this.class.rootModelMeta.rootsName;
+			roots.card = this.class.rootModelMeta.rootsCard;
 		}
 
 		var contents = await this.getContentObjects(page, pageSize, searchQuery);
-		contents.name = this.constructor.rootModelMeta.contentsName;
-		contents.card = this.constructor.rootModelMeta.contentsCard;
+		contents.name = this.class.rootModelMeta.contentsName;
+		contents.card = this.class.rootModelMeta.contentsCard;
 
 		return { roots: roots, contents: contents };
+	}
+
+	/** Register update handler function for roots/contents */
+	registerContentsUpdateHandler(
+		page: number,
+		pageSize: number,
+		searchQuery: string,
+		callback: (data: { roots: objectSetType; contents: objectSetType }) => void,
+		errorCallback: (error: any) => void
+	) {
+		return this.contentsUpdateHandlers.register(callback, errorCallback, { page: page, pageSize: pageSize, searchQuery: searchQuery });
+	}
+
+	/** Clear (out-of-date) local data (contents and roots) */
+	resetData() {
+		this.roots = new Map<string, number[]>();
+		this.contents = new Map<string, { count: number; objectIds: number[] }>();
+		this.contentsUpdateHandlers.handle();
+	}
+
+	/**
+	 * Remove items from local contents data (after it has been moved/deleted)
+	 * @param ids IDs of the objects to remove
+	 */
+	removeContentsItems(ids: number[]) {
+		for (let entry of this.contents) {
+			entry[1].count -= entry[1].objectIds.filter(objId => ids.includes(objId)).length;
+			entry[1].objectIds = entry[1].objectIds.filter(objId => !ids.includes(objId));
+			this.contents.set(entry[0], entry[1]);
+		}
+		this.contentsUpdateHandlers.handle();
 	}
 }

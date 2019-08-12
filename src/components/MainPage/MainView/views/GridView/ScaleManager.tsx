@@ -1,5 +1,4 @@
-import { Theme } from "@material-ui/core";
-import { Slider } from "@material-ui/lab";
+import { Slider, Theme } from "@material-ui/core";
 import React from "react";
 import { GridView } from ".";
 import BaseGridCard from "../../cards/BaseGridCard";
@@ -43,7 +42,7 @@ export default class ScaleManager {
 
 	/** Get default/range for scale, based on the GridCard for the contents model */
 	private getScaleConfig(): { max: number; min: number; default: number } {
-		return this.view.constructor.rootModelClass.rootModelMeta.contentsCard.scaleConfig;
+		return this.view.class.rootModelClass.rootModelMeta.contentsCard.scaleConfig;
 	}
 
 	/**

@@ -108,9 +108,8 @@ export class Face extends Model {
 		let oldPerson = this.person;
 		await this.updateSave({ person: personID, status: 1 });
 		oldPerson.update({ face_count: oldPerson.face_count - 1 });
-		//if (oldPerson.loadedFaces) oldPerson.handleFaceListUpdate();
+		oldPerson.removeContentsItems([this.id]);
 		this.person.update({ face_count: this.person.face_count + 1 });
-		//if (this.person.loadedFaces) this.person.handleFaceListUpdate();
 	}
 
 	/**

@@ -1,23 +1,9 @@
-import {
-	Icon,
-	ListItem,
-	ListItemIcon,
-	ListItemSecondaryAction,
-	ListItemText,
-	Menu,
-	MenuItem,
-	withStyles,
-	TextField,
-	List,
-	Radio,
-	MenuList,
-	ListSubheader
-} from "@material-ui/core";
+import { Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, MenuList, withStyles } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { Platform, FaceImgSizes } from "../../../controllers/Platform";
-import { Person, PersonGroup } from "../../../models";
-import { HoverIconButton, SimpleDialog, ListDialog, TextDialog, MountTrackedComponent } from "../../utils";
 import { Link } from "react-router-dom";
+import { FaceImgSizes, Platform } from "../../../controllers/Platform";
+import { Person, PersonGroup } from "../../../models";
+import { HoverIconButton, ListDialog, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
 
 /** Individual Person instance display, with menu for modification */
 class PersonListItem extends MountTrackedComponent<{
@@ -49,8 +35,7 @@ class PersonListItem extends MountTrackedComponent<{
 	constructor(props: { personId: number; classes: { avatar: string; image: string } }) {
 		super(props);
 
-		Person.getById(props.personId).registerInstanceUpdateHandler((person: Person) => this.setStateSafe({ person: person }));
-		this.state.person = Person.getById(props.personId);
+		this.updateHandler = Person.getById(props.personId).updateHandlers.register((person: Person) => this.setStateSafe({ person: person }));
 
 		if (this.state.person.thumbnail !== null)
 			Platform.getImgSrc({ id: this.state.person.thumbnail }, "face", FaceImgSizes.Standard, true).then(src => this.setState({ thumbnailSrc: src }));
@@ -67,6 +52,10 @@ class PersonListItem extends MountTrackedComponent<{
 	dialogOpen = type => this.setState({ ["openDialog" + type]: true });
 
 	dialogClose = type => this.setStateSafe({ ["openDialog" + type]: false, loading: false });
+
+	shouldComponentUpdate(nextProps, nextState) {
+		return this.props.personId !== nextProps.personId || this.state !== nextState;
+	}
 
 	render() {
 		return (
@@ -138,7 +127,7 @@ class PersonListItem extends MountTrackedComponent<{
 						action={(groupId: number) =>
 							Person.getById(this.props.personId)
 								.updateSave({ group: groupId })
-								.then(() => Person.handleListUpdate())
+								.then(() => Person.meta.listUpdateHandlers.handle())
 						}
 					/>
 

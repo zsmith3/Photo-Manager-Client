@@ -112,7 +112,7 @@ class PaginationDisplay extends React.Component<Props> {
 							</Typography>
 						</Grid>,
 						<Grid item xs={3}>
-							<Select value={currentPage} onChange={event => LocationManager.updateQuery({ page: event.target.value })}>
+							<Select value={currentPage} onChange={event => LocationManager.updateQuery({ page: event.target.value.toString() })}>
 								{pages.map(page => (
 									<MenuItem key={page} value={page} className={this.props.classes.menuItem}>
 										{page}
@@ -132,7 +132,9 @@ class PaginationDisplay extends React.Component<Props> {
 				<Grid item xs={3} md={2}>
 					<Select
 						value={this.props.pageSize}
-						onChange={event => LocationManager.updateQuery({ page_size: event.target.value, page: Math.ceil(this.props.totalCount / parseInt(event.target.value)).toString() })}
+						onChange={event =>
+							LocationManager.updateQuery({ page_size: event.target.value.toString(), page: Math.ceil(this.props.totalCount / parseInt(event.target.value.toString())).toString() })
+						}
 					>
 						{[10, 25, 50, 100, 200, 500, 1000].map(page_size => (
 							<MenuItem key={page_size} value={page_size} className={this.props.classes.menuItem}>

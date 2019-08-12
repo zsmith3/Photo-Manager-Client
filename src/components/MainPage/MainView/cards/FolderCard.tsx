@@ -39,9 +39,7 @@ class FolderCard extends BaseGridCard<Folder, { icon: string; smallIcon: string;
 	constructor(props: GridCardProps & { width: Breakpoint; classes: any }) {
 		super(props);
 
-		let folder = Folder.getById(props.modelId);
-		this.state.model = folder;
-		Folder.getById(props.modelId).registerInstanceUpdateHandler((folder: Folder) => this.setStateSafe({ model: folder }));
+		this.updateHandler = Folder.getById(props.modelId).updateHandlers.register((folder: Folder) => this.setStateSafe({ model: folder }));
 	}
 
 	protected getSize() {

@@ -145,7 +145,7 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 										.setPerson(personId)
 										.then(resolve)
 										.catch(reject)
-								)
+								).then(() => Person.getById(personId).resetData())
 							}
 						/>
 					</Fragment>
