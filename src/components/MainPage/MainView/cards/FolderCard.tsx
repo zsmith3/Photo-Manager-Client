@@ -51,7 +51,7 @@ class FolderCard extends BaseGridCard<Folder, { icon: string; smallIcon: string;
 
 		return this.renderBase(
 			<CardContent className={this.props.classes.content}>
-				<Grid container spacing={8}>
+				<Grid container spacing={1}>
 					{/* Folder icon */}
 					<Grid item xs={hasLongName && isWidthDown("sm", this.props.width) ? 2 : 4}>
 						<Icon

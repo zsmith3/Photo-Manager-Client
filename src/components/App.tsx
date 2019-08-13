@@ -27,6 +27,11 @@ export default class App extends React.Component {
 				root: {
 					padding: 6
 				}
+			},
+			MuiListItemText: {
+				primary: {
+					color: "black"
+				}
 			}
 		}
 	});

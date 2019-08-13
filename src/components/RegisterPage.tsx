@@ -75,7 +75,7 @@ class RegisterPage extends React.Component<{
 	render() {
 		return (
 			<Fragment>
-				<Grid container spacing={10}>
+				<Grid container spacing={3}>
 					<Grid item xs={12} className={this.props.classes.center}>
 						<Typography variant={isWidthUp("sm", this.props.width) ? "h3" : "h4"} component="h1">
 							Photo Manager/Fileserver

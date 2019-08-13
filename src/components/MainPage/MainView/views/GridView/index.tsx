@@ -41,6 +41,7 @@ interface GridViewState extends ViewState {
 interface GridViewProps {
 	classes: {
 		scaleSlider: string;
+		toolBar: string;
 	};
 	width: Breakpoint;
 }
@@ -48,7 +49,10 @@ interface GridViewProps {
 /** Base View class for standard Grid-based item (e.g. files, faces) display */
 export abstract class GridView extends View<GridViewState, GridViewProps> {
 	static styles = (theme: Theme) => ({
-		scaleSlider: ScaleManager.sliderStyle(theme)
+		scaleSlider: ScaleManager.sliderStyle(theme),
+		toolBar: {
+			height: 40
+		}
 	});
 
 	/** The Model to use as a root (the container - e.g. Folder, Person, Album) */
@@ -182,7 +186,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 			<Fragment>
 				{/* Toolbar */}
 				{isWidthUp("md", this.props.width) && (
-					<Grid container>
+					<Grid container className={this.props.classes.toolBar}>
 						<Grid item md={3}>
 							{/* Scaling slider */}
 							{this.scaleManager.render(this.props.classes.scaleSlider)}

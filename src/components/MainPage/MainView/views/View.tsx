@@ -56,7 +56,6 @@ export default abstract class View<S extends ViewState, P extends { classes?: an
 	}
 
 	render() {
-		console.log("render", this.state);
 		if (this.state.dataLoaded) {
 			// ID of item open in ImageModal
 			let openItem = this.selectionManager.getOpenItem();
