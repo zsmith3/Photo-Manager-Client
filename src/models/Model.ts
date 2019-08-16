@@ -120,7 +120,7 @@ export class Model {
 	}
 
 	/**
-	 * Set (overwrite) the local list of model instances
+	 * Set (without overwriting) the local list of model instances
 	 * @param list List of objects representing new instances of model
 	 * @returns List of created model instances
 	 */
@@ -128,12 +128,20 @@ export class Model {
 		this: {
 			new (...args: any[]): M;
 			meta: ModelMeta<M>;
-			addObjects(list: object[]): void;
+			addObject(obj: { id: number }, handleUpdate?: boolean): M;
+			getById(id: number): M;
 		},
-		list: object[]
+		list: {id: number}[]
 	): M[] {
-		this.meta.objects = [];
-		this.addObjects(list);
+		for (let object of list) {
+			let currentObj = this.getById(object.id);
+			if (currentObj !== null) {
+				currentObj.update(object);
+			} else this.addObject(object, false);
+		}
+
+		this.meta.listUpdateHandlers.handle(this.meta.objects);
+
 		return this.meta.objects;
 	}
 

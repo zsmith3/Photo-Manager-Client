@@ -25,6 +25,16 @@ class MainPage extends React.Component<{ classes: { rightOfNavDrawer: string; to
 		}
 	});
 
+	onResize = () => this.forceUpdate();
+
+	componentDidMount() {
+		window.addEventListener("resize", this.onResize);
+	}
+
+	componentWillUnmount() {
+		window.removeEventListener("resize", this.onResize);
+	}
+
 	render() {
 		// Extract data from URL
 		let addressParts = trimStr(this.props.location.pathname, "/").split("/");
