@@ -1,8 +1,9 @@
-import { Divider, Drawer, Hidden, Theme, withStyles } from "@material-ui/core";
-import React, { Fragment } from "react";
-import PersonGroupList from "./PersonGroupList";
-import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
+import { Divider, Drawer, Theme, withStyles } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
+import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
+import React, { Fragment } from "react";
+import AlbumList from "./AlbumList";
+import PersonGroupList from "./PersonGroupList";
 
 interface NavDrawerStyles {
 	toolbar;
@@ -39,7 +40,7 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles; width: Break
 
 				<Divider />
 
-				{/* <AlbumList /> */}
+				<AlbumList />
 
 				<Divider />
 

@@ -1,7 +1,8 @@
-import { Collapse, Icon, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, MenuList, Radio, TextField } from "@material-ui/core";
+import { Collapse, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, MenuList, TextField } from "@material-ui/core";
 import React from "react";
+import { Link } from "react-router-dom";
 import { Album } from "../../../models";
-import { HoverIconButton, SimpleDialog, TextDialog, ListDialog, MountTrackedComponent } from "../../utils";
+import { HoverIconButton, ListDialog, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
 import AlbumList from "./AlbumList";
 
 export default class AlbumListItem extends MountTrackedComponent<{
@@ -64,11 +65,9 @@ export default class AlbumListItem extends MountTrackedComponent<{
 						paddingLeft: 24 + (this.props.indent || 0) * 16
 					}}
 				>
-					<a href="">
-						{" "}
-						{/* TODO href */}
+					<Link to={`/albums/${this.state.album.id}/`}>
 						<ListItemText primary={`${this.state.album.name} (${this.state.album.file_count})`} />
-					</a>
+					</Link>
 
 					<ListItemSecondaryAction>
 						<HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>
@@ -150,11 +149,7 @@ export default class AlbumListItem extends MountTrackedComponent<{
 						list={Album.meta.objects.filter(album => album.id !== this.props.albumId).map(album => ({ id: album.id, name: album.path }))}
 						selected={this.state.album.parent === null ? null : this.state.album.parent.id}
 						nullItem="/"
-						action={(parentId: number) =>
-							Album.getById(this.props.albumId)
-								.updateSave({ parent: parentId })
-								.then(() => Album.meta.listUpdateHandlers.handle())
-						}
+						action={(parentId: number) => Album.getById(this.props.albumId).changeParent(parentId)}
 					/>
 
 					{/* Delete album dialog */}

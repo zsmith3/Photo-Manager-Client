@@ -131,7 +131,7 @@ export class Model {
 			addObject(obj: { id: number }, handleUpdate?: boolean): M;
 			getById(id: number): M;
 		},
-		list: {id: number}[]
+		list: { id: number }[]
 	): M[] {
 		for (let object of list) {
 			let currentObj = this.getById(object.id);
@@ -179,9 +179,9 @@ export class Model {
 		},
 		id: number
 	): void {
-		for (let i in this.meta.objects) {
-			if (this.meta.objects[i].id == id) delete this.meta.objects[i];
-		}
+		let ind = this.meta.objects.findIndex(object => object.id == id);
+		if (ind === -1) return;
+		else this.meta.objects.splice(ind, 1);
 
 		this.meta.listUpdateHandlers.handle(this.meta.objects);
 	}
@@ -317,8 +317,8 @@ export class Model {
 	): Promise<M[]> {
 		return new Promise((resolve, reject) => {
 			let remainingIds: number[];
-			if (refresh) remainingIds = ids.filter(id => (this.meta.loadStates.get(id) || ModelLoadStates.notLoaded) === ModelLoadStates.notLoaded);
-			else remainingIds = ids;
+			if (refresh) remainingIds = ids;
+			else remainingIds = ids.filter(id => (this.meta.loadStates.get(id) || ModelLoadStates.notLoaded) === ModelLoadStates.notLoaded);
 
 			remainingIds.forEach(id => this.meta.loadStates.set(id, ModelLoadStates.loading));
 			(remainingIds.length ? Database.get(this.meta.modelName, [{ field: "id", type: "in", value: remainingIds }]) : Promise.resolve([]))

@@ -252,12 +252,13 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
  * Create a new, styled GridView component
  * @param rootModelClass The Model to use as the root
  */
-export function makeGridView(rootModelClass: typeof RootModel) {
+export function makeGridView(rootModelClass: typeof RootModel): typeof View {
 	return withWidth()(
 		withStyles(GridView.styles)(
 			class extends GridView {
 				static rootModelClass = rootModelClass;
 			}
 		)
-	);
+	) as any;
+	// NOTE "as any" is hacky
 }

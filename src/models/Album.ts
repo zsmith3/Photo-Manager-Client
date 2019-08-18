@@ -1,15 +1,26 @@
+import FileCard from "../components/MainPage/MainView/cards/FileCard";
 import { Database, DBTables } from "../controllers/Database";
 import { promiseChain } from "../utils";
-import { Model, ModelMeta } from "./Model";
+import { FileObject } from "./FileObject";
+import { ModelMeta } from "./Model";
+import RootModel from "./RootModel";
 
 /** Album model */
-export class Album extends Model {
+export class Album extends RootModel {
 	/** Album model metadata */
 	static meta = new ModelMeta<Album>({
 		modelName: DBTables.Album,
 		props: ["id", "name", "file_count"],
 		specialProps: { parent: "parentID" }
 	});
+
+	static rootModelMeta = {
+		contentsName: "Files",
+		contentsCard: FileCard,
+		contentsFilterParam: "album",
+		contentsClass: FileObject,
+		hasRoots: false
+	};
 
 	/** List of root-level albums only */
 	static get rootAlbums(): Album[] {
@@ -70,7 +81,7 @@ export class Album extends Model {
 	 */
 	async addFile(fileId: number, multiple = false): Promise<void> {
 		await Database.create(DBTables.AlbumFile, { album: this.id, file: fileId });
-		if (!multiple) Album.loadObject(this.id, true);
+		if (!multiple) this.updateParents();
 	}
 
 	/**
@@ -84,7 +95,32 @@ export class Album extends Model {
 				.then(resolve)
 				.catch(reject);
 		});
-		Album.loadObject(this.id, true);
+		this.updateParents();
+	}
+
+	/** Reload data about all parents of this album, after adding files */
+	updateParents() {
+		let ids: number[] = [];
+		let current: Album = this;
+		while (current !== null) {
+			ids.push(current.id);
+			current.resetData();
+			current = current.parent;
+		}
+		Album.loadIds(ids, true);
+	}
+
+	/**
+	 * Change the parent album of this album (and update local data)
+	 * @param newParentId ID of new parent album
+	 * @returns Promise representing completion
+	 */
+	async changeParent(newParentId: number) {
+		let oldParent = this.parent;
+		await this.updateSave({ parent: newParentId });
+		oldParent.updateParents();
+		this.parent.updateParents();
+		Album.meta.listUpdateHandlers.handle();
 	}
 
 	/**
@@ -131,16 +167,14 @@ export class Album extends Model {
 	 * Delete album from remote database
 	 * @returns Empty Promise object representing completion
 	 */
-	/* delete (): Promise<void> {
+	delete(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			Database.delete(Album.meta.modelName, this.id).then(() => {
-				Album.deleteById(this.id);
-				// App.app.els.navDrawer.refreshAlbums();
-				resolve();
-			}).catch(reject);
+			Database.delete(Album.meta.modelName, this.id)
+				.then(() => {
+					Album.deleteById(this.id);
+					resolve();
+				})
+				.catch(reject);
 		});
-		//TODO BUG - removing album seems to remove other album from display (but not actually, thankfully)
-	} */
+	}
 }
-// TODO will need to make some ammends to album api i think
-// 		and certainly to how they're accessed in JS/TS

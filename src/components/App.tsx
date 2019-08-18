@@ -6,8 +6,8 @@ import { Database } from "../controllers/Database";
 import "../styles/App.css";
 import LoginPage from "./LoginPage";
 import MainPage from "./MainPage";
-import { LocationManager } from "./utils";
 import RegisterPage from "./RegisterPage";
+import { LocationManager } from "./utils";
 
 /** Possible root parts for the URL */
 export type addressRootTypes = "folders" | "albums" | "people";
@@ -86,7 +86,7 @@ export default class App extends React.Component {
 							<Route path="/login" component={LoginPage} />
 							<Route path="/register" component={RegisterPage} />
 
-							<Route path={["/folders/", "/people/"]} render={() => <MainPage location={props.location} />} />
+							<Route path={["/folders/", "/albums/", "/people/"]} render={() => <MainPage location={props.location} />} />
 						</LocationManager>
 					)}
 				/>

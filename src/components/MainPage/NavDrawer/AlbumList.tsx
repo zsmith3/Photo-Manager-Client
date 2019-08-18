@@ -1,7 +1,7 @@
-import { List, ListSubheader, ListItemSecondaryAction, ListItem, Typography } from "@material-ui/core";
+import { List, ListSubheader, Typography } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { Album } from "../../../models";
-import { MountTrackedComponent, HoverIconButton, TextDialog } from "../../utils";
+import { HoverIconButton, MountTrackedComponent, TextDialog } from "../../utils";
 import AlbumListItem from "./AlbumListItem";
 
 /** List of Album instances (for root or child albums) */
