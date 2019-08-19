@@ -118,6 +118,10 @@ export class Face extends Model {
 	 * @returns Promise object representing completion
 	 */
 	setStatus(status: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
+		if (status >= 4) {
+			this.person.update({ face_count: this.person.face_count - 1 });
+			this.person.removeContentsItems([this.id]);
+		}
 		return this.updateSave({ status: status });
 	}
 }

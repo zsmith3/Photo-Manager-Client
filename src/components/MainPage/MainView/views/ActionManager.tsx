@@ -20,6 +20,8 @@ interface ActionManagerState {
 		album: boolean;
 		person_confirm: boolean;
 		person_edit: boolean;
+		person_unknown: boolean;
+		person_not: boolean;
 	};
 }
 
@@ -31,7 +33,9 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 		openDialogs: {
 			album: false,
 			person_confirm: false,
-			person_edit: false
+			person_edit: false,
+			person_unknown: false,
+			person_not: false
 		}
 	};
 
@@ -88,6 +92,20 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 									<Icon>edit</Icon>
 								</ListItemIcon>
 								Set/Edit Identification
+							</MenuItem>,
+
+							<MenuItem key="mark_unknown" onClick={() => this.dialogOpen("person_unknown")}>
+								<ListItemIcon>
+									<Icon>help</Icon>
+								</ListItemIcon>
+								Ignore
+							</MenuItem>,
+
+							<MenuItem key="mark_nonperson" onClick={() => this.dialogOpen("person_not")}>
+								<ListItemIcon>
+									<Icon>clear</Icon>
+								</ListItemIcon>
+								Remove
 							</MenuItem>
 						]}
 					</MenuList>
@@ -146,6 +164,40 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 										.then(resolve)
 										.catch(reject)
 								).then(() => Person.getById(personId).resetData())
+							}
+						/>
+
+						{/* Ignore faces dialog */}
+						<SimpleDialog
+							open={this.state.openDialogs.person_unknown}
+							onClose={() => this.dialogClose("person_unknown")}
+							title="Ignore face(s)"
+							actionText="Confirm"
+							text={`Are you sure you want to mark ${selection.length} face(s) as belonging to stranger(s)? They will no longer be visible.`}
+							action={() =>
+								promiseChain(selection, (resolve, reject, id) =>
+									Face.getById(id)
+										.setStatus(4)
+										.then(resolve)
+										.catch(reject)
+								)
+							}
+						/>
+
+						{/* Remove faces dialog */}
+						<SimpleDialog
+							open={this.state.openDialogs.person_not}
+							onClose={() => this.dialogClose("person_not")}
+							title="Remove face(s)"
+							actionText="Confirm"
+							text={`Are you sure you want to mark ${selection.length} face(s) as being non-human objects? They will no longer be visible.`}
+							action={() =>
+								promiseChain(selection, (resolve, reject, id) =>
+									Face.getById(id)
+										.setStatus(5)
+										.then(resolve)
+										.catch(reject)
+								)
 							}
 						/>
 					</Fragment>
