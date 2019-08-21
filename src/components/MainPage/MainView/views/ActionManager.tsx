@@ -1,4 +1,4 @@
-import { Icon, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList } from "@material-ui/core";
+import { Icon, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Checkbox, FormControlLabel } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { Album, Face, Person } from "../../../../models";
 import { promiseChain } from "../../../../utils";
@@ -9,6 +9,7 @@ import { ViewState } from "./View";
 
 interface ActionManagerProps<S extends ViewState> {
 	rootType: addressRootTypes;
+	rootId: number;
 	selectionManager: SelectionManager<S>;
 }
 
@@ -18,10 +19,15 @@ interface ActionManagerState {
 	/** Open state of all dialogs */
 	openDialogs: {
 		album: boolean;
+		album_remove: boolean;
 		person_confirm: boolean;
 		person_edit: boolean;
 		person_unknown: boolean;
 		person_not: boolean;
+	};
+	/** State of additional options within dialogs */
+	dialogOptions: {
+		album_remove_parents: boolean;
 	};
 }
 
@@ -32,10 +38,14 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 		menuAnchorPos: null,
 		openDialogs: {
 			album: false,
+			album_remove: false,
 			person_confirm: false,
 			person_edit: false,
 			person_unknown: false,
 			person_not: false
+		},
+		dialogOptions: {
+			album_remove_parents: false
 		}
 	};
 
@@ -54,6 +64,16 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 	/** Close a dialog from its name */
 	private dialogClose = (name: keyof ActionManagerState["openDialogs"]) => this.setState({ openDialogs: { ...this.state.openDialogs, [name]: false } });
 
+	/** Update the state of an additional dialog option */
+	private updateOption(name: keyof ActionManagerState["dialogOptions"], value: any) {
+		this.setState({
+			dialogOptions: {
+				...this.state.dialogOptions,
+				[name]: value
+			}
+		});
+	}
+
 	render() {
 		let selection = this.props.selectionManager.view.state.selection;
 
@@ -61,14 +81,22 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 			<Fragment>
 				<Menu anchorReference="anchorPosition" anchorPosition={this.state.menuAnchorPos} open={this.state.openContextMenu} onClick={this.menuClose} onClose={this.menuClose}>
 					<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>{`${selection.length} ${this.props.selectionManager.modelType}(s)`}</ListSubheader>}>
-						{this.props.selectionManager.modelType === "file" && (
-							<MenuItem onClick={() => this.dialogOpen("album")}>
+						{this.props.selectionManager.modelType === "file" && [
+							<MenuItem key="album_add" onClick={() => this.dialogOpen("album")}>
 								<ListItemIcon>
 									<Icon>photo_album</Icon>
 								</ListItemIcon>
 								Add to Album
-							</MenuItem>
-						)}
+							</MenuItem>,
+							this.props.rootType === "albums" && (
+								<MenuItem key="album_remove" onClick={() => this.dialogOpen("album_remove")}>
+									<ListItemIcon>
+										<Icon>clear</Icon>
+									</ListItemIcon>
+									Remove from Album
+								</MenuItem>
+							)
+						]}
 
 						{this.props.selectionManager.modelType === "face" && [
 							<MenuItem
@@ -125,6 +153,31 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 							}))}
 							action={(albumId: number) => Album.getById(albumId).addFiles(selection)}
 						/>
+
+						{this.props.rootType === "albums" && (
+							/* Remove from album dialog */
+							<SimpleDialog
+								open={this.state.openDialogs.album_remove}
+								onClose={() => this.dialogClose("album_remove")}
+								title="Remove file(s) from album"
+								actionText="Confirm"
+								text={`Are you sure you want to remove ${selection.length} file(s) from the album ${Album.getById(this.props.rootId).name}?`}
+								action={() => Album.getById(this.props.rootId).removeFiles(selection, this.state.dialogOptions.album_remove_parents)}
+							>
+								<FormControlLabel
+									control={
+										<Checkbox
+											color="primary"
+											checked={this.state.dialogOptions.album_remove_parents}
+											onChange={event => this.updateOption("album_remove_parents", event.target.checked)}
+										/>
+									}
+									label="Remove from parent albums"
+									title="If checked, file(s) will be removed entirely from any parent albums (in which they also appear). Otherwise, file(s) will remain in the parent album(s)."
+									labelPlacement="end"
+								/>
+							</SimpleDialog>
+						)}
 					</Fragment>
 				)}
 

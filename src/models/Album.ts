@@ -62,9 +62,22 @@ export class Album extends RootModel {
 		return this.parentID === null ? null : Album.getById(this.parentID);
 	}
 
+	/** All parent albums (found recursively) */
+	get allParents(): Album[] {
+		if (this.parent === null) return [];
+		else return [this.parent].concat(this.parent.allParents);
+	}
+
 	/** Child albums */
 	get children(): Album[] {
 		return Album.meta.objects.filter(album => album.parent !== null && album.parent.id == this.id);
+	}
+
+	/** All child albums (found recursively) */
+	get allChildren(): Album[] {
+		let allChildren = this.children;
+		this.children.forEach(album => allChildren.concat(album.allChildren));
+		return allChildren;
 	}
 
 	/** Full path of the album */
@@ -100,14 +113,10 @@ export class Album extends RootModel {
 
 	/** Reload data about all parents of this album, after adding files */
 	updateParents() {
-		let ids: number[] = [];
-		let current: Album = this;
-		while (current !== null) {
-			ids.push(current.id);
-			current.resetData();
-			current = current.parent;
-		}
-		Album.loadIds(ids, true);
+		let parents = this.allParents;
+		parents.forEach(album => album.resetData());
+		let albumIds = parents.map(album => album.id);
+		Album.loadIds(albumIds, true);
 	}
 
 	/**
@@ -124,44 +133,47 @@ export class Album extends RootModel {
 	}
 
 	/**
-	 * Remove a file from album
-	 * @param file File-like (only needs ID property) object to be removed from album
-	 * @param multiple Whether or not this is part of a larger operation. If true, album listings will not be updated after removal.
-	 * @returns Empty Promise object representing completion
+	 * Reload local data about child and parent albums after removing files
+	 * @param fileIds List of File IDs which have been removed
+	 * @param removeFromParents Whether files have also been removed from parent albums (default=false)
 	 */
-	/* removeFile (file: { id: string }, multiple?: boolean): Promise<never> {
-		return new Promise((resolve, reject) => {
-			// TODO Database class
-			apiRequest("albums/" + this.id + "/files/" + file.id + "/", "DELETE").then(() => {
-				App.app.els.filesCont.removeFile(file.id);
-				if (!multiple) {
-					Database.get("albums").then((data: { id: number }[]) => {
-						Album.updateObjects(data);
-						App.app.els.navDrawer.refreshAlbums();
-						resolve();
-					});
-				} else resolve();
-			}).catch(reject);
-		});
-	} */
+	removeFilesLocally(fileIds: number[], removeFromParents = false) {
+		let albums = this.allChildren;
+		albums.push(this);
+		if (removeFromParents) albums.push(...this.allParents);
+		albums.forEach(album => album.removeContentsItems(fileIds));
+		let albumIds = albums.map(album => album.id);
+		Album.loadIds(albumIds, true);
+	}
 
 	/**
-	 * Remove multiple files from album
-	 * @param fileIDs List of IDs of files to be removed
-	 * @returns Empty Promise object representing completion
+	 * Remove a single file from this album
+	 * @param fileId ID of file to remove
+	 * @param multiple Whether this is part of a larger operation
+	 * (and so whether to reload local data)
+	 * @returns Promise representing completion
 	 */
-	/* removeFiles (fileIDs: string[]): Promise<never> {
-		return new Promise((fullResolve, fullReject) => {
-			promiseChain(fileIDs, (resolve, reject, fileID: string) => { this.removeFile({ id: fileID }, true).then(resolve).catch(reject); }).then(() => {
-				// TODO Database
-				apiRequest("albums/").then((data: { id: number }[]) => {
-					Album.updateObjects(data);
-					App.app.els.navDrawer.refreshAlbums();
-					fullResolve();
-				}).catch(fullReject);
-			}).catch(fullReject);
+	async removeFile(fileId: number, removeFromParents = false, multiple = false) {
+		const albumFiles = await Database.get(DBTables.AlbumFile, [{ field: "album", type: "exact", value: this.id }, { field: "file", type: "exact", value: fileId }]);
+		if (removeFromParents || this.parent === null) await Database.delete(DBTables.AlbumFile, albumFiles[0].id);
+		else await Database.update(DBTables.AlbumFile, albumFiles[0].id, { album: this.parent.id });
+		if (!multiple) this.removeFilesLocally([fileId], removeFromParents);
+	}
+
+	/**
+	 * Remove a set of files from this album
+	 * @param files List of File ids to remove
+	 * @param removeFromParents Whether to also remove the files from the parent of this album (default=false)
+	 * Promise representing completion
+	 */
+	async removeFiles(files: number[], removeFromParents = false) {
+		await promiseChain(files, (resolve, reject, fileId) => {
+			this.removeFile(fileId, removeFromParents, true)
+				.then(resolve)
+				.catch(reject);
 		});
-	} */
+		this.removeFilesLocally(files, removeFromParents);
+	}
 
 	/**
 	 * Delete album from remote database

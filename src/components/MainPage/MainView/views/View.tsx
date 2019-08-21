@@ -65,7 +65,7 @@ export default abstract class View<S extends ViewState, P extends { classes?: an
 					{this.renderContents()}
 
 					{/* ActionManager to display menus and dialogs */}
-					<ActionManager ref={this.actionManager} rootType={this.props.rootType} selectionManager={this.selectionManager} />
+					<ActionManager ref={this.actionManager} rootType={this.props.rootType} rootId={this.props.rootId} selectionManager={this.selectionManager} />
 
 					{/* ImageModal to display individual image files */}
 					{openItem !== null && (
