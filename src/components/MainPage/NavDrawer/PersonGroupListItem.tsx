@@ -1,11 +1,12 @@
-import { Collapse, Icon, ListItem, ListItemText, ListItemSecondaryAction, Menu, MenuList, MenuItem, ListSubheader, ListItemIcon } from "@material-ui/core";
+import { Collapse, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, MenuList } from "@material-ui/core";
 import React from "react";
-import { PersonGroup, Person } from "../../../models/Person";
-import PersonList from "./PersonList";
-import { HoverIconButton, MountTrackedComponent, TextDialog, SimpleDialog } from "../../utils";
+import { Person, PersonGroup } from "../../../models/Person";
+import { HoverIconButton, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
+import PersonList, { SortMethods } from "./PersonList";
 
 export default class PersonGroupListItem extends MountTrackedComponent<{
 	groupId: number;
+	sortMethod: SortMethods;
 }> {
 	state = {
 		group: null as PersonGroup,
@@ -17,7 +18,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 		openDialogRemove: false
 	};
 
-	constructor(props: { groupId: number }) {
+	constructor(props: { groupId: number; sortMethod: SortMethods }) {
 		super(props);
 
 		this.updateHandler = PersonGroup.getById(props.groupId).updateHandlers.register((group: PersonGroup) => this.setStateSafe({ group: group }));
@@ -36,7 +37,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 	dialogClose = type => this.setStateSafe({ ["openDialog" + type]: false, loading: false });
 
 	shouldComponentUpdate(nextProps, nextState) {
-		return this.props.groupId !== nextProps.groupId || this.state !== nextState;
+		return this.props.groupId !== nextProps.groupId || this.props.sortMethod !== nextProps.sortMethod || this.state !== nextState;
 	}
 
 	render() {
@@ -53,7 +54,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 					</ListItemSecondaryAction>
 				</ListItem>
 				<Collapse in={this.state.openCollapse}>
-					<PersonList groupId={this.props.groupId} />
+					<PersonList groupId={this.props.groupId} sortMethod={this.props.sortMethod} />
 				</Collapse>
 
 				{/* Linked menu and dialogs for modifying person group */}

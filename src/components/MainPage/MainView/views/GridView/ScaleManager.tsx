@@ -22,6 +22,7 @@ export default class ScaleManager {
 		},
 		[theme.breakpoints.down("sm")]: {
 			width: "calc(100% - 40px)",
+			marginLeft: 0,
 			paddingRight: 20
 		}
 	});

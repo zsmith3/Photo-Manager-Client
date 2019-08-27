@@ -26,6 +26,9 @@ export class ModelMeta<M extends Model> {
 	/** List of instances of the model */
 	objects: M[] = [];
 
+	/** Mapping between model id and local array index */
+	objectsIdIndexMap = new Map<number, number>();
+
 	/** Name of the database table associated with the model */
 	modelName: DBTables;
 
@@ -87,12 +90,13 @@ export class Model {
 		this: {
 			new (...args: any[]): M;
 			meta: ModelMeta<M>;
+			getById<M extends Model>(this: { meta: ModelMeta<M> }, id: number): M;
 		},
 		obj: { id: number },
 		handleUpdate = true
 	): M {
-		let object = this.meta.objects.find(object => object.id === obj.id);
-		if (object) object.update(obj);
+		let object = this.getById(obj.id);
+		if (object !== null) object.update(obj);
 		else object = new this(obj);
 
 		this.meta.loadStates.set(obj.id, ModelLoadStates.loaded);
@@ -159,29 +163,24 @@ export class Model {
 	 * @returns Model instance with specified ID
 	 */
 	static getById<M extends Model>(this: { new (...args: any[]): M; meta: ModelMeta<M> }, id: number): M {
-		let item = this.meta.objects.find(obj => "id" in obj && obj.id == id);
-		if (item === undefined) {
-			// console.error(`Model not found: ${this.meta.modelName} ${id}`);
-			return null;
-		} else {
-			return item;
-		}
+		let index = this.meta.objectsIdIndexMap.get(id);
+		if (index === undefined) return null;
+		else return this.meta.objects[index];
 	}
 
 	/**
 	 * Delete a model instance from the local list from its ID
 	 * @param id ID of model instance to delete
 	 */
-	static deleteById<M extends Model>(
-		this: {
-			new (...args: any[]): M;
-			meta: ModelMeta<M>;
-		},
-		id: number
-	): void {
-		let ind = this.meta.objects.findIndex(object => object.id == id);
-		if (ind === -1) return;
-		else this.meta.objects.splice(ind, 1);
+	static deleteById<M extends Model>(this: { new (...args: any[]): M; meta: ModelMeta<M> }, id: number): void {
+		let ind = this.meta.objectsIdIndexMap.get(id);
+		if (ind === undefined) return;
+		else {
+			this.meta.objects.splice(ind, 1);
+			for (let i = ind; i < this.meta.objects.length; i++) {
+				this.meta.objectsIdIndexMap.set(this.meta.objects[i].id, i);
+			}
+		}
 
 		this.meta.listUpdateHandlers.handle(this.meta.objects);
 	}
@@ -398,7 +397,8 @@ export class Model {
 
 		this.update(obj);
 
-		this.class.meta.objects.push(this);
+		let len = this.class.meta.objects.push(this);
+		this.class.meta.objectsIdIndexMap.set(this.id, len - 1);
 
 		// Execute on-load handler functions
 		let loadHandlers = this.class.meta.loadHandlers.get(this.id);
