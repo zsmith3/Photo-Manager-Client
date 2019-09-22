@@ -1,6 +1,6 @@
-import React from "react";
-import { pruneUrlQuery, getPathnameFromUrl, getQueryFromUrl, trimStr } from "../../utils";
 import { History } from "history";
+import React from "react";
+import { getPathnameFromUrl, getQueryFromUrl, pruneUrlQuery, trimStr } from "../../utils";
 
 /**
  * A component which can be added to the React component tree to allow for global location updates
@@ -33,10 +33,35 @@ export default class LocationManager extends React.Component<{
 	}
 
 	/**
+	 * Get the new location of the page (without updating the page)
+	 * @param url The new URL to move to
+	 * @param replaceQuery Whether to fully or partially replace the existing query
+	 * @returns The new location
+	 */
+	static getUpdatedLocation(url: string, replaceQuery: boolean | string[] = true): string {
+		let newQuery = new URLSearchParams();
+		if (replaceQuery !== true) {
+			newQuery = this.currentQuery;
+			if (replaceQuery !== false) {
+				for (let param of replaceQuery) newQuery.delete(param);
+			}
+		}
+		let newQString = newQuery.toString();
+		url = newQString ? url + "?" + newQString : url;
+
+		return url;
+	}
+
+	/**
 	 * Update the location of the page
 	 * @param url The new URL to move to
+	 * @param replaceQuery Whether to fully or partially replace the existing query
 	 */
-	static updateLocation(url: string): void {
+	static updateLocation(url: string, replaceQuery: boolean | string[] = true): void {
+		console.log(url, replaceQuery);
+		url = this.getUpdatedLocation(url, replaceQuery);
+		console.log(url);
+
 		if (this.instance) this.instance.props.history.push(url);
 		else this.nextLocation = url;
 	}

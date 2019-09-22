@@ -41,6 +41,6 @@ export class Folder extends RootModel {
 
 	/** Open folder in Application */
 	open() {
-		LocationManager.updateLocation("/folders/" + this.id + "/");
+		LocationManager.updateLocation("/folders/" + this.id + "/", ["page"]);
 	}
 }

@@ -59,17 +59,12 @@ class PaginationDisplay extends React.Component<Props> {
 			},
 			rightLink: {
 				marginLeft: 5
-			},
-			menuItem: {
-				width: 40
 			}
 		} as Styles<CSSProperties>);
 
 	render() {
 		let currentPage = this.props.page;
 		let maxPage = Math.ceil(this.props.totalCount / this.props.pageSize);
-
-		if (maxPage <= 1) return null;
 
 		let pages: string[] = [];
 		if (isWidthUp("md", this.props.width)) for (var i = Math.max(1, currentPage - 4); i <= Math.min(maxPage, currentPage + 4); i++) pages.push(i.toString());
@@ -80,38 +75,40 @@ class PaginationDisplay extends React.Component<Props> {
 				{isWidthUp("md", this.props.width) ? (
 					/* Standard desktop pages display */
 					<Grid item xs={8}>
-						<Typography variant="body1" className={this.props.classes.pageList}>
-							{currentPage > 1 && (
-								<Link className={this.props.classes.link} to={LocationManager.getUpdatedQueryLocation({ page: "1" })}>
-									{"<<"}
-								</Link>
-							)}
-							{pages.map(page => (
-								<Link
-									className={this.props.classes.rightLink}
-									key={page}
-									to={LocationManager.getUpdatedQueryLocation({ page: page })}
-									style={parseInt(page) === currentPage ? { color: "black", cursor: "default" } : { color: "blue" }}
-								>
-									{page}
-								</Link>
-							))}
-							{currentPage < maxPage && (
-								<Link className={this.props.classes.link + " " + this.props.classes.rightLink} to={LocationManager.getUpdatedQueryLocation({ page: maxPage.toString() })}>
-									{">>"}
-								</Link>
-							)}
-						</Typography>
+						{maxPage > 1 && (
+							<Typography variant="body1" className={this.props.classes.pageList}>
+								{currentPage > 1 && (
+									<Link className={this.props.classes.link} to={LocationManager.getUpdatedQueryLocation({ page: "1" })}>
+										{"<<"}
+									</Link>
+								)}
+								{pages.map(page => (
+									<Link
+										className={this.props.classes.rightLink}
+										key={page}
+										to={LocationManager.getUpdatedQueryLocation({ page: page })}
+										style={parseInt(page) === currentPage ? { color: "black", cursor: "default" } : { color: "blue" }}
+									>
+										{page}
+									</Link>
+								))}
+								{currentPage < maxPage && (
+									<Link className={this.props.classes.link + " " + this.props.classes.rightLink} to={LocationManager.getUpdatedQueryLocation({ page: maxPage.toString() })}>
+										{">>"}
+									</Link>
+								)}
+							</Typography>
+						)}
 					</Grid>
 				) : (
 					/* Mobile page selection */
 					[
-						<Grid item xs={3}>
+						<Grid item xs={3} key="title">
 							<Typography className={this.props.classes.title} variant="body1">
 								Page:
 							</Typography>
 						</Grid>,
-						<Grid item xs={3}>
+						<Grid item xs={3} key="pages">
 							<Select value={currentPage} onChange={event => LocationManager.updateQuery({ page: event.target.value.toString() })}>
 								{pages.map(page => (
 									<MenuItem key={page} value={page} className={this.props.classes.menuItem}>
@@ -133,7 +130,10 @@ class PaginationDisplay extends React.Component<Props> {
 					<Select
 						value={this.props.pageSize}
 						onChange={event =>
-							LocationManager.updateQuery({ page_size: event.target.value.toString(), page: Math.ceil(this.props.totalCount / parseInt(event.target.value.toString())).toString() })
+							LocationManager.updateQuery({
+								page_size: event.target.value.toString(),
+								page: Math.floor(((currentPage - 1) * this.props.pageSize) / parseInt(event.target.value.toString()) + 1).toString()
+							})
 						}
 					>
 						{[10, 25, 50, 100, 200, 500, 1000].map(page_size => (

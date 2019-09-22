@@ -1,7 +1,7 @@
 import { Model } from ".";
 import { GridCardExport } from "../components/MainPage/MainView/cards/BaseGridCard";
-import { ModelMeta } from "./Model";
 import { UpdateHandlerList } from "../utils";
+import { ModelMeta } from "./Model";
 
 /** Data type for roots/contents object sets */
 export type objectSetType = { name?: string; card?: GridCardExport; count?: number; objectIds: number[] };
@@ -45,16 +45,26 @@ export default class RootModel extends Model {
 		return { roots: roots, contents: { count: 0, objectIds: [], name: this.rootModelMeta.contentsName, card: this.rootModelMeta.contentsCard } };
 	}
 
-	/** List of root objects for each search term (`null` key for no search) */
+	/**
+	 * Encode query options as key for map
+	 * @param searchQuery The current search query (null if none)
+	 * @param options Other query parameters
+	 */
+	private static encodeKey(searchQuery?: string, options?: object) {
+		const defaultOptions = { isf: false };
+		return JSON.stringify({ search: searchQuery, ...Object.assign(defaultOptions, options) });
+	}
+
+	/** List of root objects for each (JSON-encoded) query */
 	private roots = new Map<string, number[]>();
 
-	/** List of contents objects for each search term (`null` key for no search) */
+	/** List of contents objects for each (JSON-encoded) query */
 	private contents = new Map<string, { count: number; objectIds: number[] }>();
 
 	/** Handler functions to run when the roots/contents are updated */
 	private contentsUpdateHandlers: UpdateHandlerList = new UpdateHandlerList(null, async (contentData: any, success: (data: any) => void, error: (error: any) => void) => {
 		try {
-			const data = await this.getContents(contentData.page, contentData.pageSize, contentData.searchQuery);
+			const data = await this.getContents(contentData.page, contentData.pageSize, contentData.searchQuery, contentData.options);
 			success(data);
 		} catch (err) {
 			error(err);
@@ -64,22 +74,24 @@ export default class RootModel extends Model {
 	/**
 	 * Retrieve or load child root objects
 	 * @param searchQuery Current search query
+	 * @param options Additional options
 	 * @returns IDs of root objects found
 	 */
-	private async getRoots(searchQuery?: string): Promise<objectSetType | null> {
+	private async getRoots(searchQuery?: string, options?: object): Promise<objectSetType | null> {
 		if (!this.class.rootModelMeta.hasRoots) return null;
 		searchQuery = searchQuery || null;
+		let queryKey = RootModel.encodeKey(searchQuery, options);
 
 		// Get from previously loaded roots
-		let existingRootIds = this.roots.get(searchQuery);
+		let existingRootIds = this.roots.get(queryKey);
 		if (existingRootIds !== undefined) return { objectIds: existingRootIds };
 
 		// Load from server
-		const rootsData = await this.class.loadFiltered({ [this.class.rootModelMeta.rootsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}) });
+		const rootsData = await this.class.loadFiltered({ [this.class.rootModelMeta.rootsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}), ...options });
 
 		// Save to stored roots
 		let objectIds = rootsData.objects.map(object => object.id);
-		this.roots.set(searchQuery, objectIds);
+		this.roots.set(queryKey, objectIds);
 
 		return { objectIds: objectIds };
 	}
@@ -89,13 +101,15 @@ export default class RootModel extends Model {
 	 * @param page Current page number
 	 * @param pageSize Page size
 	 * @param searchQuery Current search query
+	 * @param options Additional options
 	 * @returns Total number of results, and IDs from requested page
 	 */
-	private async getContentObjects(page: number, pageSize: number, searchQuery?: string): Promise<objectSetType> {
+	private async getContentObjects(page: number, pageSize: number, searchQuery?: string, options?: object): Promise<objectSetType> {
 		searchQuery = searchQuery || null;
+		let queryKey = RootModel.encodeKey(searchQuery, options);
 
 		// Get from previously loaded content
-		let existingContents = this.contents.get(searchQuery);
+		let existingContents = this.contents.get(queryKey);
 		if (existingContents !== undefined) {
 			if (existingContents.count > 0 && (page - 1) * pageSize >= existingContents.count) throw { detail: "Invalid page." };
 			let pageIds = existingContents.objectIds.slice((page - 1) * pageSize, page * pageSize);
@@ -104,7 +118,7 @@ export default class RootModel extends Model {
 
 		// Load from server
 		const contentsData = await this.class.rootModelMeta.contentsClass.loadFiltered(
-			{ [this.class.rootModelMeta.contentsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}) },
+			{ [this.class.rootModelMeta.contentsFilterParam]: this.id, ...(searchQuery ? { search: searchQuery } : {}), ...options },
 			page,
 			pageSize
 		);
@@ -113,7 +127,7 @@ export default class RootModel extends Model {
 		let oldIds = existingContents !== undefined ? existingContents.objectIds : new Array(contentsData.count).fill(null);
 		let newIds = contentsData.objects.map(object => object.id);
 		let allObjectIds = oldIds.slice(0, (page - 1) * pageSize).concat(newIds.concat(oldIds.slice(page * pageSize)));
-		this.contents.set(searchQuery, {
+		this.contents.set(queryKey, {
 			count: contentsData.count,
 			objectIds: allObjectIds
 		});
@@ -126,16 +140,17 @@ export default class RootModel extends Model {
 	 * @param page Current page number
 	 * @param pageSize Page size
 	 * @param searchQuery Current search query
+	 * @param options Additional options (e.g. isf)
 	 * @returns ObjectSet for roots (may be `null`) and contents
 	 */
-	async getContents(page: number, pageSize: number, searchQuery?: string): Promise<{ roots: objectSetType | null; contents: objectSetType }> {
-		var roots = await this.getRoots(searchQuery);
+	async getContents(page: number, pageSize: number, searchQuery?: string, options?: object): Promise<{ roots: objectSetType | null; contents: objectSetType }> {
+		var roots = await this.getRoots(searchQuery, options);
 		if (roots !== null) {
 			roots.name = this.class.rootModelMeta.rootsName;
 			roots.card = this.class.rootModelMeta.rootsCard;
 		}
 
-		var contents = await this.getContentObjects(page, pageSize, searchQuery);
+		var contents = await this.getContentObjects(page, pageSize, searchQuery, options);
 		contents.name = this.class.rootModelMeta.contentsName;
 		contents.card = this.class.rootModelMeta.contentsCard;
 
@@ -147,10 +162,11 @@ export default class RootModel extends Model {
 		page: number,
 		pageSize: number,
 		searchQuery: string,
+		options: object,
 		callback: (data: { roots: objectSetType; contents: objectSetType }) => void,
 		errorCallback: (error: any) => void
 	) {
-		return this.contentsUpdateHandlers.register(callback, errorCallback, { page: page, pageSize: pageSize, searchQuery: searchQuery });
+		return this.contentsUpdateHandlers.register(callback, errorCallback, { page: page, pageSize: pageSize, searchQuery: searchQuery, options: options });
 	}
 
 	/** Clear (out-of-date) local data (contents and roots) */

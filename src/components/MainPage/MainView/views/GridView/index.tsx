@@ -1,4 +1,4 @@
-import { Grid, ListSubheader, Theme, withStyles, withWidth } from "@material-ui/core";
+import { Checkbox, Grid, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Theme, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
@@ -35,6 +35,8 @@ interface GridViewState extends ViewState {
 		roots: objectSetType | null;
 		contents: objectSetType;
 	};
+	menuOpen: boolean;
+	menuAnchorEl: HTMLElement;
 }
 
 /** Data type for GridView props */
@@ -42,6 +44,7 @@ interface GridViewProps {
 	classes: {
 		scaleSlider: string;
 		toolBar: string;
+		menuButton: string;
 	};
 	width: Breakpoint;
 }
@@ -52,6 +55,10 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		scaleSlider: ScaleManager.sliderStyle(theme),
 		toolBar: {
 			height: 40
+		},
+		menuButton: {
+			float: "right" as "right",
+			marginRight: "10px"
 		}
 	});
 
@@ -72,12 +79,20 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 
 		this.class = this.constructor as typeof GridView;
 
+		this.state.menuOpen = false;
+
 		this.getData(props);
 
 		this.scaleManager = new ScaleManager(this);
 		this.selectionManager = new SelectionManager(this, () => this.state.data.contents.objectIds, () => this.state.data.contents.card.modelType);
 		this.virtualList = React.createRef<List>();
 	}
+
+	/** Open the display options menu */
+	menuOpen = event => this.setState({ menuAnchorEl: event.currentTarget, menuOpen: true });
+
+	/** Close the display options menu */
+	menuClose = () => this.setState({ menuOpen: false });
 
 	/**
 	 * Load data to be displayed, into `this.state` based on `this.props`
@@ -97,6 +112,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				props.page,
 				props.pageSize,
 				props.searchQuery,
+				this.props.rootType === "folders" ? { isf: this.props.includeSubfolders } : {},
 				data => this.setState({ data: data, dataLoaded: true }),
 				error => {
 					if ("detail" in error && error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
@@ -144,6 +160,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		if (
 			nextProps.rootId !== this.props.rootId ||
 			nextProps.searchQuery !== this.props.searchQuery ||
+			nextProps.includeSubfolders !== this.props.includeSubfolders ||
 			nextProps.page !== this.props.page ||
 			nextProps.pageSize !== this.props.pageSize
 		) {
@@ -165,9 +182,19 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 			rows.unshift(
 				{
 					render: ({ index, style }) => (
-						<div key={index} style={style}>
-							{this.scaleManager.render(this.props.classes.scaleSlider)}
-						</div>
+						<Grid container key={index} style={style}>
+							<Grid item xs={this.props.rootType === "folders" ? 10 : 12}>
+								{this.scaleManager.render(this.props.classes.scaleSlider)}
+							</Grid>
+
+							{this.props.rootType === "folders" && (
+								<Grid item xs={2}>
+									<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
+										<Icon>more_vert</Icon>
+									</IconButton>
+								</Grid>
+							)}
+						</Grid>
 					),
 					height: ScaleManager.sliderHeight
 				},
@@ -191,11 +218,32 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 							{/* Scaling slider */}
 							{this.scaleManager.render(this.props.classes.scaleSlider)}
 						</Grid>
-						<Grid item md={9}>
+						<Grid item md={this.props.rootType === "folders" ? 8 : 9}>
 							{/* Pagination links */}
 							<PaginationDisplay page={this.props.page} pageSize={this.props.pageSize} totalCount={this.state.data.contents.count} />
 						</Grid>
+						{this.props.rootType === "folders" && (
+							<Grid item md={1}>
+								<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
+									<Icon>more_vert</Icon>
+								</IconButton>
+							</Grid>
+						)}
 					</Grid>
+				)}
+
+				{/* Options menu */}
+				{this.props.rootType === "folders" && (
+					<Menu anchorEl={this.state.menuAnchorEl} open={this.state.menuOpen} onClick={this.menuClose} onClose={this.menuClose}>
+						<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>Display Options</ListSubheader>}>
+							<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
+								<ListItemIcon>
+									<Checkbox checked={this.props.includeSubfolders} />
+								</ListItemIcon>
+								Show subfolder contents
+							</MenuItem>
+						</MenuList>
+					</Menu>
 				)}
 
 				{/* Main virtualised list */}

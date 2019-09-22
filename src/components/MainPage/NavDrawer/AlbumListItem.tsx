@@ -2,7 +2,7 @@ import { Collapse, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListIt
 import React from "react";
 import { Link } from "react-router-dom";
 import { Album } from "../../../models";
-import { HoverIconButton, ListDialog, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
+import { HoverIconButton, ListDialog, LocationManager, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
 import AlbumList from "./AlbumList";
 
 export default class AlbumListItem extends MountTrackedComponent<{
@@ -65,7 +65,7 @@ export default class AlbumListItem extends MountTrackedComponent<{
 						paddingLeft: 24 + (this.props.indent || 0) * 16
 					}}
 				>
-					<Link to={`/albums/${this.state.album.id}/`}>
+					<Link to={LocationManager.getUpdatedLocation(`/albums/${this.state.album.id}/`, ["page"])}>
 						<ListItemText primary={`${this.state.album.name} (${this.state.album.file_count})`} />
 					</Link>
 

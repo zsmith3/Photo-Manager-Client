@@ -140,7 +140,7 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 		switch (this.props.rootType) {
 			case "folders":
 				let folder = Folder.getById(this.props.rootId);
-				LocationManager.updateLocation("/folders/" + (folder.parentID ? `${folder.parentID}/` : ""));
+				LocationManager.updateLocation("/folders/" + (folder.parentID ? `${folder.parentID}/` : ""), ["page"]);
 		}
 	};
 
@@ -181,7 +181,7 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 							<Icon>arrow_upward</Icon>
 						</IconButton>
 
-						<IconButton title="Return to root folders" onClick={() => LocationManager.updateLocation("/folders/")}>
+						<IconButton title="Return to root folders" onClick={() => LocationManager.updateLocation("/folders/", ["page"])}>
 							<Icon>home</Icon>
 						</IconButton>
 					</Grid>

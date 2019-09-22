@@ -21,9 +21,8 @@ export default class ScaleManager {
 			width: 200
 		},
 		[theme.breakpoints.down("sm")]: {
-			width: "calc(100% - 40px)",
-			marginLeft: 0,
-			paddingRight: 20
+			margin: 0,
+			paddingTop: 20
 		}
 	});
 

@@ -3,10 +3,10 @@ import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import React, { Fragment, RefObject } from "react";
 import { Platform } from "../../../../controllers/Platform";
 import { addressRootTypes } from "../../../App";
+import { MountTrackedComponent } from "../../../utils";
 import ImageModal from "../ImageModal";
 import ActionManager from "./ActionManager";
 import SelectionManager from "./SelectionManager";
-import { MountTrackedComponent } from "../../../utils";
 
 /** Props shared between ViewContainer and View */
 export interface ViewProps {
@@ -15,6 +15,7 @@ export interface ViewProps {
 	page: number;
 	pageSize: number;
 	searchQuery: string;
+	includeSubfolders: boolean;
 	width: Breakpoint;
 	totalWidth: number;
 	totalHeight: number;

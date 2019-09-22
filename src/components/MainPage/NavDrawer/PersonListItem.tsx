@@ -3,7 +3,7 @@ import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { FaceImgSizes, Platform } from "../../../controllers/Platform";
 import { Person, PersonGroup } from "../../../models";
-import { HoverIconButton, ListDialog, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
+import { HoverIconButton, ListDialog, LocationManager, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
 
 /** Individual Person instance display, with menu for modification */
 class PersonListItem extends MountTrackedComponent<{
@@ -66,7 +66,7 @@ class PersonListItem extends MountTrackedComponent<{
 						{this.state.thumbnailSrc ? <img className={this.props.classes.image} src={this.state.thumbnailSrc} /> : <Icon>face</Icon>}
 					</span>
 
-					<Link to={`/people/${this.state.person.id}/`}>
+					<Link to={LocationManager.getUpdatedLocation(`/people/${this.state.person.id}/`, ["page"])}>
 						<ListItemText primary={`${this.state.person.full_name} (${this.state.person.face_count})`} />
 					</Link>
 

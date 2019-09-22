@@ -81,6 +81,7 @@ class MainPage extends React.Component<{ classes: { rightOfNavDrawer: string; to
 							page={addressPage}
 							pageSize={addressPageSize}
 							searchQuery={LocationManager.currentQuery.get("search")}
+							includeSubfolders={["true", "1"].includes(LocationManager.currentQuery.get("isf"))}
 							totalWidth={mainViewWidth}
 							totalHeight={mainViewHeight}
 						/>
