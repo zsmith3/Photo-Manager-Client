@@ -113,7 +113,7 @@ export class Album extends RootModel {
 
 	/** Reload data about all parents of this album, after adding files */
 	updateParents() {
-		let parents = this.allParents;
+		let parents = this.allParents.concat([this]);
 		parents.forEach(album => album.resetData());
 		let albumIds = parents.map(album => album.id);
 		Album.loadIds(albumIds, true);

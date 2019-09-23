@@ -58,9 +58,7 @@ export default class LocationManager extends React.Component<{
 	 * @param replaceQuery Whether to fully or partially replace the existing query
 	 */
 	static updateLocation(url: string, replaceQuery: boolean | string[] = true): void {
-		console.log(url, replaceQuery);
 		url = this.getUpdatedLocation(url, replaceQuery);
-		console.log(url);
 
 		if (this.instance) this.instance.props.history.push(url);
 		else this.nextLocation = url;
