@@ -3,6 +3,7 @@ import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
 import { List, ListRowProps } from "react-virtualized";
+import { Input } from "../../../../../controllers/Input";
 import RootModel, { objectSetType } from "../../../../../models/RootModel";
 import { LocationManager } from "../../../../utils";
 import BaseGridCard, { GridCardExport } from "../../cards/BaseGridCard";
@@ -42,6 +43,7 @@ interface GridViewState extends ViewState {
 /** Data type for GridView props */
 interface GridViewProps {
 	classes: {
+		mobileScaleSliderContainer: string;
 		scaleSlider: string;
 		toolBar: string;
 		menuButton: string;
@@ -52,6 +54,9 @@ interface GridViewProps {
 /** Base View class for standard Grid-based item (e.g. files, faces) display */
 export abstract class GridView extends View<GridViewState, GridViewProps> {
 	static styles = (theme: Theme) => ({
+		mobileScaleSliderContainer: {
+			paddingRight: "20px"
+		},
 		scaleSlider: ScaleManager.sliderStyle(theme),
 		toolBar: {
 			height: 40
@@ -88,8 +93,12 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		this.virtualList = React.createRef<List>();
 	}
 
-	/** Open the display options menu */
-	menuOpen = event => this.setState({ menuAnchorEl: event.currentTarget, menuOpen: true });
+	/** Open the display options or selection actions menu */
+	menuOpen = event => {
+		event.stopPropagation();
+		if (Input.isTouching && this.state.selection.length > 0) this.actionManager.current.menuOpen({ left: event.clientX, top: event.clientY });
+		else this.setState({ menuAnchorEl: event.currentTarget, menuOpen: true });
+	};
 
 	/** Close the display options menu */
 	menuClose = () => this.setState({ menuOpen: false });
@@ -178,16 +187,17 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 	renderContents() {
 		const rows: (GridViewRow | string | StandardRow)[] = this.getRows();
 
+		/* Mobile Toolbars */
 		if (isWidthDown("sm", this.props.width)) {
 			rows.unshift(
 				{
 					render: ({ index, style }) => (
-						<Grid container key={index} style={style}>
-							<Grid item xs={this.props.rootType === "folders" ? 10 : 12}>
+						<Grid container key={index} style={style} className={this.props.classes.mobileScaleSliderContainer}>
+							<Grid item xs={this.state.selection.length > 0 || this.props.rootType === "folders" ? 10 : 12}>
 								{this.scaleManager.render(this.props.classes.scaleSlider)}
 							</Grid>
 
-							{this.props.rootType === "folders" && (
+							{(this.state.selection.length > 0 || this.props.rootType === "folders") && (
 								<Grid item xs={2}>
 									<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
 										<Icon>more_vert</Icon>
@@ -204,14 +214,14 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 							<PaginationDisplay page={this.props.page} pageSize={this.props.pageSize} totalCount={this.state.data.contents.count} />
 						</div>
 					),
-					height: this.state.data.contents.count > this.props.pageSize ? ScaleManager.sliderHeight : 0
+					height: ScaleManager.sliderHeight
 				}
 			);
 		}
 
 		return (
 			<Fragment>
-				{/* Toolbar */}
+				{/* Desktop Toolbar */}
 				{isWidthUp("md", this.props.width) && (
 					<Grid container className={this.props.classes.toolBar}>
 						<Grid item md={3}>
@@ -233,18 +243,16 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				)}
 
 				{/* Options menu */}
-				{this.props.rootType === "folders" && (
-					<Menu anchorEl={this.state.menuAnchorEl} open={this.state.menuOpen} onClick={this.menuClose} onClose={this.menuClose}>
-						<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>Display Options</ListSubheader>}>
-							<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
-								<ListItemIcon>
-									<Checkbox checked={this.props.includeSubfolders} />
-								</ListItemIcon>
-								Show subfolder contents
-							</MenuItem>
-						</MenuList>
-					</Menu>
-				)}
+				<Menu anchorEl={this.state.menuAnchorEl} open={this.state.menuOpen} onClick={this.menuClose} onClose={this.menuClose}>
+					<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>Display Options</ListSubheader>}>
+						<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
+							<ListItemIcon>
+								<Checkbox checked={this.props.includeSubfolders} />
+							</ListItemIcon>
+							Show subfolder contents
+						</MenuItem>
+					</MenuList>
+				</Menu>
 
 				{/* Main virtualised list */}
 				<div onClick={() => this.selectionManager.selectAll(false)}>

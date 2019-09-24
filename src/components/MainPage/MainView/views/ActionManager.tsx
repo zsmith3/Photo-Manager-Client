@@ -1,4 +1,4 @@
-import { Icon, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Checkbox, FormControlLabel } from "@material-ui/core";
+import { Checkbox, FormControlLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { Album, Face, Person } from "../../../../models";
 import { promiseChain } from "../../../../utils";
@@ -49,7 +49,6 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 		}
 	};
 
-	// TODO call this from within view
 	menuOpen = (anchorPos: { top: number; left: number }) => this.setState({ openContextMenu: true, menuAnchorPos: anchorPos });
 
 	menuClose = () => this.setState({ openContextMenu: false });

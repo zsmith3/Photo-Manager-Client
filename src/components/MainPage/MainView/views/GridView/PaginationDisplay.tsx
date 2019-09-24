@@ -109,7 +109,7 @@ class PaginationDisplay extends React.Component<Props> {
 							</Typography>
 						</Grid>,
 						<Grid item xs={3} key="pages">
-							<Select value={currentPage} onChange={event => LocationManager.updateQuery({ page: event.target.value.toString() })}>
+							<Select value={currentPage} onChange={event => LocationManager.updateQuery({ page: event.target.value.toString() })} disabled={maxPage <= 1}>
 								{pages.map(page => (
 									<MenuItem key={page} value={page} className={this.props.classes.menuItem}>
 										{page}
