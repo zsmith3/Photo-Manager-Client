@@ -1,6 +1,6 @@
-import { apiRequest, httpMethodTypes } from "../utils";
 import { LocationManager } from "../components/utils";
 import { FilterType } from "../models/Model";
+import { apiRequest, httpMethodTypes } from "../utils";
 
 /** Database table names for different models (used in API urls) */
 export enum DBTables {
@@ -137,8 +137,13 @@ class WebDatabase extends BaseDatabase {
 							resolve(false);
 						}
 					})
-					.catch(() => {
-						Database.auth.logOut();
+					.catch(err => {
+						if ("detail" in err) {
+							Database.auth.logOut();
+						} else {
+							LocationManager.updateLocation("/error/");
+						}
+
 						resolve(false);
 					});
 			});

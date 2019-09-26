@@ -4,6 +4,8 @@ import ReactDOM from "react-dom";
 import { BrowserRouter, HashRouter, Route } from "react-router-dom";
 import { Database } from "../controllers/Database";
 import "../styles/App.css";
+import ErrorPage from "./ErrorPage";
+import LoadingPage from "./LoadingPage";
 import LoginPage from "./LoginPage";
 import MainPage from "./MainPage";
 import RegisterPage from "./RegisterPage";
@@ -41,6 +43,7 @@ export default class App extends React.Component {
 	 * @param rootElement Root HTML element to host the application
 	 */
 	static start(rootElement: HTMLElement): void {
+		ReactDOM.render(<LoadingPage />, rootElement);
 		Database.auth.checkAuth().then(result => {
 			if (result) {
 				if (this.authCheckInterval) window.clearInterval(this.authCheckInterval);
@@ -61,8 +64,7 @@ export default class App extends React.Component {
 		if (LocationManager.currentLocation.length <= 1) {
 			LocationManager.updateLocation("/folders/");
 		} else if (auth) {
-			// TODO make this neater
-			if (LocationManager.currentLocation === "/login" || LocationManager.currentLocation === "/register") {
+			if (["/login", "/register"].includes(LocationManager.currentLocation)) {
 				LocationManager.updateLocation("/folders/");
 			}
 		}
@@ -85,6 +87,7 @@ export default class App extends React.Component {
 						<LocationManager history={props.history}>
 							<Route path="/login" component={LoginPage} />
 							<Route path="/register" component={RegisterPage} />
+							<Route path="/error" component={ErrorPage} />
 
 							<Route path={["/folders/", "/albums/", "/people/"]} render={() => <MainPage location={props.location} />} />
 						</LocationManager>
