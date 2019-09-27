@@ -22,7 +22,7 @@ See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/
 3) Install NPM dependencies (`npm install`)
 4) For Cordova:
 	- Install Cordova globally (`npm install -g cordova`)
-	- Enter the cordova directory (`cd cordova`) and run `cordova prepare` to install required platforms/plugins
+	- Enter the cordova directory (`cd cordova`) and run `mkdir www` then `cordova prepare` to install required platforms/plugins
 	- To generate icons/splash screen:
 		- Install [ImageMagick](https://www.imagemagick.org/script/download.php) (including legacy tools)
 		- Install [cordova-splash](https://github.com/AlexDisler/cordova-splash) and [cordova-icon](https://github.com/AlexDisler/cordova-icon) (`npm install -g cordova-icon cordova-splash`)
