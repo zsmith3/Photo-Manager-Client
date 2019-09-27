@@ -14,3 +14,7 @@ dist/
 cordova/platforms
 cordova/plugins
 cordova/www
+cordova/build.json
+
+# Keystore files
+**/*.jks
