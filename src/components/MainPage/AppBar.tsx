@@ -4,9 +4,7 @@ import { navDrawerInstance, navDrawerWidth } from "./NavDrawer";
 import { Database } from "../../controllers/Database";
 
 /** Main title AppBar */
-class FSAppBar extends React.Component<{
-	classes: { rightOfNavDrawer: string; placeholder: string };
-}> {
+class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: string; placeholder: string } }> {
 	static styles = theme => ({
 		rightOfNavDrawer: {
 			[theme.breakpoints.up("md")]: {
@@ -61,6 +59,12 @@ class FSAppBar extends React.Component<{
 					{/* Options menu */}
 					<Menu anchorEl={this.state.menuAnchorEl} open={this.state.openMenu} onClick={this.menuClose} onClose={this.menuClose}>
 						<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>Options</ListSubheader>}>
+							<MenuItem onClick={() => window.location.reload()}>
+								<ListItemIcon>
+									<Icon>refresh</Icon>
+								</ListItemIcon>
+								Refresh
+							</MenuItem>
 							<MenuItem onClick={() => Database.auth.logOut()}>
 								<ListItemIcon>
 									<Icon>exit_to_app</Icon>
