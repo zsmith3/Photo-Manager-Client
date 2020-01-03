@@ -13,6 +13,8 @@ type fileReaderTypes = "readAsArrayBuffer" | "readAsBinaryString" | "readAsDataU
  * @param headers Object representing any desired HTTP headers
  * @param responseType XHR response type (default = "blob")
  * @param readerType FileReader method with which to read the response (default = "readAsArrayBuffer")
+ * @param timeoutLength The time (milliseconds) before requests timeout, 0 for no timeout (default = 3000)
+ * @param timeoutCount The number of times to attempt a request (default = 2)
  * @returns Promise object representing response data
  */
 function httpRequest(
@@ -21,7 +23,9 @@ function httpRequest(
 	data: any = null,
 	headers: {} = {},
 	responseType: xhrResponseTypes = "blob",
-	readerType: fileReaderTypes = "readAsArrayBuffer"
+	readerType: fileReaderTypes = "readAsArrayBuffer",
+	timeoutLength: number = 3000,
+	timeoutCount: number = 2
 ): Promise<any> {
 	return new Promise((resolve, reject) => {
 		var xhr = new XMLHttpRequest();
@@ -52,6 +56,14 @@ function httpRequest(
 		};
 
 		xhr.onerror = reject;
+		xhr.timeout = timeoutLength;
+		xhr.ontimeout = () => {
+			if (timeoutCount > 1)
+				httpRequest(url, type, data, headers, responseType, readerType, timeoutLength, timeoutCount - 1)
+					.then(resolve)
+					.catch(reject);
+			else reject("Request timed out.");
+		};
 
 		xhr.send(data);
 	});
