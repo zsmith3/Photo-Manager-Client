@@ -451,10 +451,10 @@ export class Model {
 	}
 
 	/**
-	 * Save local model instance changes to the database
-	 * @returns Promise object representing completion
+	 * Serialize model for database storage
+	 * @returns Serialized model object
 	 */
-	save(): Promise<any> {
+	serialize() {
 		let obj = {};
 
 		this.class.meta.props.forEach(prop => {
@@ -471,6 +471,14 @@ export class Model {
 			}
 		}
 
-		return Database.update(this.class.meta.modelName, this.id, obj);
+		return obj;
+	}
+
+	/**
+	 * Save local model instance changes to the database
+	 * @returns Promise object representing completion
+	 */
+	save(): Promise<any> {
+		return Database.update(this.class.meta.modelName, this.id, this.serialize());
 	}
 }

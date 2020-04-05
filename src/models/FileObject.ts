@@ -15,13 +15,28 @@ export class FileObject extends Model {
 		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"],
 		specialProps: {
 			geotag: {
-				deserialize: (file: FileObject, prop: { id: number }) => {
+				deserialize: (file: FileObject, prop) => {
 					if (prop === null) file.geotagID = null;
-					else file.geotagID = GeoTag.addObject(prop).id;
+					else {
+						file.geotagID = GeoTag.addObject(prop, false).id;
+
+						if (prop.locationModified) file.geotag.locationModified = true;
+						if (prop.areaModified) file.geotag.areaModified = true;
+					}
+				},
+				serialize: (obj: { geotag: any }, prop: GeoTag) => {
+					if (prop === null) obj.geotag = null;
+					else {
+						obj.geotag = { id: prop.id };
+						if (prop.locationModified) {
+							obj.geotag.latitude = prop.latitude;
+							obj.geotag.longitude = prop.longitude;
+						}
+						if (prop.areaModified) obj.geotag.area = prop.area === null ? null : prop.area.id;
+					}
 				}
 			}
 		}
-		// TODO serialize for this
 	});
 
 	/** File name */

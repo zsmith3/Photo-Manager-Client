@@ -4,6 +4,7 @@ import { Album, Face, Person } from "../../../../models";
 import { promiseChain } from "../../../../utils";
 import { addressRootTypes } from "../../../App";
 import { ListDialog, SimpleDialog } from "../../../utils";
+import GMapDialog from "./GMapDialog";
 import SelectionManager from "./SelectionManager";
 import { ViewState } from "./View";
 
@@ -20,6 +21,7 @@ interface ActionManagerState {
 	openDialogs: {
 		album: boolean;
 		album_remove: boolean;
+		geotag_edit: boolean;
 		person_confirm: boolean;
 		person_edit: boolean;
 		person_unknown: boolean;
@@ -39,6 +41,7 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 		openDialogs: {
 			album: false,
 			album_remove: false,
+			geotag_edit: false,
 			person_confirm: false,
 			person_edit: false,
 			person_unknown: false,
@@ -94,7 +97,13 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 									</ListItemIcon>
 									Remove from Album
 								</MenuItem>
-							)
+							),
+							<MenuItem key="geotag_edit" onClick={() => this.dialogOpen("geotag_edit")}>
+								<ListItemIcon>
+									<Icon>my_location</Icon>
+								</ListItemIcon>
+								Edit Geotag
+							</MenuItem>
 						]}
 
 						{this.props.selectionManager.modelType === "face" && [
@@ -177,6 +186,9 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								/>
 							</SimpleDialog>
 						)}
+
+						{/* Edit geotag dialog */}
+						<GMapDialog open={this.state.openDialogs.geotag_edit} onClose={() => this.dialogClose("geotag_edit")} fileIds={selection} />
 					</Fragment>
 				)}
 

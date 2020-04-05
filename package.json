@@ -11,11 +11,13 @@
 	"dependencies": {
 		"@material-ui/core": "^4.3.2",
 		"@material-ui/icons": "^4.2.1",
+		"@types/google-maps-react": "^2.0.4",
 		"@types/jquery": "^3.3.31",
 		"@types/msgpack-lite": "^0.1.6",
 		"@types/react-dom": "^16.8.5",
 		"@types/react-router-dom": "^4.3.4",
 		"@types/react-virtualized": "^9.21.4",
+		"google-maps-react": "git+https://github.com/zsmith3/google-maps-react.git",
 		"jquery": "^3.4.1",
 		"msgpack-lite": "^0.1.26",
 		"react": "^16.9.0",

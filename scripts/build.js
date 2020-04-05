@@ -33,6 +33,7 @@ process.env.BUILD_PLATFORM = args.platform;
 process.env.NODE_ENV = args.buildType;
 process.env.SERVER_URL = config.server;
 process.env.HOST_URL = config.publicUrl;
+for (let key in allConfig.env_vars) process.env[key] = allConfig.env_vars[key];
 
 // Bundler options
 const options = {

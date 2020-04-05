@@ -34,6 +34,11 @@ export default class App extends React.Component {
 				primary: {
 					color: "black"
 				}
+			},
+			MuiDialog: {
+				paperWidthSm: {
+					maxWidth: "none"
+				}
 			}
 		}
 	});

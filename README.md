@@ -20,7 +20,8 @@ See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/
 1) Install [NPM](https://nodejs.org/en/)
 2) Clone this repository (`git clone https://github.com/zsmith3/Photo-Manager-Client/`) and enter the directory (`cd Photo-Manager-Client`)
 3) Install NPM dependencies (`npm install`)
-4) For Cordova:
+4) Get a Google Maps Javascript API Key (see [here](https://developers.google.com/maps/documentation/javascript/get-api-key)) and add it to the *./build_config.js* file.
+5) For Cordova:
 	- Install Cordova globally (`npm install -g cordova`)
 	- Enter the cordova directory (`cd cordova`) and run `mkdir www` then `cordova prepare` to install required platforms/plugins
 	- To generate icons/splash screen:
