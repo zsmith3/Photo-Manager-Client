@@ -19,7 +19,7 @@ const defaultArea = { id: 0, name: "", address: "", latitude: 0, longitude: 0, r
 /** Default state data for MapDialog component */
 const defaultState = {
 	geoTagAreaIds: [] as number[],
-	tab: "area" as ("area" | "location"),
+	tab: "area" as "area" | "location",
 	warnArea: false,
 	warnLocation: false,
 	data: {
@@ -227,8 +227,6 @@ class MapDialog extends React.Component<PropsType, StateType> {
 	}
 
 	shouldComponentUpdate(nextProps: PropsType) {
-		if (!(this.props.open || nextProps.open)) return false;
-
 		// Reset state when file selection changes
 		let nextIdsSorted = nextProps.fileIds.sort();
 		if (
@@ -239,6 +237,7 @@ class MapDialog extends React.Component<PropsType, StateType> {
 				.every(x => x[0] === x[1])
 		) {
 			let state = defaultState;
+			state.geoTagAreaIds = this.state.geoTagAreaIds;
 
 			let files = nextProps.fileIds.map(id => FileObject.getById(id));
 			let allTagged = files.every(file => file.geotag !== null);
@@ -268,7 +267,8 @@ class MapDialog extends React.Component<PropsType, StateType> {
 			}
 			this.setState(state);
 			return false;
-		} else return true;
+		} else if (this.props.open || nextProps.open) return true;
+		else return false;
 	}
 
 	render() {

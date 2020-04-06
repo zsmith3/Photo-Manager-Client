@@ -125,7 +125,7 @@ class WebDatabase extends BaseDatabase {
 
 	auth = {
 		checkAuth(): Promise<boolean> {
-			return new Promise(resolve => {
+			return new Promise((resolve, reject) => {
 				apiRequest("membership/status/")
 					.then(data => {
 						if (data.authenticated) {
@@ -141,7 +141,7 @@ class WebDatabase extends BaseDatabase {
 						if ("detail" in err) {
 							Database.auth.logOut();
 						} else {
-							LocationManager.updateLocation("/error/");
+							reject();
 						}
 
 						resolve(false);

@@ -19,7 +19,11 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 	};
 
 	/** Icons to display for non-image file types */
-	static fileTypeIcons = new Map<FileTypes, string>([["file", "insert_drive_file"], ["image", "photo"], ["video", "movie"]]);
+	static fileTypeIcons = new Map<FileTypes, string>([
+		["file", "insert_drive_file"],
+		["image", "photo"],
+		["video", "movie"]
+	]);
 
 	state = {
 		model: null as FileObject,

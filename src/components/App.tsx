@@ -15,12 +15,9 @@ import { LocationManager } from "./utils";
 export type addressRootTypes = "folders" | "albums" | "people";
 
 /** Main application class, to handle all views */
-export default class App extends React.Component {
+export default class App extends React.Component<{ error?: boolean }> {
 	/** Singleton instance of App class */
 	static app: App;
-
-	/** Interval ID to check authorisation (and log out if needed) */
-	static authCheckInterval: number;
 
 	/** MUI theme override */
 	static theme = createMuiTheme({
@@ -49,16 +46,14 @@ export default class App extends React.Component {
 	 */
 	static start(rootElement: HTMLElement): void {
 		ReactDOM.render(<LoadingPage />, rootElement);
-		Database.auth.checkAuth().then(result => {
-			if (result) {
-				if (this.authCheckInterval) window.clearInterval(this.authCheckInterval);
-				this.authCheckInterval = window.setInterval(Database.auth.checkAuth, 60 * 1000);
-			}
+		Database.auth
+			.checkAuth()
+			.then(result => {
+				this.performRedirect(result);
 
-			this.performRedirect(result);
-
-			ReactDOM.render(<App />, rootElement);
-		});
+				ReactDOM.render(<App />, rootElement);
+			})
+			.catch(() => ReactDOM.render(<App error={true} />, rootElement));
 	}
 
 	/**
@@ -88,15 +83,19 @@ export default class App extends React.Component {
 
 				<Route
 					path=""
-					render={props => (
-						<LocationManager history={props.history}>
-							<Route path="/login" component={LoginPage} />
-							<Route path="/register" component={RegisterPage} />
-							<Route path="/error" component={ErrorPage} />
+					render={props =>
+						this.props.error ? (
+							<ErrorPage />
+						) : (
+							<LocationManager history={props.history}>
+								<Route path="/login" component={LoginPage} />
+								<Route path="/register" component={RegisterPage} />
+								<Route path="/error" component={ErrorPage} />
 
-							<Route path={["/folders/", "/albums/", "/people/"]} render={() => <MainPage location={props.location} />} />
-						</LocationManager>
-					)}
+								<Route path={["/folders/", "/albums/", "/people/"]} render={() => <MainPage location={props.location} />} />
+							</LocationManager>
+						)
+					}
 				/>
 			</MuiThemeProvider>
 		);

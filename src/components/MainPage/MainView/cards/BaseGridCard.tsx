@@ -30,6 +30,7 @@ export interface GridCardProps {
 
 /** Default GridCard style classes */
 interface GridCardClasses {
+	[key: string]: string;
 	border: string;
 	card: string;
 	action: string;
