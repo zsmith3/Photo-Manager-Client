@@ -120,6 +120,7 @@ function decodeData(data: any, onsuccess: (data: any) => void, onerror: (data: a
 	if (process.env.NODE_ENV === "production") {
 		try {
 			let byteArray = new Uint8Array(data);
+			if (byteArray.length === 0) throw data;
 			let resData = msgpack.decode(byteArray);
 			onsuccess(resData);
 		} catch (err) {

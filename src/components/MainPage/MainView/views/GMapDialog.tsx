@@ -1,5 +1,6 @@
 import { Checkbox, FormControlLabel, Grid, MenuItem, Paper, Select, Slider, Tab, Tabs, TextField, Typography, withStyles } from "@material-ui/core";
 import { Circle, GoogleApiWrapper, Map, mapEventHandler, Marker } from "google-maps-react";
+import cloneDeep from "lodash/cloneDeep";
 import React from "react";
 import { FileObject, GeoTag, GeoTagArea } from "../../../../models";
 import { SimpleDialog } from "../../../utils";
@@ -83,7 +84,7 @@ class MapDialog extends React.Component<PropsType, StateType> {
 		}
 	};
 
-	state = defaultState;
+	state = cloneDeep(defaultState);
 
 	/** Reference to Google map component */
 	mapRef: React.RefObject<Map> & { current: { map: google.maps.Map } };
@@ -236,7 +237,7 @@ class MapDialog extends React.Component<PropsType, StateType> {
 				.map((id, ind) => [id, nextIdsSorted[ind]])
 				.every(x => x[0] === x[1])
 		) {
-			let state = defaultState;
+			let state = cloneDeep(defaultState);
 			state.geoTagAreaIds = this.state.geoTagAreaIds;
 
 			let files = nextProps.fileIds.map(id => FileObject.getById(id));
