@@ -128,7 +128,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				this.props.rootType === "folders" ? { isf: this.props.includeSubfolders } : {},
 				data => this.setState({ data: data, dataLoaded: true }),
 				error => {
-					if ("detail" in error && error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
+					if (!(typeof error === "string") && "detail" in error && error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
 					else throw error;
 				}
 			);
@@ -259,7 +259,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				</Menu>
 
 				{/* Main virtualised list */}
-				<div onClick={() => this.selectionManager.selectAll(false)}>
+				<div onClick={event => !(event.ctrlKey || event.shiftKey) && this.selectionManager.selectAll(false)}>
 					<List
 						ref={this.virtualList}
 						width={this.props.totalWidth}

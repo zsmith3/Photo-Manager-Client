@@ -67,7 +67,11 @@ class PersonListItem extends MountTrackedComponent<{
 					</span>
 
 					<Link to={LocationManager.getUpdatedLocation(`/people/${this.state.person.id}/`, ["page"])}>
-						<ListItemText primary={`${this.state.person.full_name} (${this.state.person.face_count})`} />
+						<ListItemText
+							primary={`${this.state.person.full_name} (${this.state.person.face_count_confirmed}${
+								this.state.person.face_count_unconfirmed ? `/${this.state.person.face_count_unconfirmed}` : ""
+							})`}
+						/>
 					</Link>
 
 					<ListItemSecondaryAction>

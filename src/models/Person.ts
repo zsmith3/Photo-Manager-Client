@@ -66,7 +66,7 @@ export class Person extends RootModel {
 	/** Person model metadata */
 	static meta = new ModelMeta<Person>({
 		modelName: DBTables.Person,
-		props: ["id", "full_name", "face_count", "thumbnail"],
+		props: ["id", "full_name", "face_count", "face_count_confirmed", "thumbnail"],
 		specialProps: { group: "groupID" }
 	});
 
@@ -109,6 +109,9 @@ export class Person extends RootModel {
 	/** Number of faces identified as this person */
 	face_count: number;
 
+	/** Number of faces confirmed to be this person */
+	face_count_confirmed: number;
+
 	/** ID of the Face used as a thumbnail for this person */
 	thumbnail: number;
 
@@ -118,6 +121,11 @@ export class Person extends RootModel {
 	/** Group to which person belongs */
 	get group() {
 		return PersonGroup.getById(this.groupID);
+	}
+
+	/** Number of unconfirmed faces identified as this person */
+	get face_count_unconfirmed() {
+		return this.face_count - this.face_count_confirmed;
 	}
 
 	/** Handler functions to be run when associated faces are updated */

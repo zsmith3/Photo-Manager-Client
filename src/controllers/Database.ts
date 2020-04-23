@@ -138,7 +138,8 @@ class WebDatabase extends BaseDatabase {
 						}
 					})
 					.catch(err => {
-						if ("detail" in err) {
+						if (!(typeof err === "string") && "detail" in err) {
+							// TODO can't use in operator if err is a string
 							Database.auth.logOut();
 						} else {
 							reject();

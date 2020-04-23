@@ -57,7 +57,7 @@ In order to build/run Cordova, you will then need to `cd cordova` and run [the r
 Here is a list of existing features, as well as features which I intend to add in the future. This list may not be comprehensive.
 
 - [x] Sorting capabilities
-	- [ ] Albums
+	- [x] Albums
 		- [x] Albums can have (infinitely recursive) child albums
 			- [x] Files added to child albums are automatically included in parent albums
 		- [x] Files can be added to (multiple) albums
@@ -67,15 +67,15 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [x] Predictions for people to which faces belong
 			- [ ] Run this automatically
 			- [x] Users can confirm predictions
-			- [ ] Allow users to reject predictions
-	- [ ] Geotags
+		- [ ] Allow undetected faces to be added manually
+	- [x] Geotags
 		- [x] Geotags are read from EXIF data
-		- [ ] Files should have a geotag, which includes co-ordinates, and an "area"
-		- [ ] Geotag areas should include a name, address, co-ordinates and area radius
+		- [x] Files can be given a geotag, which includes co-ordinates, and an "area"
+		- [x] Geotag areas include a name, address, co-ordinates and area radius
 	- [ ] Feature tags
 - [x] Page components
 	- [x] Navigation drawer
-		- [ ] Lists albums
+		- [x] Lists albums
 			- [x] Shows a hierarchical list, with collapsible lists of child albums
 			- [x] Albums can be renamed, moved to different parents and removed
 			- [x] New albums can be added as child or root albums
@@ -107,11 +107,13 @@ Here is a list of existing features, as well as features which I intend to add i
 	- [x] 3 main hiearachies
 		- [x] Folders
 			- [x] Displays folders and files in separate lists
-			- [ ] Option to show all files in subfolders, rather than just immediate children
+			- [x] Option to show all files in subfolders, rather than just immediate children
 		- [x] People
 			- [x] Displays faces for different people
 			- [ ] Optionally show files belonging to a person
-		- [ ] Albums
+		- [x] Albums
+			- [x] Displays all files in an album and its children
+			- [ ] List child albums
 	- [x] Filtering
 		- [x] Searching
 			- [x] Files
@@ -120,8 +122,7 @@ Here is a list of existing features, as well as features which I intend to add i
 				- [x] Found using folder name
 				- [ ] Find using name of any parent folder
 			- [ ] Allow searching of faces (via their file)
-			- [x] Searching within a folder returns results from all subfolders
-				- [ ] Option to choose whether or not to search all subfolders
+			- [x] Can search search only immediate children, or optionally all subfolder contents
 		- [ ] (*possibly*) More explicit filtering system
 - [x] Cross-platform
 	- [x] Web
