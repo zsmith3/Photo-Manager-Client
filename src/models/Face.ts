@@ -106,10 +106,11 @@ export class Face extends Model {
 	 */
 	async setPerson(personID: number): Promise<void> {
 		let oldPerson = this.person;
+		let oldStatus = this.status;
 		await this.updateSave({ person: personID, status: 1 });
-		oldPerson.update({ face_count: oldPerson.face_count - 1 });
+		oldPerson.update({ face_count: oldPerson.face_count - 1, ...(oldStatus <= 1 ? { face_count_confirmed: oldPerson.face_count_confirmed - 1} : {}) });
 		oldPerson.removeContentsItems([this.id]);
-		this.person.update({ face_count: this.person.face_count + 1 });
+		this.person.update({ face_count: this.person.face_count + 1, face_count_confirmed: this.person.face_count_confirmed + 1 });
 	}
 
 	/**
@@ -118,6 +119,8 @@ export class Face extends Model {
 	 * @returns Promise object representing completion
 	 */
 	setStatus(status: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
+		if (this.status >= 2 && status <= 1) this.person.update({ face_count_confirmed: this.person.face_count_confirmed + 1 });
+		else if (this.status <= 1 && status >= 2) this.person.update({ face_count_confirmed: this.person.face_count_confirmed - 1 });
 		if (status >= 4) {
 			this.person.update({ face_count: this.person.face_count - 1 });
 			this.person.removeContentsItems([this.id]);
