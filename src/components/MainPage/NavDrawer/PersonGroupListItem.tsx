@@ -54,7 +54,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 					</ListItemSecondaryAction>
 				</ListItem>
 				<Collapse in={this.state.openCollapse}>
-					<PersonList groupId={this.props.groupId} sortMethod={this.props.sortMethod} />
+					<PersonList groupId={this.props.groupId} sortMethod={this.props.sortMethod} visible={this.state.openCollapse} />
 				</Collapse>
 
 				{/* Linked menu and dialogs for modifying person group */}

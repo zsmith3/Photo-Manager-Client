@@ -8,6 +8,7 @@ import { HoverIconButton, ListDialog, LocationManager, MountTrackedComponent, Si
 /** Individual Person instance display, with menu for modification */
 class PersonListItem extends MountTrackedComponent<{
 	personId: number;
+	visible: boolean;
 	classes: { avatar: string; image: string };
 }> {
 	static style = {
@@ -32,13 +33,10 @@ class PersonListItem extends MountTrackedComponent<{
 		thumbnailSrc: null as string
 	};
 
-	constructor(props: { personId: number; classes: { avatar: string; image: string } }) {
+	constructor(props: { personId: number; visible: boolean; classes: { avatar: string; image: string } }) {
 		super(props);
 
 		this.updateHandler = Person.getById(props.personId).updateHandlers.register((person: Person) => this.setStateSafe({ person: person }));
-
-		if (this.state.person.thumbnail !== null)
-			Platform.getImgSrc({ id: this.state.person.thumbnail }, "face", FaceImgSizes.Standard, true).then(src => this.setState({ thumbnailSrc: src }));
 	}
 
 	menuClose = () => {
@@ -54,6 +52,9 @@ class PersonListItem extends MountTrackedComponent<{
 	dialogClose = type => this.setStateSafe({ ["openDialog" + type]: false, loading: false });
 
 	shouldComponentUpdate(nextProps, nextState) {
+		if (!this.props.visible && nextProps.visible && this.state.thumbnailSrc === null && this.state.person.thumbnail !== null)
+			Platform.getImgSrc({ id: this.state.person.thumbnail }, "face", FaceImgSizes.Standard, true).then(src => this.setState({ thumbnailSrc: src }));
+
 		return this.props.personId !== nextProps.personId || this.state !== nextState;
 	}
 

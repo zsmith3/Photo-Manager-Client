@@ -27,7 +27,7 @@ const SortFunctions = {
 };
 
 /** List of Person instances (within a PersonGroup) */
-export default class PersonList extends MountTrackedComponent<{ groupId?: number; sortMethod: SortMethods }> {
+export default class PersonList extends MountTrackedComponent<{ groupId?: number; sortMethod: SortMethods; visible: boolean }> {
 	state = {
 		personIds: [] as number[]
 	};
@@ -47,7 +47,7 @@ export default class PersonList extends MountTrackedComponent<{ groupId?: number
 		return (
 			<List>
 				{this.state.personIds.map(personId => (
-					<PersonListItem key={personId} personId={personId} />
+					<PersonListItem key={personId} personId={personId} visible={this.props.visible} />
 				))}
 			</List>
 		);
