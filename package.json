@@ -19,7 +19,7 @@
 		"@types/react-router-dom": "^4.3.5",
 		"@types/react-virtualized": "^9.21.8",
 		"google-maps-react": "git+https://github.com/zsmith3/google-maps-react.git",
-		"jquery": "^3.4.1",
+		"jquery": "^3.5.0",
 		"msgpack-lite": "^0.1.26",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
