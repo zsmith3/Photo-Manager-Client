@@ -2,7 +2,7 @@ import { Grid, Hidden, Icon, IconButton, InputAdornment, TextField, Theme, Typog
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
-import { Album, Folder, Person } from "../../models";
+import { Album, Folder, Person, ScanFolder } from "../../models";
 import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
 import { navDrawerWidth } from "./NavDrawer";
@@ -117,6 +117,9 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 			case "albums":
 				const album = await Album.loadObject<Album>(props.rootId);
 				return album.path;
+			case "scans":
+				const scanFolder = await ScanFolder.loadObject<ScanFolder>(props.rootId);
+				return scanFolder.path;
 		}
 	}
 
@@ -139,8 +142,10 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 
 		switch (this.props.rootType) {
 			case "folders":
-				let folder = Folder.getById(this.props.rootId);
-				LocationManager.updateLocation("/folders/" + (folder.parentID ? `${folder.parentID}/` : ""), ["page"]);
+			case "scans":
+				let folder = (this.props.rootType === "folders" ? Folder : ScanFolder).getById(this.props.rootId);
+				LocationManager.updateLocation(`/${this.props.rootType}/` + (folder.parentID ? `${folder.parentID}/` : ""), ["page"]);
+				break;
 		}
 	};
 
@@ -177,7 +182,7 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 							<Icon>arrow_forward</Icon>
 						</IconButton>
 
-						<IconButton title="Up" onClick={this.moveUp}>
+						<IconButton title="Up" onClick={this.moveUp} disabled={!["folders", "scans"].includes(this.props.rootType)}>
 							<Icon>arrow_upward</Icon>
 						</IconButton>
 

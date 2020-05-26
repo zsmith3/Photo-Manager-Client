@@ -1,4 +1,4 @@
-import { Face, FileObject, Model } from "../../../../models";
+import { Face, FileObject, Model, Scan } from "../../../../models";
 import { LocationManager } from "../../../utils";
 import View, { ViewState } from "./View";
 
@@ -15,12 +15,13 @@ export enum SelectMode {
 }
 
 /** Possible models for ImageModal */
-type openModels = "file" | "face";
+type openModels = "file" | "face" | "scan";
 
 /** Configuration for each ImageModal model type */
 const openModelConfigs = {
 	file: { model: FileObject, filter: (currentId, newId) => FileObject.getById(newId).type === "image" },
-	face: { model: Face, filter: (currentId, newId) => newId === currentId || Face.getById(newId).fileID !== Face.getById(currentId).fileID }
+	face: { model: Face, filter: (currentId, newId) => newId === currentId || Face.getById(newId).fileID !== Face.getById(currentId).fileID },
+	scan: { model: Scan, filter: (currentId, newId) => true }
 } as {
 	[K in openModels]: {
 		/** Model type */

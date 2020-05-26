@@ -160,7 +160,7 @@ export interface GridCardExport {
 	component: React.ComponentType<GridCardProps>;
 
 	/** The model class represented by this card */
-	modelType?: "file" | "face";
+	modelType?: "file" | "face" | "scan";
 
 	/**
 	 * Get the sizing of each GridCard in the given context

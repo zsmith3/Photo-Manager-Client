@@ -154,7 +154,6 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 	render() {
 		// <Hammer> element seems to make external <Hammer> placed
 		// around <ImageLoader /> actually work (not sure why)
-
 		return (
 			<Fragment>
 				{this.state.imageData === null ? (

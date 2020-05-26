@@ -1,7 +1,7 @@
 import { withWidth } from "@material-ui/core";
 import React from "react";
 import { MountTrackedComponent } from "../../utils";
-import { AlbumView, FolderView, PersonView } from "./views";
+import { AlbumView, FolderView, PersonView, ScanView } from "./views";
 import View, { ViewProps } from "./views/View";
 
 /** Container to select and display the appropriate View class for the current URL */
@@ -11,7 +11,8 @@ class ViewContainer extends MountTrackedComponent<ViewProps> {
 		return {
 			folders: FolderView,
 			albums: AlbumView,
-			people: PersonView
+			people: PersonView,
+			scans: ScanView
 		}[this.props.rootType];
 	}
 

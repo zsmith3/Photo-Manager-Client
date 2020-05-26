@@ -1,17 +1,15 @@
-import { AppBar, Icon, IconButton, Modal, Toolbar, Typography, withStyles, Theme } from "@material-ui/core";
+import { AppBar, Icon, IconButton, Modal, Theme, Toolbar, Typography, withStyles } from "@material-ui/core";
+import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
+import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import Hammer from "react-hammerjs";
 import { Input } from "../../../controllers/Input";
 import { FileImgSizes, Platform } from "../../../controllers/Platform";
-import { FileObject, Face } from "../../../models";
+import { Face, FileObject, Scan } from "../../../models";
+import { BaseImageFile } from "../../../models/BaseImageFile";
 import { ImageLoader, LocationManager } from "../../utils";
-import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
-import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 
-const platform: "desktop" | "mobile" = "desktop";
-// TODO set platform properly
-
-type modelType = "file" | "face";
+type modelType = "file" | "face" | "scan";
 
 /** Dialog to display and modify image file */
 class ImageModal extends React.Component<{
@@ -98,7 +96,7 @@ class ImageModal extends React.Component<{
 
 	state = {
 		/** Current open file */
-		file: null as FileObject,
+		file: null as BaseImageFile,
 
 		/** Size styling for the image element */
 		imgZoomStyle: null as {
@@ -122,13 +120,16 @@ class ImageModal extends React.Component<{
 			case "face":
 				Face.loadObject<Face>(itemId).then(face => this.setState({ file: face.file }));
 				break;
+			case "scan":
+				Scan.loadObject<Scan>(itemId).then(scan => this.setState({ file: scan }));
+				break;
 		}
 	}
 
 	/** Close the modal */
 	close() {
 		Platform.mediaQueue.resume();
-		LocationManager.updateQuery({ file: "", face: "" });
+		LocationManager.updateQuery({ file: "", face: "", scan: "" });
 	}
 
 	/**
@@ -155,8 +156,6 @@ class ImageModal extends React.Component<{
 	 * @param yPos Y position of the top edge of the image	("c" to vertically centre the image)
 	 */
 	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number) {
-		// TODO need to get App.app.config.platform before this will work
-
 		let previousZoomState = this.fileZoomStates.get(this.state.file.id);
 		let toolBarHeight = 64; // TODO height of the top imagemodal bar
 		let verticalMargin = 20;

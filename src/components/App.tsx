@@ -12,7 +12,7 @@ import RegisterPage from "./RegisterPage";
 import { LocationManager } from "./utils";
 
 /** Possible root parts for the URL */
-export type addressRootTypes = "folders" | "albums" | "people";
+export type addressRootTypes = "folders" | "albums" | "people" | "scans";
 
 /** Main application class, to handle all views */
 export default class App extends React.Component<{ error?: boolean }> {
@@ -92,7 +92,7 @@ export default class App extends React.Component<{ error?: boolean }> {
 								<Route path="/register" component={RegisterPage} />
 								<Route path="/error" component={ErrorPage} />
 
-								<Route path={["/folders/", "/albums/", "/people/"]} render={() => <MainPage location={props.location} />} />
+								<Route path={["/folders/", "/albums/", "/people/", "/scans/"]} render={() => <MainPage location={props.location} />} />
 							</LocationManager>
 						)
 					}

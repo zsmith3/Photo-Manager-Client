@@ -12,7 +12,9 @@ export enum DBTables {
 	PersonGroup = "people-groups",
 	GeoTagArea = "geotag-areas",
 	GeoTag = "geotags",
-	AlbumFile = "album-files"
+	AlbumFile = "album-files",
+	Scan = "scans",
+	ScanFolder = "scan-folders"
 }
 
 /** Platform-specific Database interface */
