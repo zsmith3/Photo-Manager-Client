@@ -7,6 +7,7 @@ import { Input } from "../../../../controllers/Input";
 import { FileImgSizes, Platform } from "../../../../controllers/Platform";
 import { Face, FileObject, Scan } from "../../../../models";
 import { BaseImageFile, ImageModelType } from "../../../../models/BaseImageFile";
+import { UpdateHandler } from "../../../../utils";
 import { ImageLoader, LocationManager } from "../../../utils";
 import { EditorSharedData } from "./BaseEditor";
 import EditorCanvas from "./EditorCanvas";
@@ -123,21 +124,35 @@ class ImageModal extends React.Component<Props> {
 	/** Ref to EditorCanvas (to pass actions from EditorMenu) */
 	editorRef: React.RefObject<EditorCanvas>;
 
+	/** Update handler to register changes to file (i.e. to switch file when deleted) */
+	fileUpdateHandler: UpdateHandler = null
+
 	/**
 	 * Load an item into `this.state` to display
 	 * @param type The item type
 	 * @param itemId The item ID
 	 */
 	loadFile(type: ImageModelType, itemId: number) {
+		if (this.fileUpdateHandler !== null) this.fileUpdateHandler.unregister();
+		let setFile = (file: BaseImageFile) => {
+			this.setState({file: file});
+			this.fileUpdateHandler = file.updateHandlers.register(obj => {
+				if (obj.deleted) {
+					if (this.props.nextItemId !== null) this.switchFile("next");
+					else if (this.props.lastItemId !== null) this.switchFile("last");
+					else this.close();
+				}
+			});
+		}
 		switch (type) {
 			case "file":
-				FileObject.loadObject(itemId).then(file => this.setState({ file: file }));
+				FileObject.loadObject<FileObject>(itemId).then(file => setFile(file));
 				break;
 			case "face":
-				Face.loadObject<Face>(itemId).then(face => this.setState({ file: face.file }));
+				Face.loadObject<Face>(itemId).then(face => setFile(face.file));
 				break;
 			case "scan":
-				Scan.loadObject<Scan>(itemId).then(scan => this.setState({ file: scan }));
+				Scan.loadObject<Scan>(itemId).then(scan => setFile(scan));
 				break;
 		}
 	}
@@ -146,6 +161,7 @@ class ImageModal extends React.Component<Props> {
 	close() {
 		Platform.mediaQueue.resume();
 		LocationManager.updateQuery({ file: "", face: "", scan: "" });
+		if (this.fileUpdateHandler !== null) this.fileUpdateHandler.unregister();
 	}
 
 	/**

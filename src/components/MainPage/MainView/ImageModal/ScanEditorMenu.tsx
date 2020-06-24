@@ -2,10 +2,10 @@ import { Button, ButtonGroup, Icon, withStyles } from "@material-ui/core";
 import React from "react";
 import { Scan } from "../../../../models";
 import { EditorSharedData } from "./BaseEditor";
-import { ScanEditorCursor } from "./ScanEditor";
+import { EditorMenuAction, ScanEditorCursor } from "./ScanEditor";
 
 /** Menu for ScanEditor */
-class ScanEditorMenu extends React.Component<{ classes: { menu: string; menuItem: string }; data: EditorSharedData<Scan>; action: (action: string, ...args: any[]) => void }> {
+class ScanEditorMenu extends React.Component<{ classes: { menu: string; menuItem: string }; data: EditorSharedData<Scan>; action: (action: EditorMenuAction, ...args: any[]) => void }> {
 	static styles = {
 		menu: {
 			top: "64px",
@@ -53,7 +53,7 @@ class ScanEditorMenu extends React.Component<{ classes: { menu: string; menuItem
 					<Button className={this.props.classes.menuItem} title="Preview Crop" onClick={() => this.props.action("preview")}>
 						<Icon>preview</Icon>
 					</Button>
-					<Button className={this.props.classes.menuItem} title="Confirm Lines">
+					<Button className={this.props.classes.menuItem} title="Confirm Lines" onClick={() => this.props.action("confirm")}>
 						<Icon>check</Icon>
 					</Button>
 				</ButtonGroup>

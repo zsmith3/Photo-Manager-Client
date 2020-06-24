@@ -186,6 +186,13 @@ export default class RootModel extends Model {
 			entry[1].objectIds = entry[1].objectIds.filter(objId => !ids.includes(objId));
 			this.contents.set(entry[0], entry[1]);
 		}
+		for (let id of ids) {
+			let obj = this.class.rootModelMeta.contentsClass.getById(id);
+			if (obj) {
+				obj.deleted = true;
+				obj.updateHandlers.handle(obj);
+			}
+		}
 		this.contentsUpdateHandlers.handle();
 	}
 }

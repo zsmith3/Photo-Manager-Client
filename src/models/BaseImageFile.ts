@@ -1,8 +1,7 @@
 import { FileImgSizes, Platform } from "../controllers/Platform";
 import { Model } from "./Model";
 
-/** Models which can be opened in ImageModal */
-export type ImageModelType = "file" | "face" | "scan";
+export { ImageModelType } from "../controllers/Platform";
 
 /** Base class for File and Scan models */
 export class BaseImageFile extends Model {

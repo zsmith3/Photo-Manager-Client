@@ -1,5 +1,4 @@
 import { BaseImageFile } from "../../../../models/BaseImageFile";
-import { EditorCanvasFunctions } from "./EditorCanvas";
 
 /** Shared editor data stored in ImageModal state */
 export interface EditorSharedData<M extends BaseImageFile> {
@@ -9,6 +8,15 @@ export interface EditorSharedData<M extends BaseImageFile> {
 
 /** EditorSharedData with all properties optional */
 export type ESDOptional = { [P in keyof EditorSharedData<BaseImageFile>]?: EditorSharedData<BaseImageFile>[P] };
+
+/** Canvas functionality required by Editor classes */
+export interface EditorCanvasFunctions {
+	/** Clear the canvas */
+	clear: () => void;
+
+	/** Draw a line to the canvas (with options) */
+	drawLine: (x1: number, y1: number, x2: number, y2: number, width: number, color: string, dash: number[]) => void;
+}
 
 /** Base class for image editor */
 export default abstract class BaseEditor<M extends BaseImageFile> {

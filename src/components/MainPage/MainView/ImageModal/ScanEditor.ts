@@ -2,7 +2,7 @@ import { Axis, Line, Scan } from "../../../../models/Scan";
 import BaseEditor from "./BaseEditor";
 
 /** Actions in ScanEditorMenu */
-export type EditorMenuAction = "updateCursor" | "preview";
+export type EditorMenuAction = "updateCursor" | "preview" | "confirm";
 
 /** Possible cursors in Scan edit mode */
 export enum ScanEditorCursor {
@@ -53,6 +53,9 @@ export default class ScanEditor extends BaseEditor<Scan> {
 				this.data.previewRects = await this.publicData.model.getCropPreview(this.data.lines);
 				this.renderCanvas();
 				break;
+			case "confirm":
+				this.publicData.model.confirmCrop(this.data.lines);
+				break;
 		}
 	}
 
@@ -71,5 +74,6 @@ export default class ScanEditor extends BaseEditor<Scan> {
 	/** Reset crop lines for new image */
 	resetData() {
 		this.data.lines = [{ axis: Axis.Horizontal, pos: this.publicData.model.height / 2 }];
+		this.data.previewRects = [];
 	}
 }

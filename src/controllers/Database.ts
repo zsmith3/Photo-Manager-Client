@@ -89,12 +89,13 @@ class WebDatabase extends BaseDatabase {
 	 * @param table Database table (URL) to request from
 	 * @param id ID of object
 	 * @param data HTTP request body data
+	 * @param noTimeout Whether to remove timeout from API request
 	 * @returns Promise representing response data
 	 */
-	private request(type: httpMethodTypes, table: string, id?: number, data?: any): Promise<any> {
+	private request(type: httpMethodTypes, table: string, id?: number, data?: any, noTimeout: boolean = false): Promise<any> {
 		let path = table + "/" + (id || id === 0 ? id + "/" : "");
 
-		return apiRequest(path, type, data);
+		return apiRequest(path, type, data, noTimeout);
 	}
 
 	// Interfaces to specific request methods
@@ -117,8 +118,8 @@ class WebDatabase extends BaseDatabase {
 		return this.request("POST", table, null, data);
 	}
 
-	update(table: DBTables, id: number, data: any): Promise<any> {
-		return this.request("PATCH", table, id, data);
+	update(table: DBTables, id: number, data: any, noTimeout: boolean = false): Promise<any> {
+		return this.request("PATCH", table, id, data, noTimeout);
 	}
 
 	delete(table: DBTables, id: number): Promise<any> {

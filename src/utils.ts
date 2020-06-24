@@ -75,9 +75,10 @@ function httpRequest(
  * @param url Request URL relative to API root
  * @param type HTTP request method (defaults to "GET")
  * @param data HTTP request body data
+ * @param noTimeout Whether to remove timeout on HTTP request
  * @returns Promise object representing API response
  */
-export function apiRequest(url: string, type?: httpMethodTypes, data?: any): Promise<any> {
+export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTimeout: boolean = false): Promise<any> {
 	var encData;
 	if (process.env.NODE_ENV === "production") {
 		if (data) encData = new Blob([msgpack.encode(data)]);
@@ -92,8 +93,8 @@ export function apiRequest(url: string, type?: httpMethodTypes, data?: any): Pro
 
 	return new Promise((resolve, reject) => {
 		let request: Promise<any>;
-		if (process.env.NODE_ENV === "production") request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers);
-		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json");
+		if (process.env.NODE_ENV === "production") request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 0 : 3000);
+		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", noTimeout ? 0 : 3000);
 		request
 			.then(data => {
 				if (type == "DELETE") {

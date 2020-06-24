@@ -1,4 +1,3 @@
-import { ImageModelType } from "../models/BaseImageFile";
 import { mediaRequest } from "../utils";
 
 /** Sizes for File image data requests */
@@ -13,6 +12,9 @@ export enum FileImgSizes {
 export enum FaceImgSizes {
 	Standard = 0
 }
+
+/** Models which can be opened in ImageModal */
+export type ImageModelType = "file" | "face" | "scan";
 
 // TODO document this
 
