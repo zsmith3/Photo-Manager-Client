@@ -1,3 +1,4 @@
+import { ImageModelType } from "../models/BaseImageFile";
 import { mediaRequest } from "../utils";
 
 /** Sizes for File image data requests */
@@ -75,7 +76,7 @@ class WebPlatform extends BasePlatform {
 		}
 	};
 
-	getImgSrc(object: { id: number }, type: "file" | "face" | "scan", size: FileImgSizes | FaceImgSizes, queue: boolean): Promise<string> {
+	getImgSrc(object: { id: number }, type: ImageModelType, size: FileImgSizes | FaceImgSizes, queue: boolean): Promise<string> {
 		let url: string;
 		switch (type) {
 			case "file":

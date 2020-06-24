@@ -3,17 +3,18 @@ import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import Hammer from "react-hammerjs";
-import { Input } from "../../../controllers/Input";
-import { FileImgSizes, Platform } from "../../../controllers/Platform";
-import { Face, FileObject, Scan } from "../../../models";
-import { BaseImageFile } from "../../../models/BaseImageFile";
-import { ImageLoader, LocationManager } from "../../utils";
+import { Input } from "../../../../controllers/Input";
+import { FileImgSizes, Platform } from "../../../../controllers/Platform";
+import { Face, FileObject, Scan } from "../../../../models";
+import { BaseImageFile, ImageModelType } from "../../../../models/BaseImageFile";
+import { ImageLoader, LocationManager } from "../../../utils";
+import { EditorSharedData } from "./BaseEditor";
+import EditorCanvas from "./EditorCanvas";
+import ScanEditorMenu from "./ScanEditorMenu";
 
-type modelType = "file" | "face" | "scan";
-
-/** Dialog to display and modify image file */
-class ImageModal extends React.Component<{
-	type: modelType;
+/** Props type for ImageModal */
+interface Props {
+	type: ImageModelType;
 	itemId: number;
 	nextItemId: number;
 	lastItemId: number;
@@ -27,9 +28,13 @@ class ImageModal extends React.Component<{
 		arrowLeft: string;
 		arrowRight: string;
 		closeIcon: string;
+		editIcon: string;
 	};
 	width: Breakpoint;
-}> {
+}
+
+/** Dialog to display and modify image file */
+class ImageModal extends React.Component<Props> {
 	static styles = (theme: Theme) => ({
 		title: {
 			width: "60%",
@@ -37,7 +42,6 @@ class ImageModal extends React.Component<{
 		},
 		img: {
 			position: "absolute" as "absolute",
-			cursor: "move",
 			transition: "all 0.1s ease-out"
 		},
 		arrows: {
@@ -77,6 +81,9 @@ class ImageModal extends React.Component<{
 			fontSize: 40,
 			position: "absolute" as "absolute",
 			right: 5
+		},
+		editIcon: {
+			color: "white"
 		}
 	});
 
@@ -99,20 +106,29 @@ class ImageModal extends React.Component<{
 		file: null as BaseImageFile,
 
 		/** Size styling for the image element */
-		imgZoomStyle: null as {
-			width: number;
-			height: number;
-			left: number;
-			top: number;
-		}
+		imgZoomStyle: {
+			width: 0,
+			height: 0,
+			left: 0,
+			top: 0
+		},
+
+		/** Whether editing mode is enabled */
+		editMode: false,
+
+		/** Shared editing data */
+		editData: { cursor: 0 } as EditorSharedData<BaseImageFile>
 	};
+
+	/** Ref to EditorCanvas (to pass actions from EditorMenu) */
+	editorRef: React.RefObject<EditorCanvas>;
 
 	/**
 	 * Load an item into `this.state` to display
 	 * @param type The item type
 	 * @param itemId The item ID
 	 */
-	loadFile(type: modelType, itemId: number) {
+	loadFile(type: ImageModelType, itemId: number) {
 		switch (type) {
 			case "file":
 				FileObject.loadObject(itemId).then(file => this.setState({ file: file }));
@@ -256,6 +272,7 @@ class ImageModal extends React.Component<{
 
 	/** Change the displayed image on mobile swipe events */
 	onSwipe = event => {
+		if (this.state.editMode && this.state.editData.cursor !== 0) return;
 		if (Input.isTouching && Math.abs(event.deltaX) > 300) {
 			let direction = event.deltaX > 0 ? "last" : "next";
 			if ((direction === "last" && this.props.lastItemId !== null) || (direction === "next" && this.props.nextItemId !== null)) {
@@ -268,11 +285,13 @@ class ImageModal extends React.Component<{
 
 	/** Reset scaling on the start of pinch events */
 	onPinchStart = event => {
+		if (this.state.editMode && this.state.editData.cursor !== 0) return;
 		this.dragging.scaleDone = 1;
 	};
 
 	/** Zoom in/out on pinch events */
 	onPinch = event => {
+		if (this.state.editMode && this.state.editData.cursor !== 0) return;
 		this.zoom(event.scale / this.dragging.scaleDone, event.center.x, event.center.y);
 		this.dragging.scaleDone = event.scale;
 
@@ -281,6 +300,7 @@ class ImageModal extends React.Component<{
 
 	/** Move the image on pan events */
 	onPan = event => {
+		if (this.state.editMode && this.state.editData.cursor !== 0) return;
 		this.drag(event.deltaX, event.deltaY);
 
 		// Run on pan end
@@ -292,15 +312,32 @@ class ImageModal extends React.Component<{
 		this.setResetTimeout();
 	};
 
-	constructor(props) {
+	/** Toggle image editing mode */
+	toggleEditMode = () => this.setState({ editMode: !this.state.editMode });
+
+	/** Fetch editing state data to pass to children (since current file not stored in this.state.editData) */
+	getEditData<M extends BaseImageFile>() {
+		return { model: this.state.file, ...this.state.editData } as EditorSharedData<M>;
+	}
+
+	/** Update editing state data */
+	updateEditData = (newData: EditorSharedData<BaseImageFile>) => {
+		let data = this.state.editData;
+		for (let key in newData) data[key] = newData[key];
+		this.setState({ editData: data });
+	};
+
+	constructor(props: Props) {
 		super(props);
 
 		Platform.mediaQueue.pause();
 
 		this.loadFile(props.type, props.itemId);
+
+		this.editorRef = React.createRef();
 	}
 
-	shouldComponentUpdate(nextProps: { type: modelType; itemId: number }) {
+	shouldComponentUpdate(nextProps: Props) {
 		if (this.props === nextProps) {
 			// If props are unchanged, then state must have changed, so re-render
 			return true;
@@ -320,6 +357,12 @@ class ImageModal extends React.Component<{
 					{/* Top bar */}
 					<AppBar style={{ background: "rgba(0, 0, 0, 0.8)" }}>
 						<Toolbar>
+							{this.props.type === "scan" && (
+								<IconButton onClick={this.toggleEditMode} title={this.state.editMode ? "Save Edits" : "Enter edit mode"}>
+									<Icon className={this.props.classes.editIcon}>{this.state.editMode ? "check" : "create"}</Icon>
+								</IconButton>
+							)}
+
 							<Typography variant="h4" color="inherit" align="center" className={this.props.classes.title}>
 								{this.state.file && this.state.file.name}
 							</Typography>
@@ -332,7 +375,10 @@ class ImageModal extends React.Component<{
 
 					{/* Main image */}
 					<Hammer onSwipe={this.onSwipe} onPinchStart={this.onPinchStart} onPinch={this.onPinch} onPan={this.onPan} options={{ recognizers: { pinch: { enable: true } } }}>
-						<div onDoubleClick={() => this.setZoom("min", "min", "c", "c")} onWheel={event => this.zoom(1 - event.deltaY / 500, event.clientX, event.clientY)}>
+						<div
+							onDoubleClick={() => (!this.state.editMode || this.state.editData.cursor === 0) && this.setZoom("min", "min", "c", "c")}
+							onWheel={event => (!this.state.editMode || this.state.editData.cursor === 0) && this.zoom(1 - event.deltaY / 500, event.clientX, event.clientY)}
+						>
 							{this.state.file && (
 								<ImageLoader
 									model={this.state.file}
@@ -340,10 +386,18 @@ class ImageModal extends React.Component<{
 									maxFirstSize={FileImgSizes.Large}
 									noQueue={true}
 									className={this.props.classes.img}
-									style={this.state.imgZoomStyle}
+									style={{ cursor: !this.state.editMode || this.state.editData.cursor === 0 ? "move" : "default", ...this.state.imgZoomStyle }}
 									onFirstLoad={() => this.setZoom("min", "min", "c", "c")}
 								/>
 							)}
+							<EditorCanvas
+								ref={this.editorRef}
+								style={{ pointerEvents: !this.state.editMode || this.state.editData.cursor === 0 ? "none" : "auto", ...this.state.imgZoomStyle }}
+								enabled={this.state.editMode}
+								type={this.props.type}
+								data={this.getEditData()}
+								updateData={this.updateEditData}
+							/>
 						</div>
 					</Hammer>
 
@@ -358,52 +412,14 @@ class ImageModal extends React.Component<{
 							<Icon className={this.props.classes.arrowIcon}>keyboard_arrow_right</Icon>
 						</IconButton>
 					)}
+
+					{this.state.editMode && this.props.type === "scan" && (
+						<ScanEditorMenu data={this.getEditData<Scan>()} action={(action, ...args) => this.editorRef.current.menuAction(action, ...args)} />
+					)}
 				</div>
 			</Modal>
 		);
 	}
-
-	/* clearToolbarButtons () {
-		$(this).find("#im-icons-left").html("");
-		$(this).find("#im-icons-right").html("");
-	}
-
-	addToolbarButton (layout, toolBar) {
-		if ("top" in layout && "bottom" in layout) {
-			this.addToolbarButton(layout.top, toolBar);
-			this.addToolbarButton(layout.bottom, toolBar);
-			return;
-		}
-
-		let button = $("<button></button>").addClass("im-button").appendTo($(this).find("#im-icons-left"));
-
-		let _this = this;
-		toolBar.setOnClick(button.get(0), layout, function () {
-			_this.selectCurrentFile();
-		});
-
-		button.attr("title", layout.title);
-
-		for (var i = 0; i < layout.icon.length; i++) {
-			$("<i class='material-icons'></i>").text(layout.icon[i]).appendTo(button);
-		}
-	}
-
-	updateButtonPositions () {
-		let allButtons = $(this).find("#im-icons-left .im-button, #im-icons-left .im-button");
-
-		for (var i = 0; i <= allButtons.length / 2; i++) $(allButtons.get(i)).appendTo($(this).find("#im-icons-left"));
-		for (; i < allButtons.length; i++) $(allButtons.get(i)).appendTo($(this).find("#im-icons-right"));
-
-		let maxWidth = Math.max($(this).find("#im-icons-left").width(), $(this).find("#im-icons-right").width() + 80);
-		$(this).find("#im-icons-left").css("width", maxWidth + "px");
-		$(this).find("#im-icons-right").css("width", (maxWidth - 80) + "px");
-
-		let totalUsed = $(this).find("#im-icons-left").width() + $(this).find("#im-icons-right").width() + 140;
-		let maxLeft = window.innerWidth - totalUsed;
-
-		$(this).find("#im-title").css("max-width", maxLeft);
-	} */
 }
 
 export default withWidth()(withStyles(ImageModal.styles)(ImageModal));

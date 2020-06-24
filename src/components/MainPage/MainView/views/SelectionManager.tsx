@@ -1,4 +1,5 @@
 import { Face, FileObject, Model, Scan } from "../../../../models";
+import { ImageModelType } from "../../../../models/BaseImageFile";
 import { LocationManager } from "../../../utils";
 import View, { ViewState } from "./View";
 
@@ -14,16 +15,13 @@ export enum SelectMode {
 	Extend = 2
 }
 
-/** Possible models for ImageModal */
-type openModels = "file" | "face" | "scan";
-
 /** Configuration for each ImageModal model type */
 const openModelConfigs = {
 	file: { model: FileObject, filter: (currentId, newId) => FileObject.getById(newId).type === "image" },
 	face: { model: Face, filter: (currentId, newId) => newId === currentId || Face.getById(newId).fileID !== Face.getById(currentId).fileID },
 	scan: { model: Scan, filter: (currentId, newId) => true }
 } as {
-	[K in openModels]: {
+	[K in ImageModelType]: {
 		/** Model type */
 		model: typeof Model;
 
@@ -46,7 +44,7 @@ export default class SelectionManager<S extends ViewState> {
 	}
 
 	/** Function (from View) to retrieve current model type of selectable objects */
-	modelTypeGetter: () => openModels;
+	modelTypeGetter: () => ImageModelType;
 
 	/** Current model type of selectable objects */
 	get modelType() {
@@ -56,7 +54,7 @@ export default class SelectionManager<S extends ViewState> {
 	/** ID of last selected object */
 	lastSelected: number;
 
-	constructor(view: View<S>, objectListGetter: () => number[], modelTypeGetter: () => openModels) {
+	constructor(view: View<S>, objectListGetter: () => number[], modelTypeGetter: () => ImageModelType) {
 		this.view = view;
 		this.objectListGetter = objectListGetter;
 		this.modelTypeGetter = modelTypeGetter;
@@ -103,10 +101,10 @@ export default class SelectionManager<S extends ViewState> {
 	 * Get the ID of the currently open item (e.g. file or face)
 	 * @returns Type and ID of item, or `null` if none is open
 	 */
-	getOpenItem(): { type: openModels; id: number } {
+	getOpenItem(): { type: ImageModelType; id: number } {
 		// TODO consider just using this.modeltypeGetter
 		// (i.e. enforcing correct model type)
-		let type: openModels;
+		let type: ImageModelType;
 		for (type in openModelConfigs) {
 			let modelId = parseInt(LocationManager.currentQuery.get(type));
 			if (openModelConfigs[type].model.getById(modelId)) return { type: type, id: modelId };
