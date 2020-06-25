@@ -72,6 +72,22 @@ export default class EditorCanvas extends React.Component<Props> {
 			ctx.moveTo((x1 * canvas.width) / this.props.data.model.width, (y1 * canvas.height) / this.props.data.model.height);
 			ctx.lineTo((x2 * canvas.width) / this.props.data.model.width, (y2 * canvas.height) / this.props.data.model.height);
 			ctx.stroke();
+		},
+
+		drawMargins: (x1: number, y1: number, x2: number, y2: number, margins: number[], color: string) => {
+			let canvas = this.canvasRef.current;
+			let ctx = canvas.getContext("2d");
+
+			x1 *= canvas.width / this.props.data.model.width;
+			let w = (x2 * canvas.width) / this.props.data.model.width - x1;
+			y1 *= canvas.height / this.props.data.model.height;
+			let h = (y2 * canvas.width) / this.props.data.model.width - y1;
+
+			let marginX = margins[0] * w;
+			let marginY = margins[1] * h;
+			ctx.fillStyle = color;
+			ctx.fillRect(x1, y1, w, h);
+			ctx.clearRect(x1 + marginX, y1 + marginY, w - 2 * marginX, h - 2 * marginY);
 		}
 	};
 

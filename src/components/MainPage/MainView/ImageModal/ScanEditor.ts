@@ -2,7 +2,7 @@ import { Axis, Line, Scan } from "../../../../models/Scan";
 import BaseEditor from "./BaseEditor";
 
 /** Actions in ScanEditorMenu */
-export type EditorMenuAction = "updateCursor" | "preview" | "confirm";
+export type EditorMenuAction = "updateCursor" | "updateOption" | "preview" | "confirm";
 
 /** Possible cursors in Scan edit mode */
 export enum ScanEditorCursor {
@@ -19,8 +19,39 @@ export default class ScanEditor extends BaseEditor<Scan> {
 	/** Render cropping lines and preview rectangles */
 	renderCanvas() {
 		this.canvasFunctions.clear();
+		this.renderMargins();
 		this.renderCropLines();
 		this.renderPreviewRects();
+	}
+
+	/** Get all rectangles formed by current cropping lines */
+	getCropRectsFromLines(lines: Line[], width: number, height: number) {
+		let divisions = [[0], [0]];
+		for (let line of lines) {
+			divisions[1 - line.axis].push(line.pos);
+		}
+
+		divisions[0].push(width);
+		divisions[1].push(height);
+		divisions[0] = divisions[0].sort((a, b) => a - b);
+		divisions[1] = divisions[1].sort((a, b) => a - b);
+
+		let rects: number[][] = [];
+		for (let x = 0; x < divisions[0].length - 1; x++) {
+			for (let y = 0; y < divisions[1].length - 1; y++) {
+				rects.push([divisions[0][x], divisions[1][y], divisions[0][x + 1], divisions[1][y + 1]]);
+			}
+		}
+
+		return rects;
+	}
+
+	/** Render cropping rectangle margins */
+	renderMargins() {
+		let rects = this.getCropRectsFromLines(this.data.lines, this.publicData.model.width, this.publicData.model.height);
+		for (let rect of rects) {
+			this.canvasFunctions.drawMargins(rect[0], rect[1], rect[2], rect[3], this.publicData.bounds, "rgba(255, 0, 0, 0.25)");
+		}
 	}
 
 	/** Render cropping lines */
@@ -50,12 +81,20 @@ export default class ScanEditor extends BaseEditor<Scan> {
 			case "updateCursor":
 				this.setPublicData({ cursor: args[0] });
 				break;
+			case "updateOption":
+				if (args[1] === null) this.setPublicData({ [args[0]]: args[2] });
+				else {
+					let data = this.publicData[args[0]];
+					data[args[1]] = args[2];
+					this.setPublicData({ [args[0]]: data });
+				}
+				break;
 			case "preview":
-				this.data.previewRects = await this.publicData.model.getCropPreview(this.data.lines);
+				this.data.previewRects = await this.publicData.model.getCropPreview(this.data.lines, { bounds: this.publicData.bounds });
 				this.renderCanvas();
 				break;
 			case "confirm":
-				await this.publicData.model.confirmCrop(this.data.lines);
+				await this.publicData.model.confirmCrop(this.data.lines, { bounds: this.publicData.bounds });
 				break;
 		}
 		this.setPublicData({ loading: false });

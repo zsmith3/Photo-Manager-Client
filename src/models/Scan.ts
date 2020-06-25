@@ -41,14 +41,14 @@ export class Scan extends BaseImageFile {
 	}
 
 	/** Get resulting image rectangles given a set of crop lines */
-	async getCropPreview(lines: Line[]): Promise<number[][][]> {
-		let result = await Database.update(this.class.meta.modelName, this.id, { lines: lines });
+	async getCropPreview(lines: Line[], options: any): Promise<number[][][]> {
+		let result = await Database.update(this.class.meta.modelName, this.id, { lines: lines, crop_options: options });
 		return result.rects;
 	}
 
 	/** Apply given crop lines and save output files */
-	async confirmCrop(lines: Line[]): Promise<void> {
-		await Database.update(this.class.meta.modelName, this.id, { lines: lines, confirm: true }, true);
+	async confirmCrop(lines: Line[], options: any): Promise<void> {
+		await Database.update(this.class.meta.modelName, this.id, { lines: lines, confirm: true, crop_options: options }, true);
 		this.folder.removeContentsItems([this.id]);
 	}
 }

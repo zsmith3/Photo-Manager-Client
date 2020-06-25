@@ -123,7 +123,7 @@ class ImageModal extends React.Component<Props> {
 		editMode: false,
 
 		/** Shared editing data */
-		editData: { cursor: 0, loading: false } as EditorSharedData<BaseImageFile>
+		editData: { cursor: 0, loading: false, bounds: [0.025, 0.025] } as EditorSharedData<BaseImageFile>
 	};
 
 	/** Ref to EditorCanvas (to pass actions from EditorMenu) */

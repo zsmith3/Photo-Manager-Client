@@ -5,6 +5,7 @@ export interface EditorSharedData<M extends BaseImageFile> {
 	model: M;
 	cursor: number;
 	loading: boolean;
+	bounds: number[];
 }
 
 /** EditorSharedData with all properties optional */
@@ -17,6 +18,9 @@ export interface EditorCanvasFunctions {
 
 	/** Draw a line to the canvas (with options) */
 	drawLine: (x1: number, y1: number, x2: number, y2: number, width: number, color: string, dash: number[]) => void;
+
+	/** Draw margins for a rectangle (margin as proportion of dimensions) */
+	drawMargins: (x1: number, y1: number, x2: number, y2: number, margins: number[], color: string) => void;
 }
 
 /** Base class for image editor */
