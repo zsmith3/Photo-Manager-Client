@@ -5,7 +5,11 @@ import { EditorSharedData } from "./BaseEditor";
 import { EditorMenuAction, ScanEditorCursor } from "./ScanEditor";
 
 /** Menu for ScanEditor */
-class ScanEditorMenu extends React.Component<{ classes: { menu: string; menuItem: string }; data: EditorSharedData<Scan>; action: (action: EditorMenuAction, ...args: any[]) => void }> {
+class ScanEditorMenu extends React.Component<{
+	classes: { menu: string; menuItem: string };
+	data: EditorSharedData<Scan>;
+	action: (action: EditorMenuAction, ...args: any[]) => void;
+}> {
 	static styles = {
 		menu: {
 			top: "64px",

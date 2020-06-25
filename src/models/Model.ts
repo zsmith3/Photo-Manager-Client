@@ -82,7 +82,7 @@ export class Model {
 	class: typeof Model;
 
 	/** Whether this model has been deleted locally */
-	deleted: boolean = false
+	deleted: boolean = false;
 
 	/**
 	 * Add a new model instance to the local list (from the API)

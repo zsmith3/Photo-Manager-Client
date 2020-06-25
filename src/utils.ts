@@ -93,7 +93,8 @@ export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTi
 
 	return new Promise((resolve, reject) => {
 		let request: Promise<any>;
-		if (process.env.NODE_ENV === "production") request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 0 : 3000);
+		if (process.env.NODE_ENV === "production")
+			request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 0 : 3000);
 		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", noTimeout ? 0 : 3000);
 		request
 			.then(data => {

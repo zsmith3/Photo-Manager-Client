@@ -1,4 +1,4 @@
-import { AppBar, Icon, IconButton, Modal, Theme, Toolbar, Typography, withStyles } from "@material-ui/core";
+import { AppBar, Icon, IconButton, LinearProgress, Modal, Theme, Toolbar, Typography, withStyles } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
@@ -30,6 +30,7 @@ interface Props {
 		arrowRight: string;
 		closeIcon: string;
 		editIcon: string;
+		progressBar: string;
 	};
 	width: Breakpoint;
 }
@@ -85,6 +86,10 @@ class ImageModal extends React.Component<Props> {
 		},
 		editIcon: {
 			color: "white"
+		},
+		progressBar: {
+			top: "64px",
+			zIndex: 1
 		}
 	});
 
@@ -118,14 +123,14 @@ class ImageModal extends React.Component<Props> {
 		editMode: false,
 
 		/** Shared editing data */
-		editData: { cursor: 0 } as EditorSharedData<BaseImageFile>
+		editData: { cursor: 0, loading: false } as EditorSharedData<BaseImageFile>
 	};
 
 	/** Ref to EditorCanvas (to pass actions from EditorMenu) */
 	editorRef: React.RefObject<EditorCanvas>;
 
 	/** Update handler to register changes to file (i.e. to switch file when deleted) */
-	fileUpdateHandler: UpdateHandler = null
+	fileUpdateHandler: UpdateHandler = null;
 
 	/**
 	 * Load an item into `this.state` to display
@@ -135,7 +140,7 @@ class ImageModal extends React.Component<Props> {
 	loadFile(type: ImageModelType, itemId: number) {
 		if (this.fileUpdateHandler !== null) this.fileUpdateHandler.unregister();
 		let setFile = (file: BaseImageFile) => {
-			this.setState({file: file});
+			this.setState({ file: file });
 			this.fileUpdateHandler = file.updateHandlers.register(obj => {
 				if (obj.deleted) {
 					if (this.props.nextItemId !== null) this.switchFile("next");
@@ -143,7 +148,7 @@ class ImageModal extends React.Component<Props> {
 					else this.close();
 				}
 			});
-		}
+		};
 		switch (type) {
 			case "file":
 				FileObject.loadObject<FileObject>(itemId).then(file => setFile(file));
@@ -388,6 +393,9 @@ class ImageModal extends React.Component<Props> {
 							</IconButton>
 						</Toolbar>
 					</AppBar>
+
+					{/* Loading bar */}
+					{this.state.editMode && this.state.editData.loading && <LinearProgress className={this.props.classes.progressBar} />}
 
 					{/* Main image */}
 					<Hammer onSwipe={this.onSwipe} onPinchStart={this.onPinchStart} onPinch={this.onPinch} onPan={this.onPan} options={{ recognizers: { pinch: { enable: true } } }}>

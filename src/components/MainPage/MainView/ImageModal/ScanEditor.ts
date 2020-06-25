@@ -45,6 +45,7 @@ export default class ScanEditor extends BaseEditor<Scan> {
 
 	/** Run any EditorMenu action */
 	async menuAction(action: EditorMenuAction, ...args: any[]) {
+		this.setPublicData({ loading: true });
 		switch (action) {
 			case "updateCursor":
 				this.setPublicData({ cursor: args[0] });
@@ -54,9 +55,10 @@ export default class ScanEditor extends BaseEditor<Scan> {
 				this.renderCanvas();
 				break;
 			case "confirm":
-				this.publicData.model.confirmCrop(this.data.lines);
+				await this.publicData.model.confirmCrop(this.data.lines);
 				break;
 		}
+		this.setPublicData({ loading: false });
 	}
 
 	/** Update current line position on mouse move */
@@ -75,5 +77,6 @@ export default class ScanEditor extends BaseEditor<Scan> {
 	resetData() {
 		this.data.lines = [{ axis: Axis.Horizontal, pos: this.publicData.model.height / 2 }];
 		this.data.previewRects = [];
+		this.menuAction("preview");
 	}
 }

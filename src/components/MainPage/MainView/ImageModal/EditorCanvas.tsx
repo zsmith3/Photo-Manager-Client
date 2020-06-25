@@ -86,8 +86,11 @@ export default class EditorCanvas extends React.Component<Props> {
 		// Re-construct editor when model type changes
 		if (this.props.type !== nextProps.type) this.createEditor(nextProps.type);
 
-		// Reset editor when model changes
-		if ((!this.props.data.model && nextProps.data.model) || (this.props.data.model && this.props.data.model.id !== nextProps.data.model.id)) {
+		// Reset editor when model changes, or when edit mode opened
+		if (
+			nextProps.enabled &&
+			(!this.props.enabled || (!this.props.data.model && nextProps.data.model) || (this.props.data.model && this.props.data.model.id !== nextProps.data.model.id))
+		) {
 			this.props.data.model = nextProps.data.model;
 			this.editor.resetData();
 		}

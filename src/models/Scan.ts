@@ -24,14 +24,16 @@ export class Scan extends BaseImageFile {
 	static meta = new ModelMeta<Scan>({
 		modelName: DBTables.Scan,
 		props: ["id", "name", "format", "width", "height", "orientation"],
-		specialProps: {folder: "folderID"}
+		specialProps: { folder: "folderID" }
 	});
 
 	/** ID of parent folder */
-	folderID: number
+	folderID: number;
 
 	/** Parent folder */
-	get folder () { return ScanFolder.getById(this.folderID); }
+	get folder() {
+		return ScanFolder.getById(this.folderID);
+	}
 
 	/** Open the scan image */
 	open() {

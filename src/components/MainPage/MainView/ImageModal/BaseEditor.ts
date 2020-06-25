@@ -4,6 +4,7 @@ import { BaseImageFile } from "../../../../models/BaseImageFile";
 export interface EditorSharedData<M extends BaseImageFile> {
 	model: M;
 	cursor: number;
+	loading: boolean;
 }
 
 /** EditorSharedData with all properties optional */
