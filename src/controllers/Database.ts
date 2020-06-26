@@ -40,9 +40,10 @@ abstract class BaseDatabase {
 	 * @param table Model table name
 	 * @param id ID of model instance to update
 	 * @param data Data object from which to update instance
+	 * @param noTimeout Whether to extend timeout on request to 5s
 	 * @returns Promise representing updated model instance data
 	 */
-	abstract update(table: DBTables, id: number, data: any): Promise<any>;
+	abstract update(table: DBTables, id: number, data: any, noTimeout: boolean): Promise<any>;
 
 	/**
 	 * Delete model instance from table by ID

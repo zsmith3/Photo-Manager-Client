@@ -13,8 +13,8 @@ type fileReaderTypes = "readAsArrayBuffer" | "readAsBinaryString" | "readAsDataU
  * @param headers Object representing any desired HTTP headers
  * @param responseType XHR response type (default = "blob")
  * @param readerType FileReader method with which to read the response (default = "readAsArrayBuffer")
- * @param timeoutLength The time (milliseconds) before requests timeout, 0 for no timeout (default = 3000)
- * @param timeoutCount The number of times to attempt a request (default = 2)
+ * @param timeoutLength The time (milliseconds) before first request timeout (doubles each time), 0 for no timeout (default = 2000)
+ * @param timeoutCount The number of times to attempt a request (default = 3)
  * @returns Promise object representing response data
  */
 function httpRequest(
@@ -24,8 +24,8 @@ function httpRequest(
 	headers: {} = {},
 	responseType: xhrResponseTypes = "blob",
 	readerType: fileReaderTypes = "readAsArrayBuffer",
-	timeoutLength: number = 3000,
-	timeoutCount: number = 2
+	timeoutLength: number = 2000,
+	timeoutCount: number = 3
 ): Promise<any> {
 	return new Promise((resolve, reject) => {
 		var xhr = new XMLHttpRequest();
@@ -59,7 +59,7 @@ function httpRequest(
 		xhr.timeout = timeoutLength;
 		xhr.ontimeout = () => {
 			if (timeoutCount > 1)
-				httpRequest(url, type, data, headers, responseType, readerType, timeoutLength, timeoutCount - 1)
+				httpRequest(url, type, data, headers, responseType, readerType, timeoutLength * 2, timeoutCount - 1)
 					.then(resolve)
 					.catch(reject);
 			else reject("Request timed out.");
@@ -75,7 +75,7 @@ function httpRequest(
  * @param url Request URL relative to API root
  * @param type HTTP request method (defaults to "GET")
  * @param data HTTP request body data
- * @param noTimeout Whether to remove timeout on HTTP request
+ * @param noTimeout Whether to extend timeout on HTTP request (to 5s)
  * @returns Promise object representing API response
  */
 export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTimeout: boolean = false): Promise<any> {
@@ -94,8 +94,8 @@ export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTi
 	return new Promise((resolve, reject) => {
 		let request: Promise<any>;
 		if (process.env.NODE_ENV === "production")
-			request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 0 : 3000);
-		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", noTimeout ? 0 : 3000);
+			request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 5000 : 2000);
+		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", noTimeout ? 5000 : 2000);
 		request
 			.then(data => {
 				if (type == "DELETE") {
