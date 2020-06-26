@@ -363,6 +363,7 @@ class ImageModal extends React.Component<Props> {
 			// If props are unchanged, then state must have changed, so re-render
 			return true;
 		} else {
+			if (nextProps.type !== this.props.type) this.state.editMode = false;
 			// If props have changed, fetch the new file, which will update the state
 			this.loadFile(nextProps.type, nextProps.itemId);
 			return false;
@@ -414,14 +415,16 @@ class ImageModal extends React.Component<Props> {
 									onFirstLoad={() => this.setZoom("min", "min", "c", "c")}
 								/>
 							)}
-							<EditorCanvas
-								ref={this.editorRef}
-								style={{ pointerEvents: !this.state.editMode || this.state.editData.cursor === 0 ? "none" : "auto", ...this.state.imgZoomStyle }}
-								enabled={this.state.editMode}
-								type={this.props.type}
-								data={this.getEditData()}
-								updateData={this.updateEditData}
-							/>
+							{this.props.type === "scan" && (
+								<EditorCanvas
+									ref={this.editorRef}
+									style={{ pointerEvents: !this.state.editMode || this.state.editData.cursor === 0 ? "none" : "auto", ...this.state.imgZoomStyle }}
+									enabled={this.state.editMode}
+									type={this.props.type}
+									data={this.getEditData()}
+									updateData={this.updateEditData}
+								/>
+							)}
 						</div>
 					</Hammer>
 
