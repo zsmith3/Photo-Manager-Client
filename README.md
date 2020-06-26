@@ -72,9 +72,11 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [x] Geotags are read from EXIF data
 		- [x] Files can be given a geotag, which includes co-ordinates, and an "area"
 		- [x] Geotag areas include a name, address, co-ordinates and area radius
+	- [x] Scanned photos can be added, cropped automatically and saved to main folder
 	- [ ] Feature tags
 - [x] Page components
 	- [x] Navigation drawer
+		- [x] Links to scanned photos
 		- [x] Lists albums
 			- [x] Shows a hierarchical list, with collapsible lists of child albums
 			- [x] Albums can be renamed, moved to different parents and removed
@@ -114,6 +116,8 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [x] Albums
 			- [x] Displays all files in an album and its children
 			- [ ] List child albums
+	- [x] Separate view for scanned photos
+		- [x] Editor with cropping function
 	- [x] Filtering
 		- [x] Searching
 			- [x] Files
