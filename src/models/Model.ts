@@ -81,6 +81,9 @@ export class Model {
 	// Hack to access "this.constructor"
 	class: typeof Model;
 
+	/** Whether this model has been deleted locally */
+	deleted: boolean = false;
+
 	/**
 	 * Add a new model instance to the local list (from the API)
 	 * @param obj Data representing new instance of model

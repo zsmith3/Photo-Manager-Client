@@ -4,6 +4,7 @@ import React from "react";
 import Hammer from "react-hammerjs";
 import { Input } from "../../../../controllers/Input";
 import { Model } from "../../../../models";
+import { ImageModelType } from "../../../../models/BaseImageFile";
 import { MountTrackedComponent } from "../../../utils";
 import { SelectMode } from "../views/SelectionManager";
 
@@ -160,7 +161,7 @@ export interface GridCardExport {
 	component: React.ComponentType<GridCardProps>;
 
 	/** The model class represented by this card */
-	modelType?: "file" | "face";
+	modelType?: ImageModelType;
 
 	/**
 	 * Get the sizing of each GridCard in the given context

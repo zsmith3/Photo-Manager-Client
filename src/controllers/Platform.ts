@@ -13,6 +13,9 @@ export enum FaceImgSizes {
 	Standard = 0
 }
 
+/** Models which can be opened in ImageModal */
+export type ImageModelType = "file" | "face" | "scan";
+
 // TODO document this
 
 abstract class BasePlatform {
@@ -75,7 +78,7 @@ class WebPlatform extends BasePlatform {
 		}
 	};
 
-	getImgSrc(object: { id: number }, type: "file" | "face", size: FileImgSizes | FaceImgSizes, queue: boolean): Promise<string> {
+	getImgSrc(object: { id: number }, type: ImageModelType, size: FileImgSizes | FaceImgSizes, queue: boolean): Promise<string> {
 		let url: string;
 		switch (type) {
 			case "file":
@@ -83,6 +86,9 @@ class WebPlatform extends BasePlatform {
 				break;
 			case "face":
 				url = "api/images/faces/" + object.id + "/" + [""][size];
+				break;
+			case "scan":
+				url = "api/images/scans/" + object.id + "/" + ["thumbnail/", "300x200/", "1800x1200/", ""][size];
 				break;
 		}
 

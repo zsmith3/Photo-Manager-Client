@@ -1,22 +1,15 @@
-import { CardContent, Icon, Typography, withStyles } from "@material-ui/core";
+import { Icon, withStyles } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { FileImgSizes } from "../../../../controllers/Platform";
 import { FileObject } from "../../../../models";
 import { FileTypes } from "../../../../models/FileObject";
-import { ImageLoader } from "../../../utils";
-import BaseGridCard, { GridCardExport, GridCardProps } from "./BaseGridCard";
+import BaseFileCard, { getDesiredSize, scaleConfig } from "./BaseFileCard";
+import { GridCardExport } from "./BaseGridCard";
 
 /** GridCard for File model */
-class FileCard extends BaseGridCard<FileObject, { img: string }> {
-	static styles = {
-		...BaseGridCard.styles,
-		content: {
-			padding: 0
-		},
-		img: {
-			objectFit: "contain" as "contain"
-		}
-	};
+class FileCard extends BaseFileCard<FileObject> {
+	get fileModel() {
+		return FileObject;
+	}
 
 	/** Icons to display for non-image file types */
 	static fileTypeIcons = new Map<FileTypes, string>([
@@ -25,35 +18,11 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 		["video", "movie"]
 	]);
 
-	state = {
-		model: null as FileObject,
-		imageData: ""
-	};
-
-	constructor(props: GridCardProps & { classes: any }) {
-		super(props);
-
-		this.updateHandler = FileObject.getById(props.modelId).updateHandlers.register((file: FileObject) => this.setStateSafe({ model: file }));
-	}
-
-	protected getSize() {
-		return meta.getDesiredSize(this.props.scale);
-	}
-
 	render() {
 		return this.renderBase(
 			<Fragment>
 				{this.state.model.type === "image" ? (
-					/* Thumbnail for image files */
-					<ImageLoader
-						model={this.state.model}
-						maxSize={FileImgSizes.Small}
-						className={this.props.classes.img}
-						style={{
-							width: this.props.scale,
-							height: (this.props.scale * 2) / 3
-						}}
-					/>
+					this.renderImage()
 				) : (
 					/* File type icon for other types */
 					<Icon
@@ -67,12 +36,7 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 						{FileCard.fileTypeIcons.get(this.state.model.type)}
 					</Icon>
 				)}
-				{/* File name */}
-				<CardContent className={this.props.classes.content} style={{ height: this.props.scale / 3 }}>
-					<Typography variant="body2" align="center">
-						{this.state.model.name}
-					</Typography>
-				</CardContent>
+				{this.renderName()}
 			</Fragment>
 		);
 	}
@@ -81,9 +45,7 @@ class FileCard extends BaseGridCard<FileObject, { img: string }> {
 const meta: GridCardExport = {
 	component: withStyles(FileCard.styles)(FileCard),
 	modelType: "file",
-	getDesiredSize(scale: number) {
-		return { width: scale, height: scale };
-	},
-	scaleConfig: { max: 300, min: 50, default: 150 }
+	getDesiredSize: getDesiredSize,
+	scaleConfig: scaleConfig
 };
 export default meta;

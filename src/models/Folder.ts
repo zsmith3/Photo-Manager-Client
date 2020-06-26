@@ -2,11 +2,12 @@ import FileCard from "../components/MainPage/MainView/cards/FileCard";
 import FolderCard from "../components/MainPage/MainView/cards/FolderCard";
 import { LocationManager } from "../components/utils";
 import { DBTables } from "../controllers/Database";
+import { BaseFolder } from "./BaseFolder";
 import { FileObject } from "./FileObject";
 import { ModelMeta } from "./Model";
-import RootModel from "./RootModel";
 
-export class Folder extends RootModel {
+/** Standard file folder model */
+export class Folder extends BaseFolder {
 	static meta = new ModelMeta<Folder>({
 		modelName: DBTables.Folder,
 		props: ["id", "name", "path", "file_count", "length"],
@@ -14,27 +15,11 @@ export class Folder extends RootModel {
 	});
 
 	static rootModelMeta = {
-		hasRoots: true,
-		rootsName: "Folders",
+		...BaseFolder.rootModelMeta,
 		rootsCard: FolderCard,
-		rootsFilterParam: "parent",
-		contentsName: "Files",
 		contentsCard: FileCard,
-		contentsFilterParam: "folder",
 		contentsClass: FileObject
 	};
-
-	/** Name of the folder */
-	name: string;
-
-	/** Full path to the folder */
-	path: string;
-
-	/** ID of parent folder */
-	parentID: number;
-
-	/** Number of files in the folder (including subfolders) */
-	file_count: number;
 
 	/** Folder size (bytes) */
 	length: number;

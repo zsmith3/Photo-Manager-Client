@@ -12,7 +12,9 @@ export enum DBTables {
 	PersonGroup = "people-groups",
 	GeoTagArea = "geotag-areas",
 	GeoTag = "geotags",
-	AlbumFile = "album-files"
+	AlbumFile = "album-files",
+	Scan = "scans",
+	ScanFolder = "scan-folders"
 }
 
 /** Platform-specific Database interface */
@@ -38,9 +40,10 @@ abstract class BaseDatabase {
 	 * @param table Model table name
 	 * @param id ID of model instance to update
 	 * @param data Data object from which to update instance
+	 * @param noTimeout Whether to extend timeout on request to 5s
 	 * @returns Promise representing updated model instance data
 	 */
-	abstract update(table: DBTables, id: number, data: any): Promise<any>;
+	abstract update(table: DBTables, id: number, data: any, noTimeout: boolean): Promise<any>;
 
 	/**
 	 * Delete model instance from table by ID
@@ -87,12 +90,13 @@ class WebDatabase extends BaseDatabase {
 	 * @param table Database table (URL) to request from
 	 * @param id ID of object
 	 * @param data HTTP request body data
+	 * @param noTimeout Whether to remove timeout from API request
 	 * @returns Promise representing response data
 	 */
-	private request(type: httpMethodTypes, table: string, id?: number, data?: any): Promise<any> {
+	private request(type: httpMethodTypes, table: string, id?: number, data?: any, noTimeout: boolean = false): Promise<any> {
 		let path = table + "/" + (id || id === 0 ? id + "/" : "");
 
-		return apiRequest(path, type, data);
+		return apiRequest(path, type, data, noTimeout);
 	}
 
 	// Interfaces to specific request methods
@@ -115,8 +119,8 @@ class WebDatabase extends BaseDatabase {
 		return this.request("POST", table, null, data);
 	}
 
-	update(table: DBTables, id: number, data: any): Promise<any> {
-		return this.request("PATCH", table, id, data);
+	update(table: DBTables, id: number, data: any, noTimeout: boolean = false): Promise<any> {
+		return this.request("PATCH", table, id, data, noTimeout);
 	}
 
 	delete(table: DBTables, id: number): Promise<any> {

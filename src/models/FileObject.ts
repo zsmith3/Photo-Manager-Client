@@ -1,14 +1,17 @@
 import { GeoTag } from ".";
 import { LocationManager } from "../components/utils";
 import { DBTables } from "../controllers/Database";
-import { FileImgSizes, Platform } from "../controllers/Platform";
-import { Model, ModelMeta } from "./Model";
+import { FileImgSizes } from "../controllers/Platform";
+import { BaseImageFile } from "./BaseImageFile";
+import { ModelMeta } from "./Model";
 
 /** Possible values for File.type field */
 export type FileTypes = "image" | "video" | "file";
 
 /** File model */
-export class FileObject extends Model {
+export class FileObject extends BaseImageFile {
+	modelName = "file" as "file";
+
 	/** File model metadata */
 	static meta = new ModelMeta<FileObject>({
 		modelName: DBTables.File,
@@ -39,32 +42,14 @@ export class FileObject extends Model {
 		}
 	});
 
-	/** File name */
-	name: string;
-
-	/** File path */
-	path: string;
-
 	/** File type (broad) */
 	type: FileTypes;
-
-	/** File format (extension) */
-	format: string;
 
 	/** File size (bytes) */
 	length: number;
 
 	/** File timestamp (date taken if available, otherwise date modified) */
 	timestamp: Date;
-
-	/** File width (if image or video) */
-	width: number;
-
-	/** File height (if image or video) */
-	height: number;
-
-	/** File orientation (if image) */
-	orientation: number;
 
 	/** File duration (if video) */
 	duration: number;
@@ -75,39 +60,12 @@ export class FileObject extends Model {
 	/** Whether file is marked for deletion */
 	is_deleted: boolean;
 
-	/** Local storage of image data for file */
-	private imageData: Map<FileImgSizes, string> = new Map<FileImgSizes, string>();
-
-	/** Information about state of file zoom/positioning in ImageModal (current session) */
-	zoom: object;
-
-	/** Parent ID (for File instances belonging to a Face) */
-	// parent?: number
-	// TODO remove this and remove it from ImageModal
-	// 	I think maybe use selection instead
-
 	/** File geotag ID */
 	private geotagID: number;
 
 	/** File geotag (if image) */
 	get geotag(): GeoTag {
 		return GeoTag.getById(this.geotagID);
-	}
-
-	/** Material icon to use in place of image data */
-	imageMaterialIcon = "photo";
-
-	/**
-	 * Construct a new FileObject instance
-	 * @param obj Data object from which to construct the new file instance
-	 */
-	constructor(obj: object) {
-		super(obj);
-
-		if (this.orientation == 6 || this.orientation == 8) {
-			this.width = obj["height"];
-			this.height = obj["width"];
-		}
 	}
 
 	/**
@@ -119,32 +77,7 @@ export class FileObject extends Model {
 	async loadImgData(size: FileImgSizes, queue: boolean): Promise<string> {
 		if (this.type !== "image") return null;
 
-		let data = this.imageData.get(size);
-		if (data) return data;
-		else {
-			const data = await Platform.getImgSrc(this, "file", size, queue);
-			this.imageData.set(size, data);
-			return data;
-		}
-	}
-
-	/**
-	 * Get the largest already-loaded size for this image file,
-	 * up to a given maximum size
-	 * @param size The maximum size to look for
-	 * @returns The best size found
-	 */
-	getBestImgSize(size: FileImgSizes): FileImgSizes {
-		let bestInd = null as FileImgSizes;
-		let entries = this.imageData.entries();
-		while (true) {
-			let next = entries.next();
-			if (next.done) break;
-
-			let pair = next.value;
-			if ((bestInd === null || pair[0] > bestInd) && pair[0] <= size) bestInd = pair[0];
-		}
-		return bestInd;
+		return super.loadImgData(size, queue);
 	}
 
 	/**
@@ -156,22 +89,6 @@ export class FileObject extends Model {
 	open() {
 		if (this.type == "image") {
 			LocationManager.updateQuery({ file: this.id.toString() });
-		}
-	}
-
-	/**
-	 * Get the maximum dimensions of the file (for images)
-	 * when it is fit within the given width and height
-	 * but the aspect ratio is maintained.
-	 * @param maxW Width of the bounding box
-	 * @param maxH Height of the bounding box
-	 * @returns [Width of the image at that size, Height of the image at that size]
-	 */
-	getSize(maxW: number, maxH: number): [number, number] {
-		if (this.width / this.height < maxW / maxH) {
-			return [(this.width * maxH) / this.height, maxH];
-		} else {
-			return [maxW, (this.height * maxW) / this.width];
 		}
 	}
 
