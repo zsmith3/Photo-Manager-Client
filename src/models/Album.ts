@@ -154,7 +154,10 @@ export class Album extends RootModel {
 	 * @returns Promise representing completion
 	 */
 	async removeFile(fileId: number, removeFromParents = false, multiple = false) {
-		const albumFiles = await Database.get(DBTables.AlbumFile, [{ field: "album", type: "exact", value: this.id }, { field: "file", type: "exact", value: fileId }]);
+		const albumFiles = await Database.get(DBTables.AlbumFile, [
+			{ field: "album", type: "exact", value: this.id },
+			{ field: "file", type: "exact", value: fileId }
+		]);
 		if (removeFromParents || this.parent === null) await Database.delete(DBTables.AlbumFile, albumFiles[0].id);
 		else await Database.update(DBTables.AlbumFile, albumFiles[0].id, { album: this.parent.id });
 		if (!multiple) this.removeFilesLocally([fileId], removeFromParents);

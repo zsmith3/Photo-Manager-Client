@@ -12,7 +12,11 @@ class FileCard extends BaseFileCard<FileObject> {
 	}
 
 	/** Icons to display for non-image file types */
-	static fileTypeIcons = new Map<FileTypes, string>([["file", "insert_drive_file"], ["image", "photo"], ["video", "movie"]]);
+	static fileTypeIcons = new Map<FileTypes, string>([
+		["file", "insert_drive_file"],
+		["image", "photo"],
+		["video", "movie"]
+	]);
 
 	render() {
 		return this.renderBase(

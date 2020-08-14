@@ -25,7 +25,11 @@ export default class BaseFileCard<T extends BaseImageFile & { open: () => any }>
 	};
 
 	/** Icons to display for non-image file types */
-	static fileTypeIcons = new Map<FileTypes, string>([["file", "insert_drive_file"], ["image", "photo"], ["video", "movie"]]);
+	static fileTypeIcons = new Map<FileTypes, string>([
+		["file", "insert_drive_file"],
+		["image", "photo"],
+		["video", "movie"]
+	]);
 
 	state = {
 		model: null as T,
