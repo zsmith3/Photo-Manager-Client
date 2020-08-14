@@ -219,7 +219,10 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 						>
 							<FormControl component="fieldset">
 								<FormLabel component="legend">Direction</FormLabel>
-								<RadioGroup value={this.state.dialogOptions.rotate_direction} onChange={event => this.updateOption("rotate_direction", event.currentTarget.value)}>
+								<RadioGroup
+									value={this.state.dialogOptions.rotate_direction}
+									onChange={event => this.updateOption("rotate_direction", (event.currentTarget as HTMLInputElement).value)}
+								>
 									<FormControlLabel
 										value={RotateDirection.Clockwise}
 										control={<Radio />}
