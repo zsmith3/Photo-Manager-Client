@@ -495,7 +495,8 @@ export class UpdateHandlerList {
 
 	/** Unregister existing update handler */
 	unregister(id: number) {
-		this.list.splice(this.list.findIndex(item => item.id == id));
+		let ind = this.list.findIndex(item => item.id == id);
+		if (ind !== -1) this.list.splice(ind);
 	}
 
 	/** Handle/invoke an update to the data */
