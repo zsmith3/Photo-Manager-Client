@@ -10,7 +10,9 @@ import BaseGridCard, { GridCardProps } from "./BaseGridCard";
 /** Base GridCard for File/Scan models */
 export default class BaseFileCard<T extends BaseImageFile & { open: () => any }> extends BaseGridCard<T, { img: string }> {
 	/** Associated Model class (File or Scan) */
-	fileModel: typeof BaseImageFile;
+	get fileModel(): typeof BaseImageFile {
+		return null;
+	}
 
 	static styles = {
 		...BaseGridCard.styles,
@@ -23,11 +25,7 @@ export default class BaseFileCard<T extends BaseImageFile & { open: () => any }>
 	};
 
 	/** Icons to display for non-image file types */
-	static fileTypeIcons = new Map<FileTypes, string>([
-		["file", "insert_drive_file"],
-		["image", "photo"],
-		["video", "movie"]
-	]);
+	static fileTypeIcons = new Map<FileTypes, string>([["file", "insert_drive_file"], ["image", "photo"], ["video", "movie"]]);
 
 	state = {
 		model: null as T,

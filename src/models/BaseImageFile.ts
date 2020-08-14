@@ -27,7 +27,7 @@ export class BaseImageFile extends Model {
 	orientation: number;
 
 	/** Local storage of image data for file */
-	private imageData: Map<FileImgSizes, string> = new Map<FileImgSizes, string>();
+	protected imageData: Map<FileImgSizes, string> = new Map<FileImgSizes, string>();
 
 	/** Material icon to use in place of image data */
 	imageMaterialIcon = "photo";

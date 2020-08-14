@@ -8,6 +8,12 @@ import { ModelMeta } from "./Model";
 /** Possible values for File.type field */
 export type FileTypes = "image" | "video" | "file";
 
+/** Possible directions to rotate image in */
+export enum RotateDirection {
+	Clockwise = "clockwise",
+	Anticlockwise = "anticlockwise"
+}
+
 /** File model */
 export class FileObject extends BaseImageFile {
 	modelName = "file" as "file";
@@ -90,6 +96,24 @@ export class FileObject extends BaseImageFile {
 		if (this.type == "image") {
 			LocationManager.updateQuery({ file: this.id.toString() });
 		}
+	}
+
+	/**
+	 * Rotate the (image) file 90 degrees
+	 * @param direction Direction to rotate (clockwise or anti-clockwise)
+	 */
+	async rotate(direction: RotateDirection) {
+		const orientations = [1, 6, 3, 8];
+		const directions = { [RotateDirection.Clockwise]: 1, [RotateDirection.Anticlockwise]: -1 };
+		let newOrientation = orientations[(orientations.indexOf(this.orientation) + directions[direction] + 4) % 4];
+		this.imageData.clear();
+		await this.updateSave({ orientation: newOrientation });
+		if (this.orientation == 6 || this.orientation == 8) {
+			let oldWidth = this.width;
+			this.width = this.height;
+			this.height = oldWidth;
+		}
+		return this;
 	}
 
 	// Function to set a boolean field (for private use)

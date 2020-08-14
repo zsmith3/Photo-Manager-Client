@@ -89,11 +89,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		this.getData(props);
 
 		this.scaleManager = new ScaleManager(this);
-		this.selectionManager = new SelectionManager(
-			this,
-			() => this.state.data.contents.objectIds,
-			() => this.state.data.contents.card.modelType
-		);
+		this.selectionManager = new SelectionManager(this, () => this.state.data.contents.objectIds, () => this.state.data.contents.card.modelType);
 		this.virtualList = React.createRef<List>();
 	}
 

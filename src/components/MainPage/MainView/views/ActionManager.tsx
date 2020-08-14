@@ -1,6 +1,7 @@
-import { Checkbox, FormControlLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList } from "@material-ui/core";
+import { Checkbox, FormControl, FormControlLabel, FormLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Radio, RadioGroup } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { Album, Face, Person } from "../../../../models";
+import { Album, Face, FileObject, Person } from "../../../../models";
+import { RotateDirection } from "../../../../models/FileObject";
 import { promiseChain } from "../../../../utils";
 import { addressRootTypes } from "../../../App";
 import { ListDialog, SimpleDialog } from "../../../utils";
@@ -26,10 +27,12 @@ interface ActionManagerState {
 		person_edit: boolean;
 		person_unknown: boolean;
 		person_not: boolean;
+		rotate: boolean;
 	};
 	/** State of additional options within dialogs */
 	dialogOptions: {
 		album_remove_parents: boolean;
+		rotate_direction: RotateDirection;
 	};
 }
 
@@ -45,10 +48,12 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 			person_confirm: false,
 			person_edit: false,
 			person_unknown: false,
-			person_not: false
+			person_not: false,
+			rotate: false
 		},
 		dialogOptions: {
-			album_remove_parents: false
+			album_remove_parents: false,
+			rotate_direction: RotateDirection.Clockwise
 		}
 	};
 
@@ -103,6 +108,12 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 									<Icon>my_location</Icon>
 								</ListItemIcon>
 								Edit Geotag
+							</MenuItem>,
+							<MenuItem key="rotate" onClick={() => this.dialogOpen("rotate")}>
+								<ListItemIcon>
+									<Icon>rotate_90_degrees_ccw</Icon>
+								</ListItemIcon>
+								Rotate
 							</MenuItem>
 						]}
 
@@ -189,6 +200,47 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 
 						{/* Edit geotag dialog */}
 						<GMapDialog open={this.state.openDialogs.geotag_edit} onClose={() => this.dialogClose("geotag_edit")} fileIds={selection} />
+
+						{/* Rotate image dialog */}
+						<SimpleDialog
+							open={this.state.openDialogs.rotate}
+							onClose={() => this.dialogClose("rotate")}
+							title="Rotate image(s)"
+							actionText="Confirm"
+							text={`Select direction to rotate ${selection.length} file(s).`}
+							action={() =>
+								promiseChain(selection, (resolve, reject, id) =>
+									FileObject.getById(id)
+										.rotate(this.state.dialogOptions.rotate_direction)
+										.then(resolve)
+										.catch(reject)
+								)
+							}
+						>
+							<FormControl component="fieldset">
+								<FormLabel component="legend">Direction</FormLabel>
+								<RadioGroup value={this.state.dialogOptions.rotate_direction} onChange={event => this.updateOption("rotate_direction", event.currentTarget.value)}>
+									<FormControlLabel
+										value={RotateDirection.Clockwise}
+										control={<Radio />}
+										label={
+											<Fragment>
+												Clockwise<Icon>rotate_right</Icon>
+											</Fragment>
+										}
+									/>
+									<FormControlLabel
+										value={RotateDirection.Anticlockwise}
+										control={<Radio />}
+										label={
+											<Fragment>
+												Anti-clockwise<Icon>rotate_left</Icon>
+											</Fragment>
+										}
+									/>
+								</RadioGroup>
+							</FormControl>
+						</SimpleDialog>
 					</Fragment>
 				)}
 

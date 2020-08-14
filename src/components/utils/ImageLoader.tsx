@@ -2,13 +2,14 @@ import { Icon } from "@material-ui/core";
 import React, { Fragment } from "react";
 import Hammer from "react-hammerjs";
 import { FaceImgSizes, FileImgSizes, Platform } from "../../controllers/Platform";
+import { Model } from "../../models";
 import MountTrackedComponent from "./MountTrackedComponent";
 
 type ImgSizes = FileImgSizes | FaceImgSizes;
 
 interface ImageLoaderPropsType {
 	/** The Model for which to render the image (File or Face) */
-	model: {
+	model: Model & {
 		imageMaterialIcon: string;
 		loadImgData(size: ImgSizes, queue: boolean): Promise<string>;
 		getBestImgSize(size: ImgSizes): ImgSizes;
@@ -115,10 +116,19 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 		else this.loadImg(startState, props);
 	}
 
+	/** Reload the image on model updates */
+	onModelUpdate = () => {
+		this.state.imageData = null;
+		this.state.loadState = null;
+		this.loadFirst(this.props);
+	};
+
 	constructor(props: ImageLoaderPropsType) {
 		super(props);
 
 		this.loadFirst(props);
+
+		this.updateHandler = props.model.class.getById(props.model.id).updateHandlers.register(this.onModelUpdate);
 	}
 
 	componentWillUnmount() {
@@ -141,6 +151,8 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 			if (nextProps.model !== this.props.model) {
 				this.state.imageData = null;
 				this.state.loadState = null;
+				this.updateHandler.unregister();
+				this.updateHandler = nextProps.model.class.getById(nextProps.model.id).updateHandlers.register(this.onModelUpdate);
 			}
 
 			// Run the initial load given the new props

@@ -73,17 +73,12 @@ class Sync {
 				})
 				.then(function() {
 					// Download new files
-					return Platform.files
-						.downloadFiles(
-							sync.localDir,
-							toAdd.map(id => data.remoteFiles[id])
-						)
-						.progress(function(data) {
-							sync.notify({
-								text: "Downloading " + (data.doneCount + 1) + " of " + data.totalCount + " files",
-								progress: (data.doneCount / data.totalCount) * 100
-							});
+					return Platform.files.downloadFiles(sync.localDir, toAdd.map(id => data.remoteFiles[id])).progress(function(data) {
+						sync.notify({
+							text: "Downloading " + (data.doneCount + 1) + " of " + data.totalCount + " files",
+							progress: (data.doneCount / data.totalCount) * 100
 						});
+					});
 				});
 		});
 	}

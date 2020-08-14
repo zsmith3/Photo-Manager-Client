@@ -22,11 +22,7 @@ export default class EditorCanvas extends React.Component<Props> {
 
 	/** Construct this.editor (re-run when model type changes) */
 	createEditor(type: ImageModelType) {
-		this.editor = new { scan: ScanEditor }[type](
-			this.canvasFunctions,
-			() => this.props.data,
-			(data: ESDOptional) => this.props.updateData(data)
-		);
+		this.editor = new { scan: ScanEditor }[type](this.canvasFunctions, () => this.props.data, (data: ESDOptional) => this.props.updateData(data));
 	}
 
 	/** Get the (x, y) co-ordinates within the image of a mouse event */

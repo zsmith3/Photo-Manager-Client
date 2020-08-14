@@ -140,13 +140,12 @@ class ImageModal extends React.Component<Props> {
 	loadFile(type: ImageModelType, itemId: number) {
 		if (this.fileUpdateHandler !== null) this.fileUpdateHandler.unregister();
 		let setFile = (file: BaseImageFile) => {
-			this.setState({ file: file });
 			this.fileUpdateHandler = file.updateHandlers.register(obj => {
 				if (obj.deleted) {
 					if (this.props.nextItemId !== null) this.switchFile("next");
 					else if (this.props.lastItemId !== null) this.switchFile("last");
 					else this.close();
-				}
+				} else this.setState({ file: obj });
 			});
 		};
 		switch (type) {
