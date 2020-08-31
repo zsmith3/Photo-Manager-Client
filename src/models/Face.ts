@@ -107,7 +107,7 @@ export class Face extends Model {
 	async setPerson(personID: number): Promise<void> {
 		let oldPerson = this.person;
 		let oldStatus = this.status;
-		await this.updateSave({ person: personID, status: 1 });
+		await this.updateSave({ person: personID, status: personID !== 0 ? 1 : 3 });
 		oldPerson.update({ face_count: oldPerson.face_count - 1, ...(oldStatus <= 1 ? { face_count_confirmed: oldPerson.face_count_confirmed - 1 } : {}) });
 		oldPerson.removeContentsItems([this.id]);
 		this.person.update({ face_count: this.person.face_count + 1, face_count_confirmed: this.person.face_count_confirmed + 1 });
