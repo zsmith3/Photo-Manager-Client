@@ -5,3 +5,8 @@ a {
 *:focus {
     outline: none;
 }
+
+/* Override to make Google Maps autocomplete box visible */
+.pac-container {
+    z-index: 10000;
+}

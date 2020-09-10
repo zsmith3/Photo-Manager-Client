@@ -81,6 +81,18 @@ class MapDialog extends React.Component<PropsType, StateType> {
 		},
 		latLngGrid: {
 			padding: 10
+		},
+		searchBox: {
+			fontFamily: "Roboto",
+			fontSize: "15px",
+			marginLeft: "12px",
+			textOverflow: "ellipsis",
+			width: "calc(100% - 300px)",
+			marginTop: "10px",
+			padding: "10px",
+			height: "40px",
+			border: "none",
+			boxShadow: "rgba(0, 0, 0, 0.3) 0px 1px 4px -1px"
 		}
 	};
 
@@ -88,6 +100,15 @@ class MapDialog extends React.Component<PropsType, StateType> {
 
 	/** Reference to Google map component */
 	mapRef: React.RefObject<Map> & { current: { map: google.maps.Map } };
+
+	/** Reference to map search box */
+	searchBoxRef: React.RefObject<HTMLInputElement>;
+
+	/** Map search box API */
+	searchBoxApi: google.maps.places.SearchBox = null;
+
+	/** Map search markers */
+	searchMarkers: google.maps.Marker[] = [];
 
 	/**
 	 * Update this.state.data recursively
@@ -217,9 +238,46 @@ class MapDialog extends React.Component<PropsType, StateType> {
 			});
 	};
 
+	/** Setup Google Maps SearchBox API */
+	setupSearch = () => {
+		this.searchBoxApi = new google.maps.places.SearchBox(this.searchBoxRef.current);
+		this.mapRef.current.map.controls[google.maps.ControlPosition.TOP_LEFT].push(this.searchBoxRef.current);
+
+		this.searchBoxApi.addListener("places_changed", () => {
+			const places = this.searchBoxApi.getPlaces();
+			if (places.length == 0) return;
+
+			// Clear out the old markers.
+			this.searchMarkers.forEach(marker => marker.setMap(null));
+			this.searchMarkers = [];
+
+			// For each place, get the icon, name and location.
+			const bounds = new google.maps.LatLngBounds();
+			places.forEach(place => {
+				if (!place.geometry) return;
+				const icon = {
+					url: place.icon as string,
+					size: new google.maps.Size(71, 71),
+					origin: new google.maps.Point(0, 0),
+					anchor: new google.maps.Point(17, 34),
+					scaledSize: new google.maps.Size(25, 25)
+				};
+
+				// Create a marker for each place.
+				this.searchMarkers.push(new google.maps.Marker({ map: this.mapRef.current.map, icon, title: place.name, position: place.geometry.location }));
+
+				if (place.geometry.viewport) bounds.union(place.geometry.viewport);
+				// Only geocodes have viewport.
+				else bounds.extend(place.geometry.location);
+			});
+			this.mapRef.current.map.fitBounds(bounds);
+		});
+	};
+
 	constructor(props) {
 		super(props);
 		this.mapRef = React.createRef();
+		this.searchBoxRef = React.createRef();
 	}
 
 	componentDidMount() {
@@ -286,8 +344,16 @@ class MapDialog extends React.Component<PropsType, StateType> {
 							ref={this.mapRef}
 							zoom={12}
 							onClick={this.placeMarker}
+							onBoundsChanged={(props, map, event) => this.searchBoxApi.setBounds(map.getBounds())}
+							onReady={this.setupSearch}
 							clickableIcons={true}
-							initialCenter={this.state.data.hasArea ? getLatLngLiteral(this.state.data.area) : getLatLngLiteral(this.state.data.geotag)}
+							initialCenter={
+								this.state.data.hasArea
+									? getLatLngLiteral(this.state.data.area)
+									: this.state.data.hasLocation
+									? getLatLngLiteral(this.state.data.geotag)
+									: { lat: 51.75, lng: -0.35 }
+							}
 						>
 							{this.state.data.hasArea && <Marker position={getLatLng(this.state.data.area)} label={{ fontFamily: "Material Icons", text: "location_searching" }} />}
 							{this.state.data.hasLocation && <Marker position={getLatLng(this.state.data.geotag)} label={{ fontFamily: "Material Icons", text: "my_location" }} />}
@@ -304,6 +370,7 @@ class MapDialog extends React.Component<PropsType, StateType> {
 								/>
 							)}
 						</Map>
+						<input ref={this.searchBoxRef} type="text" placeholder="Search" className={this.props.classes.searchBox} />
 					</Grid>
 
 					{/* Geotag editing options */}
