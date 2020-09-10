@@ -106,16 +106,9 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 		// Ignore Hammer.onPress on non-touchscreen, as not relevant
 		if (event.type == "press" && !Input.isTouching) return;
 
-		if (Input.isTouching) {
-			this.props.onSelect(this.props.modelId, SelectMode.Replace);
-			this.selectResetTime = Date.now();
-		}
-		// TODO select here i think
-		else
-			this.props.onMenu(this.props.modelId, {
-				top: event.clientY,
-				left: event.clientX
-			});
+		this.props.onSelect(this.props.modelId, SelectMode.Replace);
+		if (Input.isTouching) this.selectResetTime = Date.now();
+		else this.props.onMenu(this.props.modelId, { top: event.clientY, left: event.clientX });
 	};
 
 	shouldComponentUpdate(nextProps: GridCardProps & P & { classes: GridCardClasses & C }, nextState: { model: M }) {
