@@ -44,7 +44,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 		let Fragment = React.Fragment;
 		return (
 			<Fragment>
-				<ListItem button>
+				<ListItem button onClick={() => this.setState({ openCollapse: !this.state.openCollapse })}>
 					<ListItemText primary={this.state.group.name} />
 
 					<ListItemSecondaryAction>
