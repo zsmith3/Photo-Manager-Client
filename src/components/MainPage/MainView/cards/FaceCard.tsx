@@ -14,7 +14,7 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 		},
 		statusIcon: {
 			position: "absolute" as "absolute",
-			bottom: 0,
+			bottom: 10,
 			width: "100%",
 			textAlign: "center" as "center",
 			textShadow: "0 0 20px black",
@@ -42,7 +42,7 @@ class FaceCard extends BaseGridCard<Face, { statusIcon: string }> {
 			<Fragment>
 				<ImageLoader model={this.state.model} maxSize={FaceImgSizes.Standard} minSize={FaceImgSizes.Standard} style={this.getSize()} />
 				{this.state.model.status > 1 && (
-					<Typography variant="h2" className={this.props.classes.statusIcon}>
+					<Typography variant="h2" className={this.props.classes.statusIcon} style={{ fontSize: this.props.scale / 50 + "rem" }}>
 						?
 					</Typography>
 				)}
@@ -57,6 +57,6 @@ const meta: GridCardExport = {
 	getDesiredSize(scale: number) {
 		return { width: scale, height: (scale * 5) / 4 };
 	},
-	scaleConfig: { max: 160, min: 40, default: 80 }
+	scaleConfig: { max: 160, min: 40, default: 160 } // NOTE should be default=80
 };
 export default meta;

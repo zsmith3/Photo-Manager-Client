@@ -77,4 +77,4 @@ export function getDesiredSize(scale: number) {
 	return { width: scale, height: scale };
 }
 
-export const scaleConfig = { max: 300, min: 50, default: 150 };
+export const scaleConfig = { max: 300, min: 50, default: 300 }; // NOTE should be default=150
