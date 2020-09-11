@@ -1,6 +1,6 @@
 import { Divider, Drawer, Theme, withStyles, ListItem, ListItemIcon, ListItemText, Icon, ListSubheader } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
-import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
+import withWidth, { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
 import AlbumList from "./AlbumList";
 import PersonGroupList from "./PersonGroupList";
@@ -33,6 +33,10 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles; width: Break
 		super(props);
 
 		navDrawerInstance = this;
+	}
+
+	componentDidMount() {
+		this.componentWillUnmount = LocationManager.instance.props.history.listen(loc => isWidthDown("sm", this.props.width) && this.setState({ mobileOpen: false }));
 	}
 
 	render() {

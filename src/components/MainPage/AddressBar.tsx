@@ -3,6 +3,7 @@ import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import { Album, Folder, Person, ScanFolder } from "../../models";
+import { UpdateHandler } from "../../utils";
 import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
 import { navDrawerWidth } from "./NavDrawer";
@@ -83,6 +84,9 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 		searchShown: false
 	};
 
+	/** Handler to update the displayed address on model change */
+	addressUpdateHandler: UpdateHandler = null;
+
 	/**
 	 * Determine whether two versions of `this.props` are the same
 	 * @param props1 The first version
@@ -99,41 +103,40 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 		this.fetchAddress(props);
 	}
 
-	/**
-	 * Get the address to display, based on `this.props`
-	 * @param props The value of `this.props` to use
-	 * @returns Promise representing the address
-	 */
-	private async getAddress(props: AddressBarProps): Promise<string> {
-		if (props.rootId === null) return "/";
-
-		switch (props.rootType) {
-			case "folders":
-				const folder = await Folder.loadObject<Folder>(props.rootId);
-				return folder.path;
-			case "people":
-				const person = await Person.loadObject<Person>(props.rootId);
-				return person.full_name;
-			case "albums":
-				const album = await Album.loadObject<Album>(props.rootId);
-				return album.path;
-			case "scans":
-				const scanFolder = await ScanFolder.loadObject<ScanFolder>(props.rootId);
-				return scanFolder.path;
+	/** Update the display address (if props still match) */
+	private updateAddress(props: AddressBarProps, address: string) {
+		if (AddressBar.compareProps(props, this.props)) {
+			this.setState({ address: address });
 		}
 	}
 
 	/**
-	 * Load the display address into `this.state`
-	 * (calls `this.setState`)
+	 * Load the display address into `this.state`, based on `this.props`
+	 * (and update on model change)
 	 * @param props The value of `this.props` to use
 	 */
-	private fetchAddress(props: AddressBarProps) {
-		this.getAddress(props).then(address => {
-			if (AddressBar.compareProps(props, this.props)) {
-				this.setState({ address: address });
-			}
-		});
+	private async fetchAddress(props: AddressBarProps): Promise<void> {
+		if (this.addressUpdateHandler !== null) {
+			this.addressUpdateHandler.unregister();
+			this.addressUpdateHandler = null;
+		}
+
+		if (props.rootId === null) this.updateAddress(props, "/");
+
+		switch (props.rootType) {
+			case "folders":
+				(await Folder.loadObject<Folder>(props.rootId)).updateHandlers.register(folder => this.updateAddress(props, folder.path));
+				break;
+			case "people":
+				(await Person.loadObject<Person>(props.rootId)).updateHandlers.register(person => this.updateAddress(props, person.full_name));
+				break;
+			case "albums":
+				(await Album.loadObject<Album>(props.rootId)).updateHandlers.register(album => this.updateAddress(props, album.path));
+				break;
+			case "scans":
+				(await ScanFolder.loadObject<ScanFolder>(props.rootId)).updateHandlers.register(scanFolder => this.updateAddress(props, scanFolder.path));
+				break;
+		}
 	}
 
 	/** Move up to the parent folder (or other container) */
@@ -162,6 +165,13 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 			// If props have changed, fetch the new address, which will update the state
 			this.fetchAddress(nextProps);
 			return false;
+		}
+	}
+
+	componentWillUnmount() {
+		if (this.addressUpdateHandler !== null) {
+			this.addressUpdateHandler.unregister();
+			this.addressUpdateHandler = null;
 		}
 	}
 
