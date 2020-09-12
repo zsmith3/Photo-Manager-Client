@@ -1,11 +1,11 @@
-import { Divider, Drawer, Theme, withStyles, ListItem, ListItemIcon, ListItemText, Icon, ListSubheader } from "@material-ui/core";
+import { Divider, Drawer, ListItem, ListItemText, Theme, withStyles } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import withWidth, { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
-import AlbumList from "./AlbumList";
-import PersonGroupList from "./PersonGroupList";
 import { Link } from "react-router-dom";
 import { LocationManager } from "../../utils";
+import AlbumList from "./AlbumList";
+import PersonGroupList from "./PersonGroupList";
 
 interface NavDrawerStyles {
 	toolbar;
@@ -41,7 +41,7 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles; width: Break
 
 	render() {
 		const drawer = (
-			<div className={this.props.classes.drawer} tabIndex={0} role="button" onKeyDown={() => this.setState({ mobileOpen: false })}>
+			<div className={this.props.classes.drawer} tabIndex={0} role="button" onKeyDown={() => this.state.mobileOpen && this.setState({ mobileOpen: false })}>
 				<div className={this.props.classes.toolbar} />
 
 				<Divider />

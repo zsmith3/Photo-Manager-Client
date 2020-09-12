@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Radio, RadioGroup } from "@material-ui/core";
+import { Checkbox, FormControl, FormControlLabel, FormLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, Radio, RadioGroup } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { Album, Face, FileObject, Person } from "../../../../models";
 import { RotateDirection } from "../../../../models/FileObject";
@@ -86,76 +86,81 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 
 		return (
 			<Fragment>
-				<Menu anchorReference="anchorPosition" anchorPosition={this.state.menuAnchorPos} open={this.state.openContextMenu} onClick={this.menuClose} onClose={this.menuClose}>
-					<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>{`${selection.length} ${this.props.selectionManager.modelType}(s)`}</ListSubheader>}>
-						{this.props.selectionManager.modelType === "file" && [
-							<MenuItem key="album_add" onClick={() => this.dialogOpen("album")}>
-								<ListItemIcon>
-									<Icon>photo_album</Icon>
-								</ListItemIcon>
-								Add to Album
-							</MenuItem>,
-							this.props.rootType === "albums" && (
-								<MenuItem key="album_remove" onClick={() => this.dialogOpen("album_remove")}>
-									<ListItemIcon>
-										<Icon>clear</Icon>
-									</ListItemIcon>
-									Remove from Album
-								</MenuItem>
-							),
-							<MenuItem key="geotag_edit" onClick={() => this.dialogOpen("geotag_edit")}>
-								<ListItemIcon>
-									<Icon>my_location</Icon>
-								</ListItemIcon>
-								Edit Geotag
-							</MenuItem>,
-							<MenuItem key="rotate" onClick={() => this.dialogOpen("rotate")}>
-								<ListItemIcon>
-									<Icon>rotate_90_degrees_ccw</Icon>
-								</ListItemIcon>
-								Rotate
-							</MenuItem>
-						]}
-
-						{this.props.selectionManager.modelType === "face" && [
-							<MenuItem
-								key="confirm_id"
-								onClick={() => this.dialogOpen("person_confirm")}
-								disabled={
-									selection.find(id => {
-										let face = Face.getById(id);
-										return face.personID !== 0 && face.status > 1;
-									}) === undefined
-								}
-							>
-								<ListItemIcon>
-									<Icon>check</Icon>
-								</ListItemIcon>
-								Confirm Identification
-							</MenuItem>,
-
-							<MenuItem key="edit_id" onClick={() => this.dialogOpen("person_edit")}>
-								<ListItemIcon>
-									<Icon>edit</Icon>
-								</ListItemIcon>
-								Set/Edit Identification
-							</MenuItem>,
-
-							<MenuItem key="mark_unknown" onClick={() => this.dialogOpen("person_unknown")}>
-								<ListItemIcon>
-									<Icon>help</Icon>
-								</ListItemIcon>
-								Ignore
-							</MenuItem>,
-
-							<MenuItem key="mark_nonperson" onClick={() => this.dialogOpen("person_not")}>
+				<Menu
+					anchorReference="anchorPosition"
+					anchorPosition={this.state.menuAnchorPos}
+					open={this.state.openContextMenu}
+					onClick={this.menuClose}
+					onClose={this.menuClose}
+					MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>{`${selection.length} ${this.props.selectionManager.modelType}(s)`}</ListSubheader> }}
+				>
+					{this.props.selectionManager.modelType === "file" && [
+						<MenuItem key="album_add" onClick={() => this.dialogOpen("album")}>
+							<ListItemIcon>
+								<Icon>photo_album</Icon>
+							</ListItemIcon>
+							Add to Album
+						</MenuItem>,
+						this.props.rootType === "albums" && (
+							<MenuItem key="album_remove" onClick={() => this.dialogOpen("album_remove")}>
 								<ListItemIcon>
 									<Icon>clear</Icon>
 								</ListItemIcon>
-								Remove
+								Remove from Album
 							</MenuItem>
-						]}
-					</MenuList>
+						),
+						<MenuItem key="geotag_edit" onClick={() => this.dialogOpen("geotag_edit")}>
+							<ListItemIcon>
+								<Icon>my_location</Icon>
+							</ListItemIcon>
+							Edit Geotag
+						</MenuItem>,
+						<MenuItem key="rotate" onClick={() => this.dialogOpen("rotate")}>
+							<ListItemIcon>
+								<Icon>rotate_90_degrees_ccw</Icon>
+							</ListItemIcon>
+							Rotate
+						</MenuItem>
+					]}
+
+					{this.props.selectionManager.modelType === "face" && [
+						<MenuItem
+							key="confirm_id"
+							onClick={() => this.dialogOpen("person_confirm")}
+							disabled={
+								selection.find(id => {
+									let face = Face.getById(id);
+									return face.personID !== 0 && face.status > 1;
+								}) === undefined
+							}
+						>
+							<ListItemIcon>
+								<Icon>check</Icon>
+							</ListItemIcon>
+							Confirm Identification
+						</MenuItem>,
+
+						<MenuItem key="edit_id" onClick={() => this.dialogOpen("person_edit")}>
+							<ListItemIcon>
+								<Icon>edit</Icon>
+							</ListItemIcon>
+							Set/Edit Identification
+						</MenuItem>,
+
+						<MenuItem key="mark_unknown" onClick={() => this.dialogOpen("person_unknown")}>
+							<ListItemIcon>
+								<Icon>help</Icon>
+							</ListItemIcon>
+							Ignore
+						</MenuItem>,
+
+						<MenuItem key="mark_nonperson" onClick={() => this.dialogOpen("person_not")}>
+							<ListItemIcon>
+								<Icon>clear</Icon>
+							</ListItemIcon>
+							Remove
+						</MenuItem>
+					]}
 				</Menu>
 
 				{this.props.selectionManager.modelType === "file" && (

@@ -1,9 +1,10 @@
-import { Checkbox, Grid, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Theme, withStyles, withWidth } from "@material-ui/core";
+import { Checkbox, Grid, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, Theme, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
-import React, { Fragment } from "react";
+import React from "react";
 import { List, ListRowProps } from "react-virtualized";
 import { Input } from "../../../../../controllers/Input";
+import { Model } from "../../../../../models";
 import RootModel, { objectSetType } from "../../../../../models/RootModel";
 import { LocationManager } from "../../../../utils";
 import BaseGridCard, { GridCardExport } from "../../cards/BaseGridCard";
@@ -79,6 +80,9 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 	/** Ref to virtualised List component */
 	virtualList: React.RefObject<List>;
 
+	/** Ref to outer div */
+	mainRef: React.RefObject<HTMLDivElement>;
+
 	constructor(props: ViewProps & GridViewProps) {
 		super(props);
 
@@ -95,6 +99,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 			() => this.state.data.contents.card.modelType
 		);
 		this.virtualList = React.createRef<List>();
+		this.mainRef = React.createRef<HTMLDivElement>();
 	}
 
 	/** Open the display options or selection actions menu */
@@ -106,6 +111,27 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 
 	/** Close the display options menu */
 	menuClose = () => this.setState({ menuOpen: false });
+
+	/**
+	 * Keyboard events (arrow keys to modify selection, ctrl+arrows to change page)
+	 * @param event The KeyUp event
+	 */
+	private onKeyUp = event => {
+		if (event.key === "Enter") {
+			(this.class.rootModelClass.rootModelMeta.contentsClass.getById(this.selectionManager.lastSelected) as Model & { open: () => any }).open();
+		} else if (event.key.substr(0, 5) === "Arrow") {
+			if (event.ctrlKey) {
+				let maxPage = Math.ceil(this.state.data.contents.count / this.props.pageSize);
+				if (event.key == "ArrowLeft") LocationManager.updateQuery({ page: Math.max(this.props.page - 1, 1).toString() });
+				else if (event.key == "ArrowRight") LocationManager.updateQuery({ page: Math.min(this.props.page + 1, maxPage).toString() });
+			} else {
+				let desiredScale = this.state.data.contents.card.getDesiredSize(this.state.currentScale, this.props.width);
+				let cardsPerRow = this.scaleManager.getCountFromScale(desiredScale.width);
+				let delta = { Left: -1, Right: 1, Up: -cardsPerRow, Down: cardsPerRow }[event.key.substr(5)];
+				this.selectionManager.moveSelection(delta);
+			}
+		}
+	};
 
 	/**
 	 * Load data to be displayed, into `this.state` based on `this.props`
@@ -188,6 +214,20 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		return true;
 	}
 
+	componentDidMount() {
+		// Set document focus to this on page change
+		let interval: NodeJS.Timeout;
+		let doFocus = () => {
+			if (this.mainRef.current !== null) {
+				this.mainRef.current.focus();
+				clearInterval(interval);
+			}
+		};
+		interval = setInterval(doFocus, 100);
+		let unlisten = LocationManager.instance.props.history.listen(loc => (interval = setInterval(doFocus, 100)));
+		this.componentWillUnmount = () => Boolean(clearInterval(interval)) || unlisten();
+	}
+
 	renderContents() {
 		const rows: (GridViewRow | string | StandardRow)[] = this.getRows();
 
@@ -224,7 +264,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		}
 
 		return (
-			<Fragment>
+			<div tabIndex={-1} onKeyUp={this.onKeyUp} ref={this.mainRef}>
 				{/* Desktop Toolbar */}
 				{isWidthUp("md", this.props.width) && (
 					<Grid container className={this.props.classes.toolBar}>
@@ -247,15 +287,19 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				)}
 
 				{/* Options menu */}
-				<Menu anchorEl={this.state.menuAnchorEl} open={this.state.menuOpen} onClick={this.menuClose} onClose={this.menuClose}>
-					<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>Display Options</ListSubheader>}>
-						<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
-							<ListItemIcon>
-								<Checkbox checked={this.props.includeSubfolders} />
-							</ListItemIcon>
-							Show subfolder contents
-						</MenuItem>
-					</MenuList>
+				<Menu
+					anchorEl={this.state.menuAnchorEl}
+					open={this.state.menuOpen}
+					onClick={this.menuClose}
+					onClose={this.menuClose}
+					MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>Display Options</ListSubheader> }}
+				>
+					<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
+						<ListItemIcon>
+							<Checkbox checked={this.props.includeSubfolders} />
+						</ListItemIcon>
+						Show subfolder contents
+					</MenuItem>
 				</Menu>
 
 				{/* Main virtualised list */}
@@ -303,7 +347,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 						}}
 					/>
 				</div>
-			</Fragment>
+			</div>
 		);
 	}
 }

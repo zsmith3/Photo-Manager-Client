@@ -98,6 +98,18 @@ export default class SelectionManager<S extends ViewState> {
 	}
 
 	/**
+	 * Move the current selection left/right/up/down
+	 * @param delta The (positive or negative) number of places to move
+	 */
+	moveSelection(delta: number) {
+		let last = this.objectList.indexOf(this.lastSelected);
+		let nextIndex = Math.min(Math.max(last + delta, 0), this.objectList.length - 1);
+		let nextId = this.objectList[nextIndex];
+		this.lastSelected = nextId;
+		this.view.setState({ selection: [nextId] });
+	}
+
+	/**
 	 * Get the ID of the currently open item (e.g. file or face)
 	 * @returns Type and ID of item, or `null` if none is open
 	 */

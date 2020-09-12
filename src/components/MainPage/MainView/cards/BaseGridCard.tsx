@@ -134,6 +134,7 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 						}}
 						onClick={this.onClick}
 						onDoubleClick={() => this.state.model.open()}
+						// onKeyUp={event => event.key === "Enter" && this.state.model.open()}
 						onContextMenu={this.onContextMenu}
 					>
 						{/* Border to mark as selected */}

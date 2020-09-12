@@ -1,4 +1,4 @@
-import { Collapse, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, MenuList, TextField } from "@material-ui/core";
+import { Collapse, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, TextField } from "@material-ui/core";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Album } from "../../../models";
@@ -88,33 +88,37 @@ export default class AlbumListItem extends MountTrackedComponent<{
 				{/* Linked menu and dialogs for modifying album */}
 				<Fragment>
 					{/* Options menu */}
-					<Menu anchorEl={this.state.menuAnchorEl} open={this.state.openMenu} onClick={this.menuClose} onClose={this.menuClose}>
-						<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>{this.state.album.path}</ListSubheader>}>
-							<MenuItem onClick={() => this.dialogOpen("Rename")}>
-								<ListItemIcon>
-									<Icon>edit</Icon>
-								</ListItemIcon>
-								Rename
-							</MenuItem>
-							<MenuItem onClick={() => this.dialogOpen("New")}>
-								<ListItemIcon>
-									<Icon>add</Icon>
-								</ListItemIcon>
-								Create
-							</MenuItem>
-							<MenuItem onClick={() => this.dialogOpen("Parent")}>
-								<ListItemIcon>
-									<Icon>folder</Icon>
-								</ListItemIcon>
-								Change Parent
-							</MenuItem>
-							<MenuItem onClick={() => this.dialogOpen("Remove")}>
-								<ListItemIcon>
-									<Icon>delete</Icon>
-								</ListItemIcon>
-								Remove
-							</MenuItem>
-						</MenuList>
+					<Menu
+						anchorEl={this.state.menuAnchorEl}
+						open={this.state.openMenu}
+						onClick={this.menuClose}
+						onClose={this.menuClose}
+						MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>{this.state.album.path}</ListSubheader> }}
+					>
+						<MenuItem onClick={() => this.dialogOpen("Rename")}>
+							<ListItemIcon>
+								<Icon>edit</Icon>
+							</ListItemIcon>
+							Rename
+						</MenuItem>
+						<MenuItem onClick={() => this.dialogOpen("New")}>
+							<ListItemIcon>
+								<Icon>add</Icon>
+							</ListItemIcon>
+							Create
+						</MenuItem>
+						<MenuItem onClick={() => this.dialogOpen("Parent")}>
+							<ListItemIcon>
+								<Icon>folder</Icon>
+							</ListItemIcon>
+							Change Parent
+						</MenuItem>
+						<MenuItem onClick={() => this.dialogOpen("Remove")}>
+							<ListItemIcon>
+								<Icon>delete</Icon>
+							</ListItemIcon>
+							Remove
+						</MenuItem>
 					</Menu>
 
 					{/* Album rename dialog */}

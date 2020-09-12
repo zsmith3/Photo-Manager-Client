@@ -10,6 +10,7 @@ import MountTrackedComponent from "./MountTrackedComponent";
  * @param text The DialogContentText (if any) to display
  * @param actionText The name of the primary DialogAction (the secondary will always be "Cancel")
  * @param action The function to run when the primary DialogAction button is clicked
+ * @param noFocus Used by other Dialog types to prevent autofocus of DialogContent
  */
 export class SimpleDialog extends MountTrackedComponent<{
 	open: boolean;
@@ -18,16 +19,39 @@ export class SimpleDialog extends MountTrackedComponent<{
 	text?: React.ReactNode;
 	actionText: string;
 	action: () => Promise<any>;
+	noFocus?: boolean;
 }> {
 	state = {
 		loading: false
 	};
 
+	/** Reference to main dialog content */
+	contentRef: React.RefObject<HTMLElement>;
+
+	constructor(props) {
+		super(props);
+
+		this.contentRef = React.createRef();
+	}
+
+	/** Submit data (on primary DialogAction button click) */
+	submit = () => {
+		this.setState({ loading: true });
+		this.props.action().then(() => {
+			this.props.onClose();
+			this.setStateSafe({ loading: false });
+		});
+	};
+
+	componentDidUpdate() {
+		if (this.props.open && !this.props.noFocus) setTimeout(() => this.contentRef.current.focus(), 1);
+	}
+
 	render() {
 		return (
 			<Dialog open={this.props.open} onClose={this.props.onClose}>
 				<DialogTitle>{this.props.title}</DialogTitle>
-				<DialogContent>
+				<DialogContent onKeyDown={event => event.key === "Enter" && this.submit()} tabIndex={-1} ref={this.contentRef}>
 					{Boolean(this.props.text) && <DialogContentText>{this.props.text}</DialogContentText>}
 					{this.props.children}
 				</DialogContent>
@@ -35,17 +59,7 @@ export class SimpleDialog extends MountTrackedComponent<{
 					<Button disabled={this.state.loading} onClick={this.props.onClose} color="primary">
 						Cancel
 					</Button>
-					<Button
-						disabled={this.state.loading}
-						onClick={() => {
-							this.setState({ loading: true });
-							this.props.action().then(() => {
-								this.props.onClose();
-								this.setStateSafe({ loading: false });
-							});
-						}}
-						color="primary"
-					>
+					<Button disabled={this.state.loading} onClick={this.submit} color="primary">
 						{this.props.actionText}
 					</Button>
 				</DialogActions>
@@ -153,6 +167,7 @@ export class TextDialog extends React.Component<{
 				title={this.props.title}
 				actionText={this.props.actionText}
 				action={() => this.props.action(this.state.value)}
+				noFocus={true}
 			>
 				<TextField autoFocus label={this.props.label} defaultValue={this.props.defaultValue} onChange={event => (this.state.value = event.currentTarget.value)} />
 			</SimpleDialog>

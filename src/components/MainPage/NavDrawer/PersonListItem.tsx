@@ -1,4 +1,4 @@
-import { Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, MenuList, withStyles } from "@material-ui/core";
+import { Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, withStyles } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { FaceImgSizes, Platform } from "../../../controllers/Platform";
@@ -83,27 +83,31 @@ class PersonListItem extends MountTrackedComponent<{
 				{/* Linked menu and dialogs for modifying person */}
 				<Fragment>
 					{/* Options menu */}
-					<Menu anchorEl={this.state.menuAnchorEl} open={this.state.openMenu} onClick={this.menuClose} onClose={this.menuClose}>
-						<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>{this.state.person.full_name}</ListSubheader>}>
-							<MenuItem onClick={() => this.dialogOpen("Rename")}>
-								<ListItemIcon>
-									<Icon>edit</Icon>
-								</ListItemIcon>
-								Rename
-							</MenuItem>
-							<MenuItem onClick={() => this.dialogOpen("Group")}>
-								<ListItemIcon>
-									<Icon>group</Icon>
-								</ListItemIcon>
-								Edit Group
-							</MenuItem>
-							<MenuItem onClick={() => this.dialogOpen("Remove")}>
-								<ListItemIcon>
-									<Icon>delete</Icon>
-								</ListItemIcon>
-								Remove
-							</MenuItem>
-						</MenuList>
+					<Menu
+						anchorEl={this.state.menuAnchorEl}
+						open={this.state.openMenu}
+						onClick={this.menuClose}
+						onClose={this.menuClose}
+						MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>{this.state.person.full_name}</ListSubheader> }}
+					>
+						<MenuItem onClick={() => this.dialogOpen("Rename")}>
+							<ListItemIcon>
+								<Icon>edit</Icon>
+							</ListItemIcon>
+							Rename
+						</MenuItem>
+						<MenuItem onClick={() => this.dialogOpen("Group")}>
+							<ListItemIcon>
+								<Icon>group</Icon>
+							</ListItemIcon>
+							Edit Group
+						</MenuItem>
+						<MenuItem onClick={() => this.dialogOpen("Remove")}>
+							<ListItemIcon>
+								<Icon>delete</Icon>
+							</ListItemIcon>
+							Remove
+						</MenuItem>
 					</Menu>
 
 					{/* Person rename dialog */}

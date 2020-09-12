@@ -1,7 +1,7 @@
-import { AppBar, Hidden, Icon, IconButton, Toolbar, Typography, withStyles, Menu, MenuList, ListSubheader, MenuItem, ListItemIcon } from "@material-ui/core";
+import { AppBar, Hidden, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, Toolbar, Typography, withStyles } from "@material-ui/core";
 import React from "react";
-import { navDrawerInstance, navDrawerWidth } from "./NavDrawer";
 import { Database } from "../../controllers/Database";
+import { navDrawerInstance, navDrawerWidth } from "./NavDrawer";
 
 /** Main title AppBar */
 class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: string; placeholder: string } }> {
@@ -57,21 +57,25 @@ class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: string; pl
 					</IconButton>
 
 					{/* Options menu */}
-					<Menu anchorEl={this.state.menuAnchorEl} open={this.state.openMenu} onClick={this.menuClose} onClose={this.menuClose}>
-						<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>Options</ListSubheader>}>
-							<MenuItem onClick={() => window.location.reload()}>
-								<ListItemIcon>
-									<Icon>refresh</Icon>
-								</ListItemIcon>
-								Refresh
-							</MenuItem>
-							<MenuItem onClick={() => Database.auth.logOut()}>
-								<ListItemIcon>
-									<Icon>exit_to_app</Icon>
-								</ListItemIcon>
-								Log Out
-							</MenuItem>
-						</MenuList>
+					<Menu
+						anchorEl={this.state.menuAnchorEl}
+						open={this.state.openMenu}
+						onClick={this.menuClose}
+						onClose={this.menuClose}
+						MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>Options</ListSubheader> }}
+					>
+						<MenuItem onClick={() => window.location.reload()}>
+							<ListItemIcon>
+								<Icon>refresh</Icon>
+							</ListItemIcon>
+							Refresh
+						</MenuItem>
+						<MenuItem onClick={() => Database.auth.logOut()}>
+							<ListItemIcon>
+								<Icon>exit_to_app</Icon>
+							</ListItemIcon>
+							Log Out
+						</MenuItem>
 					</Menu>
 				</Toolbar>
 			</AppBar>

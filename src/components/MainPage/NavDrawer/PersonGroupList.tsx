@@ -1,4 +1,4 @@
-import { List, ListItemIcon, ListSubheader, Menu, MenuItem, MenuList, Radio } from "@material-ui/core";
+import { List, ListItemIcon, ListSubheader, Menu, MenuItem, Radio } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { PersonGroup } from "../../../models";
 import { HoverIconButton, MountTrackedComponent, TextDialog } from "../../utils";
@@ -65,21 +65,25 @@ export default class PersonGroupList extends MountTrackedComponent<{}> {
 				/>
 
 				{/* Options (sorting) menu */}
-				<Menu anchorEl={this.state.menuAnchorEl} open={this.state.openMenu} onClick={this.menuClose} onClose={this.menuClose}>
-					<MenuList subheader={<ListSubheader style={{ lineHeight: "24px" }}>Options</ListSubheader>}>
-						<MenuItem onClick={() => this.setState({ sortMethod: SortMethods.Alphabetical })}>
-							<ListItemIcon>
-								<Radio checked={this.state.sortMethod == SortMethods.Alphabetical} />
-							</ListItemIcon>
-							Sort alphabetically
-						</MenuItem>
-						<MenuItem onClick={() => this.setState({ sortMethod: SortMethods.Count })}>
-							<ListItemIcon>
-								<Radio checked={this.state.sortMethod == SortMethods.Count} />
-							</ListItemIcon>
-							Sort by face count
-						</MenuItem>
-					</MenuList>
+				<Menu
+					anchorEl={this.state.menuAnchorEl}
+					open={this.state.openMenu}
+					onClick={this.menuClose}
+					onClose={this.menuClose}
+					MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>Options</ListSubheader> }}
+				>
+					<MenuItem onClick={() => this.setState({ sortMethod: SortMethods.Alphabetical })}>
+						<ListItemIcon>
+							<Radio checked={this.state.sortMethod == SortMethods.Alphabetical} />
+						</ListItemIcon>
+						Sort alphabetically
+					</MenuItem>
+					<MenuItem onClick={() => this.setState({ sortMethod: SortMethods.Count })}>
+						<ListItemIcon>
+							<Radio checked={this.state.sortMethod == SortMethods.Count} />
+						</ListItemIcon>
+						Sort by face count
+					</MenuItem>
 				</Menu>
 			</Fragment>
 		);

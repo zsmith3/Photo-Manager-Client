@@ -332,6 +332,39 @@ class ImageModal extends React.Component<Props> {
 		this.setResetTimeout();
 	};
 
+	/** Keyboard events:
+	 * switchFile on left/right arrows,
+	 * zoom on up/down arrows,
+	 * setZoom on 0/1,
+	 * close on Escape */
+	onKeyDown = event => {
+		let toolBarHeight = 64; // TODO height of the top imagemodal bar
+
+		switch (event.key) {
+			case "ArrowLeft":
+				if (this.props.lastItemId !== null) this.switchFile("last");
+				break;
+			case "ArrowRight":
+				if (this.props.nextItemId !== null) this.switchFile("next");
+				break;
+			case "ArrowUp":
+				this.zoom(1.1, window.innerWidth / 2, (window.innerHeight + toolBarHeight) / 2);
+				break;
+			case "ArrowDown":
+				this.zoom(0.9, window.innerWidth / 2, (window.innerHeight + toolBarHeight) / 2);
+				break;
+			case "0":
+				this.setZoom("min", "min", "c", "c");
+				break;
+			case "1":
+				this.setZoom("max", "max", "c", "c");
+				break;
+			case "Escape":
+				this.close();
+				break;
+		}
+	};
+
 	/** Toggle image editing mode */
 	toggleEditMode = () => this.setState({ editMode: !this.state.editMode });
 
@@ -373,7 +406,7 @@ class ImageModal extends React.Component<Props> {
 		let arrowPosClass = window.innerWidth > window.innerHeight ? this.props.classes.arrowsLandscape : this.props.classes.arrowsPortrait;
 
 		return (
-			<Modal open={true}>
+			<Modal open={true} onKeyDown={this.onKeyDown}>
 				<div>
 					{/* Top bar */}
 					<AppBar style={{ background: "rgba(0, 0, 0, 0.8)" }}>
