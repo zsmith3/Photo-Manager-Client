@@ -13,11 +13,11 @@ This site also contains a [live working demo](./demo/) of the project in its cur
 
 # Screenshots
 
-<img src="./screenshots/001.png" style="width: calc(50% - 10px); margin: 5px;" title="Main folder view">
-<img src="./screenshots/002.png" style="width: calc(50% - 10px); margin: 5px;" title="Image view">
-<img src="./screenshots/003.png" style="width: calc(50% - 10px); margin: 5px;" title="Adding files to an album">
-<img src="./screenshots/004.png" style="width: calc(50% - 10px); margin: 5px;" title="Identifying faces">
-<img src="./screenshots/005.png" style="width: calc(50% - 10px); margin: 5px;" title="Modifying album structure">
+<a href="./screenshots/001.png" target="_blank"><img src="./screenshots/001.png" style="width: calc(50% - 10px); margin: 5px; float: left;" title="Main folder view"></a>
+<a href="./screenshots/002.png" target="_blank"><img src="./screenshots/002.png" style="width: calc(50% - 10px); margin: 5px; float: right;" title="Image view"></a>
+<a href="./screenshots/003.png" target="_blank"><img src="./screenshots/003.png" style="width: calc(50% - 10px); margin: 5px; float: left;" title="Adding files to an album"></a>
+<a href="./screenshots/004.png" target="_blank"><img src="./screenshots/004.png" style="width: calc(50% - 10px); margin: 5px; float: right;" title="Identifying faces"></a>
+<a href="./screenshots/005.png" target="_blank"><img src="./screenshots/005.png" style="width: calc(50% - 10px); margin: 5px; float: left;" title="Modifying album structure"></a>
 
 # More Information
 
