@@ -1,5 +1,21 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemText, Radio, TextField } from "@material-ui/core";
-import React from "react";
+import {
+	Button,
+	Collapse,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	Icon,
+	List,
+	ListItem,
+	ListItemSecondaryAction,
+	ListItemText,
+	Radio,
+	TextField
+} from "@material-ui/core";
+import React, { Fragment } from "react";
+import { HoverIconButton } from ".";
 import MountTrackedComponent from "./MountTrackedComponent";
 
 /**
@@ -44,7 +60,7 @@ export class SimpleDialog extends MountTrackedComponent<{
 	};
 
 	componentDidUpdate() {
-		if (this.props.open && !this.props.noFocus) setTimeout(() => this.contentRef.current.focus(), 1);
+		if (this.props.open && !this.props.noFocus && !this.state.loading) setTimeout(() => this.contentRef.current.focus(), 1);
 	}
 
 	render() {
@@ -68,6 +84,14 @@ export class SimpleDialog extends MountTrackedComponent<{
 	}
 }
 
+/** Data about a ListDialog item */
+interface ListDialogItem {
+	id: number;
+	name: string;
+	noSelect?: boolean;
+	children?: ListDialogItem[];
+}
+
 /**
  * Simple Material-UI dialog with List selection
  * (most props are passed to base SimpleDialog)
@@ -79,7 +103,8 @@ export class SimpleDialog extends MountTrackedComponent<{
  * @param action The function to run when the primary DialogAction button is clicked
  * @param list List of items to display and select from
  * @param selected ID of initially selected item
- * @param nullItem Default item with an ID of `null`
+ * @param openByDefault Whether collapsible list items are open by default (default = false)
+ * @param selectableFilter Filter function applied to each item to determine if it is selectable
  */
 export class ListDialog extends React.Component<{
 	open: boolean;
@@ -88,18 +113,86 @@ export class ListDialog extends React.Component<{
 	text?: string;
 	actionText: string;
 	action: (selected: number) => Promise<any>;
-	list: { id: number; name: string }[];
+	list: ListDialogItem[];
 	selected?: number;
-	nullItem?: string;
+	openByDefault?: boolean;
+	selectableFilter?: (id: number) => boolean;
 }> {
 	state: {
 		selected: number;
+		itemsOpen: { [id: number]: boolean };
 	};
 
 	constructor(props) {
 		super(props);
 
-		this.state = { selected: props.selected };
+		this.state = { selected: props.selected, itemsOpen: {} };
+	}
+
+	/**
+	 * Initialise this.state.itemsOpen (to all false)
+	 * @param list (Nested) list of items
+	 */
+	initItemsOpen(list: ListDialogItem[]) {
+		let getItemIds: (list: ListDialogItem[]) => number[] = list =>
+			list ? list.map(item => item.id).concat(list.map(item => getItemIds(item.children)).reduce((all, cur) => all.concat(cur), [])) : [];
+		this.setState({ itemsOpen: getItemIds(list).reduce((acc, cur) => ({ ...acc, [cur]: cur in acc ? acc[cur] : Boolean(this.props.openByDefault) }), this.state.itemsOpen) });
+	}
+
+	/**
+	 * Collapse/expand a (collapsible) list item
+	 * @param itemId ID of list item to toggle
+	 */
+	toggleItemOpen(itemId: number) {
+		this.setState({ itemsOpen: { ...this.state.itemsOpen, [itemId]: !this.state.itemsOpen[itemId] } });
+	}
+
+	/**
+	 * Recursively generate the displayed list
+	 * @param listItems Nested list of items to display
+	 * @param indent Current indent level (default = 0)
+	 */
+	generateList(listItems: ListDialogItem[], indent?: number) {
+		let selectable = (itemId: number) => !this.props.selectableFilter || this.props.selectableFilter(itemId) || null;
+		indent = indent || 0;
+		return (
+			<List>
+				{listItems.map(item => (
+					<Fragment key={item.id}>
+						<ListItem
+							button={item.noSelect || selectable(item.id)}
+							onClick={item.noSelect ? () => this.toggleItemOpen(item.id) : selectable(item.id) && (() => this.setState({ selected: item.id }))}
+							style={{ paddingLeft: indent * 16 + "px" }}
+						>
+							{!item.noSelect && <Radio checked={this.state.selected === item.id} disabled={!selectable(item.id)} />}
+							<ListItemText primary={item.name} />
+							{item.children &&
+								Boolean(item.children.length) &&
+								(item.noSelect ? (
+									<Icon>{this.state.itemsOpen[item.id] ? "expand_less" : "expand_more"}</Icon>
+								) : (
+									<ListItemSecondaryAction>
+										<HoverIconButton action={() => this.toggleItemOpen(item.id)}>{this.state.itemsOpen[item.id] ? "expand_less" : "expand_more"}</HoverIconButton>
+									</ListItemSecondaryAction>
+								))}
+						</ListItem>
+						{item.children && Boolean(item.children.length) && (
+							<Collapse in={this.state.itemsOpen[item.id]} unmountOnExit>
+								{this.generateList(item.children, indent + 1)}
+							</Collapse>
+						)}
+					</Fragment>
+				))}
+			</List>
+		);
+	}
+
+	shouldComponentUpdate(nextProps) {
+		// Initialise itemsOpen when list changes
+		if (nextProps.list !== this.props.list) {
+			this.initItemsOpen(this.props.list);
+			return false;
+		} else return true;
 	}
 
 	render() {
@@ -111,20 +204,7 @@ export class ListDialog extends React.Component<{
 				actionText={this.props.actionText}
 				action={() => this.props.action(this.state.selected)}
 			>
-				<List>
-					{this.props.nullItem && (
-						<ListItem key={-1} button onClick={() => this.setState({ selected: null })}>
-							<Radio checked={this.state.selected === null} />
-							<ListItemText primary={this.props.nullItem} />
-						</ListItem>
-					)}
-					{this.props.list.map(item => (
-						<ListItem key={item.id} button onClick={() => this.setState({ selected: item.id })}>
-							<Radio checked={this.state.selected === item.id} />
-							<ListItemText primary={item.name} />
-						</ListItem>
-					))}
-				</List>
+				{this.generateList(this.props.list)}
 			</SimpleDialog>
 		);
 	}

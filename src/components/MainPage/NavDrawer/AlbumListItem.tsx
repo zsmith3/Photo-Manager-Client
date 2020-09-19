@@ -93,7 +93,7 @@ export default class AlbumListItem extends MountTrackedComponent<{
 						open={this.state.openMenu}
 						onClick={this.menuClose}
 						onClose={this.menuClose}
-						MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>{this.state.album.path}</ListSubheader> }}
+						MenuListProps={{ subheader: <ListSubheader>{this.state.album.path}</ListSubheader> }}
 					>
 						<MenuItem onClick={() => this.dialogOpen("Rename")}>
 							<ListItemIcon>
@@ -150,9 +150,16 @@ export default class AlbumListItem extends MountTrackedComponent<{
 						onClose={() => this.dialogClose("Parent")}
 						title="Change album parent"
 						actionText="Change Parent"
-						list={Album.meta.objects.filter(album => album.id !== this.props.albumId).map(album => ({ id: album.id, name: album.path }))}
+						list={[{ id: null, name: "/", children: Album.rootAlbums }]}
 						selected={this.state.album.parent === null ? null : this.state.album.parent.id}
-						nullItem="/"
+						selectableFilter={id =>
+							id === null ||
+							!Album.getById(id)
+								.allParents.map(album => album.id)
+								.concat([id])
+								.includes(this.state.album.id)
+						}
+						openByDefault={true}
 						action={(parentId: number) => Album.getById(this.props.albumId).changeParent(parentId)}
 					/>
 

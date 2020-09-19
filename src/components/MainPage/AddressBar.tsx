@@ -97,12 +97,6 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 		return props1.rootType === props2.rootType && props1.rootId === props2.rootId;
 	}
 
-	constructor(props) {
-		super(props);
-
-		this.fetchAddress(props);
-	}
-
 	/** Update the display address (if props still match) */
 	private updateAddress(props: AddressBarProps, address: string) {
 		if (AddressBar.compareProps(props, this.props)) {
@@ -166,6 +160,10 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 			this.fetchAddress(nextProps);
 			return false;
 		}
+	}
+
+	componentDidMount() {
+		this.fetchAddress(this.props);
 	}
 
 	componentWillUnmount() {

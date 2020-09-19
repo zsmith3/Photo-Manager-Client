@@ -1,6 +1,6 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, Radio, RadioGroup } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { Album, Face, FileObject, Person } from "../../../../models";
+import { Album, Face, FileObject, Person, PersonGroup } from "../../../../models";
 import { RotateDirection } from "../../../../models/FileObject";
 import { promiseChain } from "../../../../utils";
 import { addressRootTypes } from "../../../App";
@@ -92,7 +92,7 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 					open={this.state.openContextMenu}
 					onClick={this.menuClose}
 					onClose={this.menuClose}
-					MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>{`${selection.length} ${this.props.selectionManager.modelType}(s)`}</ListSubheader> }}
+					MenuListProps={{ subheader: <ListSubheader>{`${selection.length} ${this.props.selectionManager.modelType}(s)`}</ListSubheader> }}
 				>
 					{this.props.selectionManager.modelType === "file" && [
 						<MenuItem key="album_add" onClick={() => this.dialogOpen("album")}>
@@ -171,10 +171,8 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 							onClose={() => this.dialogClose("album")}
 							title="Add file(s) to album"
 							actionText="Add"
-							list={Album.meta.objects.map(album => ({
-								id: album.id,
-								name: album.path
-							}))}
+							list={Album.rootAlbums}
+							openByDefault={true}
 							action={(albumId: number) => Album.getById(albumId).addFiles(selection)}
 						/>
 
@@ -277,9 +275,11 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 							onClose={() => this.dialogClose("person_edit")}
 							title="Edit identification of face(s)"
 							actionText="Change Person"
-							list={Person.meta.objects.map(person => ({
-								id: person.id,
-								name: person.full_name
+							list={PersonGroup.meta.objects.map(group => ({
+								id: group.id,
+								name: group.name,
+								noSelect: true,
+								children: group.people.map(person => ({ id: person.id, name: person.full_name }))
 							}))}
 							action={(personId: number) =>
 								promiseChain(selection, (resolve, reject, id) =>

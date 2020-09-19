@@ -24,7 +24,7 @@ export class Album extends RootModel {
 
 	/** List of root-level albums only */
 	static get rootAlbums(): Album[] {
-		return Album.meta.objects.filter(album => album.parent === undefined);
+		return Album.meta.objects.filter(album => album.parent === null);
 	}
 
 	/**
@@ -127,8 +127,8 @@ export class Album extends RootModel {
 	async changeParent(newParentId: number) {
 		let oldParent = this.parent;
 		await this.updateSave({ parent: newParentId });
-		oldParent.updateParents();
-		this.parent.updateParents();
+		if (oldParent !== null) oldParent.updateParents();
+		if (this.parent !== null) this.parent.updateParents();
 		Album.meta.listUpdateHandlers.handle();
 	}
 

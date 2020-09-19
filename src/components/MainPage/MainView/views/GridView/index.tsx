@@ -292,7 +292,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 					open={this.state.menuOpen}
 					onClick={this.menuClose}
 					onClose={this.menuClose}
-					MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>Display Options</ListSubheader> }}
+					MenuListProps={{ subheader: <ListSubheader>Display Options</ListSubheader> }}
 				>
 					<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
 						<ListItemIcon>

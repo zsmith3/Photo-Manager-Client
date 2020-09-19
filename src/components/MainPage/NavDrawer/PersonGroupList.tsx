@@ -70,7 +70,7 @@ export default class PersonGroupList extends MountTrackedComponent<{}> {
 					open={this.state.openMenu}
 					onClick={this.menuClose}
 					onClose={this.menuClose}
-					MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>Options</ListSubheader> }}
+					MenuListProps={{ subheader: <ListSubheader>Options</ListSubheader> }}
 				>
 					<MenuItem onClick={() => this.setState({ sortMethod: SortMethods.Alphabetical })}>
 						<ListItemIcon>

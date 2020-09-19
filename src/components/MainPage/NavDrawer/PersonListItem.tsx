@@ -88,7 +88,7 @@ class PersonListItem extends MountTrackedComponent<{
 						open={this.state.openMenu}
 						onClick={this.menuClose}
 						onClose={this.menuClose}
-						MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>{this.state.person.full_name}</ListSubheader> }}
+						MenuListProps={{ subheader: <ListSubheader>{this.state.person.full_name}</ListSubheader> }}
 					>
 						<MenuItem onClick={() => this.dialogOpen("Rename")}>
 							<ListItemIcon>

@@ -36,6 +36,11 @@ export default class App extends React.Component<{ error?: boolean }> {
 				paperWidthSm: {
 					maxWidth: "none"
 				}
+			},
+			MuiListSubheader: {
+				root: {
+					lineHeight: "36px"
+				}
 			}
 		}
 	});

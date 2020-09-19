@@ -62,7 +62,7 @@ class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: string; pl
 						open={this.state.openMenu}
 						onClick={this.menuClose}
 						onClose={this.menuClose}
-						MenuListProps={{ subheader: <ListSubheader style={{ lineHeight: "24px" }}>Options</ListSubheader> }}
+						MenuListProps={{ subheader: <ListSubheader>Options</ListSubheader> }}
 					>
 						<MenuItem onClick={() => window.location.reload()}>
 							<ListItemIcon>
