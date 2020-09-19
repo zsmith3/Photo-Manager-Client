@@ -1,6 +1,6 @@
 module.exports = {
 	env_vars: {
-		googleMapsAPIKey: "TODO"
+		googleMapsAPIKey: null
 	},
 	browser: {
 		server: "https://localhost/fileserver/",
