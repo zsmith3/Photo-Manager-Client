@@ -506,3 +506,13 @@ export class UpdateHandlerList {
 		this.lastData = data;
 	}
 }
+
+/**
+ * Extract given properties from an object, and add new ones
+ * @param obj Object from which to extract (e.g. a Class instance)
+ * @param props List of properties to extract
+ * @param newProps Object of new properties to add
+ */
+export function getObjProps<A, B>(obj: A, props: (keyof A)[], newProps?: B): A & B {
+	return { ...Object.fromEntries(props.map(key => [key, obj[key]])), ...(newProps || {}) } as A & B;
+}

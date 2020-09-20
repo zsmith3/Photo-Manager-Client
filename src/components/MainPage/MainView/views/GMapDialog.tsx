@@ -1,8 +1,10 @@
-import { Checkbox, FormControlLabel, Grid, MenuItem, Paper, Select, Slider, Tab, Tabs, TextField, Typography, withStyles } from "@material-ui/core";
+import { Checkbox, FormControlLabel, Grid, ListItemText, MenuItem, Paper, Select, Slider, Tab, Tabs, TextField, Typography, withStyles } from "@material-ui/core";
+import { Autocomplete } from "@material-ui/lab";
 import { Circle, GoogleApiWrapper, Map, mapEventHandler, Marker } from "google-maps-react";
 import cloneDeep from "lodash/cloneDeep";
 import React from "react";
 import { FileObject, GeoTag, GeoTagArea } from "../../../../models";
+import { getObjProps } from "../../../../utils";
 import { SimpleDialog } from "../../../utils";
 
 /** Props for MapDialog component */
@@ -141,8 +143,8 @@ class MapDialog extends React.Component<PropsType, StateType> {
 	 * Update the area by ID
 	 * @param id ID of area to switch to (including 0 or -1)
 	 */
-	setArea(id: any) {
-		if (id === -1) this.updateData({ hasArea: false });
+	setArea(id: number) {
+		if (id === -1) this.updateData({ hasArea: false, area: defaultArea });
 		else {
 			let area;
 			if (id === 0) area = { ...defaultArea };
@@ -334,11 +336,14 @@ class MapDialog extends React.Component<PropsType, StateType> {
 		let areaDisabled = !(this.state.data.modifyArea && this.state.data.hasArea);
 		let locDisabled = !(this.state.data.modifyLocation && this.state.data.hasLocation);
 
+		const areaNoneOption = { id: -1, name: "None", address: null };
+		const areaNewOption = { id: 0, name: "New Place", address: null };
+
 		return (
-			<SimpleDialog open={this.props.open} onClose={this.props.onClose} title="Edit geotag for file(s)" actionText="Save Changes" action={this.save}>
+			<SimpleDialog open={this.props.open} onClose={this.props.onClose} title="Edit geotag for file(s)" actionText="Save Changes" action={this.save} noFocus={true}>
 				<Grid container className={this.props.classes.outerContainer}>
 					{/* Google map container */}
-					<Grid item xs={8} className={this.props.classes.mapContainer}>
+					<Grid item xs={8} className={this.props.classes.mapContainer} onKeyDown={event => event.stopPropagation()}>
 						<Map
 							google={this.props.google}
 							ref={this.mapRef}
@@ -398,30 +403,29 @@ class MapDialog extends React.Component<PropsType, StateType> {
 								</Grid>
 
 								{/* Select an existing/new area */}
-								<Grid item xs={6} className={this.props.classes.latLngGrid}>
-									<Grid item xs={12} className={this.props.classes.formRow}>
-										<Select
-											value={this.state.data.hasArea ? this.state.data.area.id : -1}
-											onChange={event => this.setArea(event.target.value)}
-											disabled={!this.state.data.modifyArea}
-										>
-											<MenuItem key={-1} value={-1}>
-												None
-											</MenuItem>
-											{this.state.geoTagAreaIds.map(id => (
-												<MenuItem key={id} value={id}>
-													{GeoTagArea.getById(id).name}
-												</MenuItem>
-											))}
-											<MenuItem key={0} value={0}>
-												New Place
-											</MenuItem>
-										</Select>
-									</Grid>
+								<Grid item xs={12}>
+									<Autocomplete
+										options={[areaNoneOption]
+											.concat(
+												this.state.geoTagAreaIds
+													.map(id => GeoTagArea.getById(id))
+													.map(area => getObjProps(area, ["id", "name", "address"]))
+													.sort((area1, area2) => (area1.name < area2.name ? -1 : 1))
+											)
+											.concat([areaNewOption])}
+										renderOption={option => <ListItemText primary={option.name} secondary={option.address} />}
+										filterOptions={(options, state) => options.filter(option => (option.name + option.address).toLowerCase().includes(state.inputValue.toLowerCase()))}
+										getOptionLabel={option => option.name || ""}
+										renderInput={params => <TextField {...params} />}
+										onChange={(_event, value) => value !== null && typeof value !== "string" && this.setArea(value.id)}
+										disabled={!this.state.data.modifyArea}
+										value={this.state.data.hasArea ? (this.state.data.area.id === 0 ? areaNewOption : this.state.data.area) : areaNoneOption}
+										getOptionSelected={(option, value) => option.id === value.id}
+									/>
 								</Grid>
 
 								{/* Area name */}
-								<Grid item xs={6} className={this.props.classes.latLngGrid}>
+								<Grid item xs={6} className={this.props.classes.formRow} style={{ paddingRight: "10px" }}>
 									<TextField
 										label="Place name"
 										value={this.state.data.area.name}
@@ -431,7 +435,7 @@ class MapDialog extends React.Component<PropsType, StateType> {
 								</Grid>
 
 								{/* Area address */}
-								<Grid item xs={12} className={this.props.classes.formRow}>
+								<Grid item xs={6} className={this.props.classes.formRow} style={{ paddingLeft: "10px" }}>
 									<TextField
 										label="Address"
 										multiline

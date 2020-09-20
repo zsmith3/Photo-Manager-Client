@@ -17,6 +17,7 @@ import {
 } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { HoverIconButton } from ".";
+import { getObjProps } from "../../utils";
 import MountTrackedComponent from "./MountTrackedComponent";
 
 /**
@@ -157,7 +158,7 @@ export class ListDialog extends React.Component<{
 	generateList(listItems: ListDialogItem[], searchValue: string, indent?: number) {
 		if (searchValue) {
 			let getRes = (item: ListDialogItem) => {
-				let getItem = (item: ListDialogItem, newProps: any) => ({ ...Object.fromEntries(["id", "name", "noSelect", "children"].map(key => [key, item[key]])), ...newProps });
+				let getItem = (item: ListDialogItem, newProps: any) => getObjProps(item, ["id", "name", "noSelect", "children"], newProps);
 				if (item.name.toLowerCase().includes(searchValue.toLowerCase())) return getItem(item, { match: true });
 				let childRes = (item.children || []).map(child => getRes(child)).filter(child => child !== null);
 				if (childRes.length > 1) return getItem(item, { noSelect: true, children: childRes });
