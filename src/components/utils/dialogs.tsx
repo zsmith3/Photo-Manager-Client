@@ -7,6 +7,7 @@ import {
 	DialogContentText,
 	DialogTitle,
 	Icon,
+	InputAdornment,
 	List,
 	ListItem,
 	ListItemSecondaryAction,
@@ -121,12 +122,13 @@ export class ListDialog extends React.Component<{
 	state: {
 		selected: number;
 		itemsOpen: { [id: number]: boolean };
+		searchValue: string;
 	};
 
 	constructor(props) {
 		super(props);
 
-		this.state = { selected: props.selected, itemsOpen: {} };
+		this.state = { selected: props.selected, itemsOpen: {}, searchValue: "" };
 	}
 
 	/**
@@ -152,8 +154,24 @@ export class ListDialog extends React.Component<{
 	 * @param listItems Nested list of items to display
 	 * @param indent Current indent level (default = 0)
 	 */
-	generateList(listItems: ListDialogItem[], indent?: number) {
+	generateList(listItems: ListDialogItem[], searchValue: string, indent?: number) {
+		if (searchValue) {
+			let getRes = (item: ListDialogItem) => {
+				let getItem = (item: ListDialogItem, newProps: any) => ({ ...Object.fromEntries(["id", "name", "noSelect", "children"].map(key => [key, item[key]])), ...newProps });
+				if (item.name.toLowerCase().includes(searchValue.toLowerCase())) return getItem(item, { match: true });
+				let childRes = (item.children || []).map(child => getRes(child)).filter(child => child !== null);
+				if (childRes.length > 1) return getItem(item, { noSelect: true, children: childRes });
+				else if (childRes.length == 0) return null;
+				else if (childRes[0].match) return getItem(item, { noSelect: true, children: childRes });
+				else return getItem(childRes[0], { noSelect: true, name: item.name + "/" + childRes[0].name });
+			};
+			listItems = listItems.map(item => getRes(item)).filter(item => item !== null);
+
+			return this.generateList(listItems, null);
+		}
+
 		let selectable = (itemId: number) => !this.props.selectableFilter || this.props.selectableFilter(itemId) || null;
+		let isOpen = (itemId: number) => searchValue === null || this.state.itemsOpen[itemId];
 		indent = indent || 0;
 		return (
 			<List>
@@ -169,16 +187,16 @@ export class ListDialog extends React.Component<{
 							{item.children &&
 								Boolean(item.children.length) &&
 								(item.noSelect ? (
-									<Icon>{this.state.itemsOpen[item.id] ? "expand_less" : "expand_more"}</Icon>
+									<Icon>{isOpen(item.id) ? "expand_less" : "expand_more"}</Icon>
 								) : (
 									<ListItemSecondaryAction>
-										<HoverIconButton action={() => this.toggleItemOpen(item.id)}>{this.state.itemsOpen[item.id] ? "expand_less" : "expand_more"}</HoverIconButton>
+										<HoverIconButton action={() => this.toggleItemOpen(item.id)}>{isOpen(item.id) ? "expand_less" : "expand_more"}</HoverIconButton>
 									</ListItemSecondaryAction>
 								))}
 						</ListItem>
 						{item.children && Boolean(item.children.length) && (
-							<Collapse in={this.state.itemsOpen[item.id]} unmountOnExit>
-								{this.generateList(item.children, indent + 1)}
+							<Collapse in={isOpen(item.id)} unmountOnExit>
+								{this.generateList(item.children, searchValue, indent + 1)}
 							</Collapse>
 						)}
 					</Fragment>
@@ -203,8 +221,23 @@ export class ListDialog extends React.Component<{
 				title={this.props.title}
 				actionText={this.props.actionText}
 				action={() => this.props.action(this.state.selected)}
+				noFocus={true}
 			>
-				{this.generateList(this.props.list)}
+				{/* Search box */}
+				<TextField
+					placeholder="Search"
+					autoFocus
+					onChange={event => this.setState({ searchValue: event.currentTarget.value })}
+					InputProps={{
+						endAdornment: (
+							<InputAdornment position="end">
+								<Icon>search</Icon>
+							</InputAdornment>
+						)
+					}}
+				/>
+				{/* Main list */}
+				{this.generateList(this.props.list, this.state.searchValue)}
 			</SimpleDialog>
 		);
 	}

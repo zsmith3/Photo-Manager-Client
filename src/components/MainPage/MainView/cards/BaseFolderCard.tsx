@@ -12,7 +12,9 @@ export default class BaseFolderCard<T extends Model & { name: string; file_count
 	{ icon: string; smallIcon: string; largeIcon: string; title: string },
 	{ width: Breakpoint }
 > {
-	folderModel: typeof Folder | typeof ScanFolder;
+	get folderModel(): typeof Folder | typeof ScanFolder {
+		return null;
+	}
 
 	static styles = (theme: Theme) => ({
 		...BaseGridCard.styles,
