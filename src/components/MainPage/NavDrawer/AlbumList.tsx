@@ -1,58 +1,32 @@
-import { List, ListSubheader, Typography } from "@material-ui/core";
 import React, { Fragment } from "react";
 import { Album } from "../../../models";
-import { HoverIconButton, MountTrackedComponent, TextDialog } from "../../utils";
+import { HoverIconButton, TextDialog } from "../../utils";
 import AlbumListItem from "./AlbumListItem";
+import HierarchyList from "./HierarchyList";
 
 /** List of Album instances (for root or child albums) */
-export default class AlbumList extends MountTrackedComponent<{
-	parentAlbumID?: number;
-	indent?: number;
-}> {
+export default class AlbumList extends HierarchyList<Album> {
+	static get modelType() {
+		return Album;
+	}
+
+	static get listItemComponent() {
+		return AlbumListItem;
+	}
+
+	static modelTypeName = "Album";
+
 	state = {
-		albumIds: [],
+		...this.state,
 		openDialogNew: false
 	};
 
-	constructor(props) {
-		super(props);
-
-		Album.registerListUpdateHandler((albums: Album[]) => {
-			this.setStateSafe({
-				albumIds: albums
-					.filter((album: Album) => (album.parent === null ? this.props.parentAlbumID === undefined : album.parent.id === this.props.parentAlbumID))
-					.map((album: Album) => album.id)
-			});
-		});
-	}
-
-	render() {
+	renderHeaderButton() {
 		return (
 			<Fragment>
-				<List
-					style={this.props.indent ? { padding: 0 } : null}
-					subheader={
-						this.props.parentAlbumID === undefined ? (
-							<ListSubheader>
-								Albums
-								<HoverIconButton action={() => this.setState({ openDialogNew: true })} layers={1} style={{ float: "right" }}>
-									add
-								</HoverIconButton>
-							</ListSubheader>
-						) : null
-					}
-				>
-					<Fragment>
-						{this.state.albumIds.map(albumId => (
-							<AlbumListItem key={albumId} albumId={albumId} indent={this.props.indent || 0} />
-						))}
-						{this.state.albumIds.length > 0 || (
-							<Typography variant="body2" style={{ marginLeft: 40 }}>
-								No albums here.
-							</Typography>
-						)}
-					</Fragment>
-				</List>
+				<HoverIconButton action={() => this.setState({ openDialogNew: true })} layers={1} style={{ float: "right" }}>
+					add
+				</HoverIconButton>
 
 				{/* New root album dialog */}
 				<TextDialog

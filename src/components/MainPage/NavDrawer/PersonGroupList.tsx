@@ -6,7 +6,7 @@ import PersonGroupListItem from "./PersonGroupListItem";
 import { SortMethods } from "./PersonList";
 
 /** List of PersonGroup instances, with modification options */
-export default class PersonGroupList extends MountTrackedComponent<{}> {
+export default class PersonGroupList extends MountTrackedComponent<{ height?: string }> {
 	state = {
 		groupIds: PersonGroup.meta.objects.map(group => group.id),
 		openDialogNew: false,
@@ -37,8 +37,9 @@ export default class PersonGroupList extends MountTrackedComponent<{}> {
 		return (
 			<Fragment>
 				<List
+					style={this.props.height ? { height: this.props.height, overflowY: "auto" } : null}
 					subheader={
-						<ListSubheader>
+						<ListSubheader style={{ backgroundColor: "white" }}>
 							People
 							<HoverIconButton action={this.menuOpen} layers={1} style={{ float: "right" }}>
 								more_vert

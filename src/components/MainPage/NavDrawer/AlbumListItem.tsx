@@ -1,18 +1,26 @@
-import { Collapse, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem, TextField } from "@material-ui/core";
-import React from "react";
-import { Link } from "react-router-dom";
+import { Icon, ListItemIcon, ListSubheader, Menu, MenuItem, TextField } from "@material-ui/core";
+import React, { Fragment } from "react";
 import { Album } from "../../../models";
-import { HoverIconButton, ListDialog, LocationManager, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
+import { HoverIconButton, ListDialog, SimpleDialog, TextDialog } from "../../utils";
 import AlbumList from "./AlbumList";
+import HierarchyListItem from "./HierarchyListItem";
 
-export default class AlbumListItem extends MountTrackedComponent<{
-	albumId: number;
-	indent?: number;
-}> {
+/** ListItem to display a single album, with children as collapsible sub-list */
+export default class AlbumListItem extends HierarchyListItem<Album> {
+	static get modelType() {
+		return Album;
+	}
+
+	static get listComponent() {
+		return AlbumList;
+	}
+
+	static modelTypeName = "Album";
+
 	state = {
-		album: null as Album,
-		menuAnchorEl: null,
+		...this.state,
 		openCollapse: true,
+		menuAnchorEl: null,
 		openMenu: false,
 		openDialogRename: false,
 		openDialogNew: false,
@@ -21,19 +29,18 @@ export default class AlbumListItem extends MountTrackedComponent<{
 		loading: false
 	};
 
+	/** Current values of Dialog inputs */
 	updates: {
 		subName: string;
 		parent: number;
 	};
 
-	constructor(props: { albumId: number; indent?: number }) {
+	constructor(props: { modelId: number; indent?: number }) {
 		super(props);
-
-		this.updateHandler = Album.getById(props.albumId).updateHandlers.register((album: Album) => this.setStateSafe({ album: album }));
 
 		this.updates = {
 			subName: "",
-			parent: this.state.album.parent !== null ? this.state.album.parent.id : null
+			parent: this.state.model.parent !== null ? this.state.model.parent.id : null
 		};
 	}
 
@@ -49,134 +56,102 @@ export default class AlbumListItem extends MountTrackedComponent<{
 
 	dialogClose = type => this.setStateSafe({ ["openDialog" + type]: false, loading: false });
 
-	shouldComponentUpdate(nextProps, nextState) {
-		return this.props.albumId !== nextProps.albumId || this.props.indent !== nextProps.indent || this.state !== nextState;
+	renderMenuButton() {
+		return <HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>;
 	}
 
-	render() {
-		let Fragment = React.Fragment;
+	renderPopups() {
 		return (
 			<Fragment>
-				{/* Main album list item */}
-				<ListItem
-					button
-					style={{
-						padding: 6,
-						paddingLeft: 24 + (this.props.indent || 0) * 16
-					}}
+				{/* Options menu */}
+				<Menu
+					anchorEl={this.state.menuAnchorEl}
+					open={this.state.openMenu}
+					onClick={this.menuClose}
+					onClose={this.menuClose}
+					MenuListProps={{ subheader: <ListSubheader>{this.state.model.path}</ListSubheader> }}
 				>
-					<Link to={LocationManager.getUpdatedLocation(`/albums/${this.state.album.id}/`, ["page"])}>
-						<ListItemText primary={`${this.state.album.name} (${this.state.album.file_count})`} />
-					</Link>
+					<MenuItem onClick={() => this.dialogOpen("Rename")}>
+						<ListItemIcon>
+							<Icon>edit</Icon>
+						</ListItemIcon>
+						Rename
+					</MenuItem>
+					<MenuItem onClick={() => this.dialogOpen("New")}>
+						<ListItemIcon>
+							<Icon>add</Icon>
+						</ListItemIcon>
+						Create
+					</MenuItem>
+					<MenuItem onClick={() => this.dialogOpen("Parent")}>
+						<ListItemIcon>
+							<Icon>folder</Icon>
+						</ListItemIcon>
+						Change Parent
+					</MenuItem>
+					<MenuItem onClick={() => this.dialogOpen("Remove")}>
+						<ListItemIcon>
+							<Icon>delete</Icon>
+						</ListItemIcon>
+						Remove
+					</MenuItem>
+				</Menu>
 
-					<ListItemSecondaryAction>
-						<HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>
+				{/* Album rename dialog */}
+				<TextDialog
+					open={this.state.openDialogRename}
+					onClose={() => this.dialogClose("Rename")}
+					title="Rename Album"
+					actionText="Rename"
+					label="Album Name"
+					defaultValue={this.state.model.name}
+					action={(name: string) => Album.getById(this.props.modelId).updateSave({ name: name })}
+				/>
 
-						{this.state.album.children.length > 0 && (
-							<HoverIconButton action={() => this.setState({ openCollapse: !this.state.openCollapse })}>{this.state.openCollapse ? "expand_less" : "expand_more"}</HoverIconButton>
-						)}
-					</ListItemSecondaryAction>
-				</ListItem>
+				{/* New sub-album dialog */}
+				<SimpleDialog
+					open={this.state.openDialogNew}
+					onClose={() => this.dialogClose("New")}
+					title="Create Album"
+					actionText="Create"
+					action={() => Album.create(this.state.model.id, this.updates.subName)}
+				>
+					<TextField disabled label="Parent Album" defaultValue={this.state.model.path + "/"} />
+					<TextField autoFocus label="New Album" onChange={event => (this.updates.subName = event.currentTarget.value)} />
+				</SimpleDialog>
 
-				{/* Nested list of child albums */}
-				{this.state.album.children.length > 0 && (
-					<Collapse in={this.state.openCollapse}>
-						<AlbumList parentAlbumID={this.props.albumId} indent={this.props.indent + 1} />
-					</Collapse>
-				)}
+				{/* Change parent album dialog */}
+				<ListDialog
+					open={this.state.openDialogParent}
+					onClose={() => this.dialogClose("Parent")}
+					title="Change album parent"
+					actionText="Change Parent"
+					list={[{ id: null, name: "/", children: Album.rootAlbums }]}
+					selected={this.state.model.parent === null ? null : this.state.model.parent.id}
+					selectableFilter={id =>
+						id === null ||
+						!Album.getById(id)
+							.allParents.map(album => album.id)
+							.concat([id])
+							.includes(this.state.model.id)
+					}
+					openByDefault={true}
+					action={(parentId: number) => Album.getById(this.props.modelId).changeParent(parentId)}
+				/>
 
-				{/* Linked menu and dialogs for modifying album */}
-				<Fragment>
-					{/* Options menu */}
-					<Menu
-						anchorEl={this.state.menuAnchorEl}
-						open={this.state.openMenu}
-						onClick={this.menuClose}
-						onClose={this.menuClose}
-						MenuListProps={{ subheader: <ListSubheader>{this.state.album.path}</ListSubheader> }}
-					>
-						<MenuItem onClick={() => this.dialogOpen("Rename")}>
-							<ListItemIcon>
-								<Icon>edit</Icon>
-							</ListItemIcon>
-							Rename
-						</MenuItem>
-						<MenuItem onClick={() => this.dialogOpen("New")}>
-							<ListItemIcon>
-								<Icon>add</Icon>
-							</ListItemIcon>
-							Create
-						</MenuItem>
-						<MenuItem onClick={() => this.dialogOpen("Parent")}>
-							<ListItemIcon>
-								<Icon>folder</Icon>
-							</ListItemIcon>
-							Change Parent
-						</MenuItem>
-						<MenuItem onClick={() => this.dialogOpen("Remove")}>
-							<ListItemIcon>
-								<Icon>delete</Icon>
-							</ListItemIcon>
-							Remove
-						</MenuItem>
-					</Menu>
-
-					{/* Album rename dialog */}
-					<TextDialog
-						open={this.state.openDialogRename}
-						onClose={() => this.dialogClose("Rename")}
-						title="Rename Album"
-						actionText="Rename"
-						label="Album Name"
-						defaultValue={this.state.album.name}
-						action={(name: string) => Album.getById(this.props.albumId).updateSave({ name: name })}
-					/>
-
-					{/* New sub-album dialog */}
-					<SimpleDialog
-						open={this.state.openDialogNew}
-						onClose={() => this.dialogClose("New")}
-						title="Create Album"
-						actionText="Create"
-						action={() => Album.create(this.state.album.id, this.updates.subName)}
-					>
-						<TextField disabled label="Parent Album" defaultValue={this.state.album.path + "/"} />
-						<TextField autoFocus label="New Album" onChange={event => (this.updates.subName = event.currentTarget.value)} />
-					</SimpleDialog>
-
-					{/* Change parent album dialog */}
-					<ListDialog
-						open={this.state.openDialogParent}
-						onClose={() => this.dialogClose("Parent")}
-						title="Change album parent"
-						actionText="Change Parent"
-						list={[{ id: null, name: "/", children: Album.rootAlbums }]}
-						selected={this.state.album.parent === null ? null : this.state.album.parent.id}
-						selectableFilter={id =>
-							id === null ||
-							!Album.getById(id)
-								.allParents.map(album => album.id)
-								.concat([id])
-								.includes(this.state.album.id)
-						}
-						openByDefault={true}
-						action={(parentId: number) => Album.getById(this.props.albumId).changeParent(parentId)}
-					/>
-
-					{/* Delete album dialog */}
-					<SimpleDialog
-						open={this.state.openDialogRemove}
-						onClose={() => this.dialogClose("Remove")}
-						title="Remove Album"
-						text={
-							<Fragment>
-								Are you sure you want to delete the album <i>{this.state.album.name}</i>?
-							</Fragment>
-						}
-						actionText="Confirm"
-						action={() => Album.getById(this.props.albumId).delete()}
-					/>
-				</Fragment>
+				{/* Delete album dialog */}
+				<SimpleDialog
+					open={this.state.openDialogRemove}
+					onClose={() => this.dialogClose("Remove")}
+					title="Remove Album"
+					text={
+						<Fragment>
+							Are you sure you want to delete the album <i>{this.state.model.name}</i>?
+						</Fragment>
+					}
+					actionText="Confirm"
+					action={() => Album.getById(this.props.modelId).delete()}
+				/>
 			</Fragment>
 		);
 	}

@@ -5,16 +5,19 @@ import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { LocationManager } from "../../utils";
 import AlbumList from "./AlbumList";
+import FolderList from "./FolderList";
 import PersonGroupList from "./PersonGroupList";
 
 interface NavDrawerStyles {
 	toolbar;
 	drawer;
+	listsContainer;
 }
 
 // Navigation drawer class
 class NavDrawer extends React.Component<{ classes: NavDrawerStyles; width: Breakpoint }> {
 	static drawerWidth = 240;
+	static marginTop = 113;
 
 	static styles: (theme: Theme) => NavDrawerStyles = (theme: Theme) => ({
 		toolbar: theme.mixins.toolbar,
@@ -22,6 +25,9 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles; width: Break
 			width: NavDrawer.drawerWidth,
 			maxHeight: "100vh",
 			overflowY: "auto"
+		},
+		listsContainer: {
+			height: "calc(100vh - " + NavDrawer.marginTop + "px)"
 		}
 	});
 
@@ -52,13 +58,19 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles; width: Break
 					</ListItem>
 				</Link>
 
-				<Divider />
+				<div className={this.props.classes.listsContainer}>
+					<Divider />
 
-				<AlbumList />
+					<FolderList height="calc(33.3333% - 1px)" />
 
-				<Divider />
+					<Divider />
 
-				<PersonGroupList />
+					<AlbumList height="calc(33.3333% - 1px)" />
+
+					<Divider />
+
+					<PersonGroupList height="calc(33.3333% - 1px)" />
+				</div>
 			</div>
 		);
 

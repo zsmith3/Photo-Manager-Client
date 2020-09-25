@@ -115,7 +115,10 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 			this.addressUpdateHandler = null;
 		}
 
-		if (props.rootId === null) this.updateAddress(props, "/");
+		if (props.rootId === null) {
+			this.updateAddress(props, "/");
+			return;
+		}
 
 		switch (props.rootType) {
 			case "folders":

@@ -24,6 +24,17 @@ export class Folder extends BaseFolder {
 	/** Folder size (bytes) */
 	length: number;
 
+	/** Parent folder */
+	get parent(): Folder {
+		if (this.parentID === null) return null;
+		else return this.class.getById(this.parentID) as Folder;
+	}
+
+	/** Child folders */
+	get children(): Folder[] {
+		return Folder.meta.objects.filter(folder => folder.parentID === this.id);
+	}
+
 	/** Open folder in Application */
 	open() {
 		LocationManager.updateLocation("/folders/" + this.id + "/", ["page"]);
