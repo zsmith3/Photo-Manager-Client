@@ -62,18 +62,16 @@ class PersonListItem extends MountTrackedComponent<{
 		return (
 			<Fragment>
 				{/* Main Person list item */}
-				<ListItem button>
+				<ListItem button component={Link} to={LocationManager.getUpdatedLocation(`/people/${this.state.person.id}/`, ["page"])}>
 					<span className={this.props.classes.avatar}>
 						{this.state.thumbnailSrc ? <img className={this.props.classes.image} src={this.state.thumbnailSrc} /> : <Icon>face</Icon>}
 					</span>
 
-					<Link to={LocationManager.getUpdatedLocation(`/people/${this.state.person.id}/`, ["page"])}>
-						<ListItemText
-							primary={`${this.state.person.full_name} (${this.state.person.face_count_confirmed}${
-								this.state.person.face_count_unconfirmed ? `/${this.state.person.face_count_unconfirmed}` : ""
-							})`}
-						/>
-					</Link>
+					<ListItemText
+						primary={`${this.state.person.full_name} (${this.state.person.face_count_confirmed}${
+							this.state.person.face_count_unconfirmed ? `/${this.state.person.face_count_unconfirmed}` : ""
+						})`}
+					/>
 
 					<ListItemSecondaryAction>
 						<HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>

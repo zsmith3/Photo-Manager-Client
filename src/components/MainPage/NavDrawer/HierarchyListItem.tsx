@@ -43,12 +43,15 @@ export default abstract class HierarchyListItem<M extends Model & { name: string
 		return (
 			<Fragment>
 				{/* Main list item */}
-				<ListItem button style={{ padding: 6, paddingLeft: 24 + (this.props.indent || 0) * 16 }}>
-					<Link to={LocationManager.getUpdatedLocation(`/${this.class.modelTypeName.toLowerCase()}s/${this.state.model.id}/`, ["page"])}>
-						<ListItemText primary={`${this.state.model.name} (${this.state.model.file_count})`} />
-					</Link>
+				<ListItem
+					button
+					style={{ padding: 6, paddingLeft: 24 + (this.props.indent || 0) * 16 }}
+					component={Link}
+					to={LocationManager.getUpdatedLocation(`/${this.class.modelTypeName.toLowerCase()}s/${this.state.model.id}/`, ["page"])}
+				>
+					<ListItemText primary={`${this.state.model.name} (${this.state.model.file_count})`} />
 
-					<ListItemSecondaryAction>
+					<ListItemSecondaryAction onClick={event => event.preventDefault()}>
 						{this.renderMenuButton()}
 
 						{this.state.model.children.length > 0 && (

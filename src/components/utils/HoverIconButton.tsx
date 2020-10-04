@@ -17,8 +17,8 @@ export default class HoverIconButton extends React.Component<{
 	/** Instances of this component (for external reference) */
 	static instances: HoverIconButton[] = [];
 
-	/** Reference to the root element */
-	mainRef: React.RefObject<HTMLSpanElement>;
+	/** Reference to the button element */
+	buttonRef: React.RefObject<HTMLButtonElement>;
 
 	state = {
 		shouldHide: !Input.isTouching
@@ -27,7 +27,7 @@ export default class HoverIconButton extends React.Component<{
 	constructor(props) {
 		super(props);
 
-		this.mainRef = React.createRef();
+		this.buttonRef = React.createRef();
 
 		HoverIconButton.instances.push(this);
 	}
@@ -36,7 +36,12 @@ export default class HoverIconButton extends React.Component<{
 		if (!this.state.shouldHide) return;
 
 		let layers = this.props.layers || 2;
-		let currentElement = this.mainRef.current;
+
+		let buttonElement = this.buttonRef.current;
+		buttonElement.onfocus = () => !Input.isTouching && this.setState({ shouldHide: false });
+		buttonElement.onblur = () => !Input.isTouching && this.setState({ shouldHide: true });
+
+		let currentElement = buttonElement.parentElement;
 		for (let i = 0; i < layers; i++) currentElement = currentElement.parentElement;
 		currentElement.onmouseover = () =>
 			Array.from(currentElement.querySelectorAll("span"))
@@ -52,10 +57,9 @@ export default class HoverIconButton extends React.Component<{
 		return (
 			<span
 				className={this.state.shouldHide ? "hover-icon-button" : null}
-				ref={this.mainRef}
-				style={Object.assign(this.props.style || {}, this.state.shouldHide ? { opacity: 0, transition: "0.3s opacity ease-in-out" } : {})}
+				style={Object.assign(this.state.shouldHide ? { opacity: 0, transition: "0.3s opacity ease-in-out" } : {}, this.props.style || {})}
 			>
-				<IconButton onClick={this.props.action}>
+				<IconButton onClick={this.props.action} ref={this.buttonRef}>
 					<Icon>{this.props.children}</Icon>
 				</IconButton>
 			</span>

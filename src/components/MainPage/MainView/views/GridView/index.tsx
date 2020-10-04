@@ -1,7 +1,7 @@
 import { Checkbox, Grid, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, Theme, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
-import { isWidthDown, isWidthUp } from "@material-ui/core/withWidth";
-import React from "react";
+import { isWidthUp } from "@material-ui/core/withWidth";
+import React, { Fragment } from "react";
 import { List, ListRowProps } from "react-virtualized";
 import { Input } from "../../../../../controllers/Input";
 import { Model } from "../../../../../models";
@@ -56,7 +56,8 @@ interface GridViewProps {
 export abstract class GridView extends View<GridViewState, GridViewProps> {
 	static styles = (theme: Theme) => ({
 		mobileScaleSliderContainer: {
-			paddingRight: "20px"
+			height: 40,
+			paddingLeft: "20px"
 		},
 		scaleSlider: ScaleManager.sliderStyle(theme),
 		toolBar: {
@@ -231,42 +232,10 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 	renderContents() {
 		const rows: (GridViewRow | string | StandardRow)[] = this.getRows();
 
-		/* Mobile Toolbars */
-		if (isWidthDown("sm", this.props.width)) {
-			rows.unshift(
-				{
-					render: ({ index, style }) => (
-						<Grid container key={index} style={style} className={this.props.classes.mobileScaleSliderContainer}>
-							<Grid item xs={this.state.selection.length > 0 || this.props.rootType === "folders" ? 10 : 12}>
-								{this.scaleManager.render(this.props.classes.scaleSlider)}
-							</Grid>
-
-							{(this.state.selection.length > 0 || this.props.rootType === "folders") && (
-								<Grid item xs={2}>
-									<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
-										<Icon>more_vert</Icon>
-									</IconButton>
-								</Grid>
-							)}
-						</Grid>
-					),
-					height: ScaleManager.sliderHeight
-				},
-				{
-					render: ({ index, style }) => (
-						<div key={index} style={style}>
-							<PaginationDisplay page={this.props.page} pageSize={this.props.pageSize} totalCount={this.state.data.contents.count} />
-						</div>
-					),
-					height: ScaleManager.sliderHeight
-				}
-			);
-		}
-
 		return (
 			<div tabIndex={-1} onKeyUp={this.onKeyUp} ref={this.mainRef}>
 				{/* Desktop Toolbar */}
-				{isWidthUp("md", this.props.width) && (
+				{isWidthUp("md", this.props.width) ? (
 					<Grid container className={this.props.classes.toolBar}>
 						<Grid item md={3}>
 							{/* Scaling slider */}
@@ -284,6 +253,26 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 							</Grid>
 						)}
 					</Grid>
+				) : (
+					<Fragment>
+						{/* Mobile toolbars */}
+						<Grid container className={this.props.classes.mobileScaleSliderContainer}>
+							<Grid item xs={this.state.selection.length > 0 || this.props.rootType === "folders" ? 10 : 12}>
+								{this.scaleManager.render(this.props.classes.scaleSlider)}
+							</Grid>
+
+							{(this.state.selection.length > 0 || this.props.rootType === "folders") && (
+								<Grid item xs={2}>
+									<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
+										<Icon>more_vert</Icon>
+									</IconButton>
+								</Grid>
+							)}
+						</Grid>
+						<div className={this.props.classes.toolBar}>
+							<PaginationDisplay page={this.props.page} pageSize={this.props.pageSize} totalCount={this.state.data.contents.count} />
+						</div>
+					</Fragment>
 				)}
 
 				{/* Options menu */}
@@ -307,7 +296,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 					<List
 						ref={this.virtualList}
 						width={this.props.totalWidth}
-						height={this.props.totalHeight - (isWidthUp("md", this.props.width) ? ScaleManager.sliderHeight : 0)}
+						height={this.props.totalHeight - (isWidthUp("md", this.props.width) ? 1 : 2) * ScaleManager.sliderHeight}
 						style={{ paddingLeft: ScaleManager.horizontalPadding }}
 						rowCount={rows.length}
 						rowHeight={props => {

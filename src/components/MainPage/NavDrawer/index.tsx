@@ -52,11 +52,9 @@ class NavDrawer extends React.Component<{ classes: NavDrawerStyles; width: Break
 
 				<Divider />
 
-				<Link to={LocationManager.getUpdatedLocation(`/scans/`, ["page"])}>
-					<ListItem button>
-						<ListItemText primary="Scanned Photos" />
-					</ListItem>
-				</Link>
+				<ListItem button component={Link} to={LocationManager.getUpdatedLocation(`/scans/`, ["page"])}>
+					<ListItemText primary="Scanned Photos" />
+				</ListItem>
 
 				<div className={this.props.classes.listsContainer}>
 					<Divider />

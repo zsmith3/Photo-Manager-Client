@@ -1,32 +1,32 @@
 {
 	"name": "photo-manager-client",
 	"devDependencies": {
-		"@babel/core": "^7.9.0",
-		"@babel/plugin-transform-runtime": "^7.9.0",
+		"@babel/core": "^7.11.6",
+		"@babel/plugin-transform-runtime": "^7.11.5",
 		"cssnano": "^4.1.10",
 		"parcel-bundler": "^1.12.4",
 		"prettier": "^1.19.1",
-		"typescript": "^3.8.3"
+		"typescript": "^3.9.7"
 	},
 	"dependencies": {
 		"@material-ui/core": "^4.11.0",
 		"@material-ui/icons": "^4.9.1",
 		"@material-ui/lab": "^4.0.0-alpha.56",
-		"@types/google-maps-react": "^2.0.4",
-		"@types/jquery": "^3.3.34",
-		"@types/lodash": "^4.14.149",
+		"@types/googlemaps": "^3.39.13",
+		"@types/jquery": "^3.5.1",
+		"@types/lodash": "^4.14.161",
 		"@types/msgpack-lite": "^0.1.7",
-		"@types/react-dom": "^16.9.6",
+		"@types/react-dom": "^16.9.8",
 		"@types/react-router-dom": "^4.3.5",
-		"@types/react-virtualized": "^9.21.8",
+		"@types/react-virtualized": "^9.21.10",
 		"google-maps-react": "git+https://github.com/zsmith3/google-maps-react.git",
-		"jquery": "^3.5.0",
+		"jquery": "^3.5.1",
 		"msgpack-lite": "^0.1.26",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
 		"react-hammerjs": "^1.0.1",
-		"react-router-dom": "^5.1.2",
-		"react-virtualized": "^9.21.2"
+		"react-router-dom": "^5.2.0",
+		"react-virtualized": "^9.22.2"
 	},
 	"scripts": {
 		"install": "node ./scripts/install",
