@@ -30,6 +30,7 @@ See also [Photo-Manager-Server](https://github.com/zsmith3/Photo-Manager-Server/
 		- Run (from cordova directory) `cordova-icon` and `cordova-splash`
 	- Install external requirements to build to certain platforms (e.g. see [here](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#installing-the-requirements) for Android)
 
+Note: to avoid errors with google-maps-react, change `type Style = Object<string, string | number | boolean>` to `type Style = { [key: string]: string | number | boolean }` in `index.d.ts`.
 
 ## Building
 
