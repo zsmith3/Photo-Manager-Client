@@ -4,10 +4,11 @@ import { isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
 import { List, ListRowProps } from "react-virtualized";
 import { Input } from "../../../../../controllers/Input";
-import { Model } from "../../../../../models";
+import { Face, Model } from "../../../../../models";
 import RootModel, { objectSetType } from "../../../../../models/RootModel";
 import { LocationManager } from "../../../../utils";
 import BaseGridCard, { GridCardExport } from "../../cards/BaseGridCard";
+import FileCard from "../../cards/FileCard";
 import SelectionManager from "../SelectionManager";
 import View, { ViewProps, ViewState } from "../View";
 import PaginationDisplay from "./PaginationDisplay";
@@ -39,6 +40,7 @@ interface GridViewState extends ViewState {
 	};
 	menuOpen: boolean;
 	menuAnchorEl: HTMLElement;
+	facesUseFileThumbnails: boolean;
 }
 
 /** Data type for GridView props */
@@ -134,6 +136,15 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		}
 	};
 
+	private processData(data: { roots: objectSetType | null; contents: objectSetType }): { roots: objectSetType | null; contents: objectSetType } {
+		if (this.state.facesUseFileThumbnails && data.contents.card.modelType === "face") {
+			data.contents.objectIds = data.contents.objectIds.map(id => Face.getById(id).file.id).filter((v, i, a) => a.indexOf(v) === i);
+			data.contents.name = "Files";
+			data.contents.card = FileCard;
+		}
+		return data;
+	}
+
 	/**
 	 * Load data to be displayed, into `this.state` based on `this.props`
 	 * @param props Value of `this.props` to use
@@ -142,7 +153,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		if (props.rootId === null) {
 			// Load base root objects
 			const data = await this.class.rootModelClass.getAbsoluteRoots();
-			this.setState({ data: data, dataLoaded: true });
+			this.setState({ data: this.processData(data), dataLoaded: true });
 		} else {
 			// Load children of chosen root object
 			const rootObject = await this.class.rootModelClass.loadObject<RootModel>(props.rootId);
@@ -153,7 +164,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				props.pageSize,
 				props.searchQuery,
 				this.props.rootType === "folders" ? { isf: this.props.includeSubfolders } : {},
-				data => this.setState({ data: data, dataLoaded: true }),
+				data => this.setState({ data: this.processData(data), dataLoaded: true }),
 				error => {
 					if (!(typeof error === "string") && "detail" in error && error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
 					else throw error;
@@ -202,7 +213,8 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 			nextProps.searchQuery !== this.props.searchQuery ||
 			nextProps.includeSubfolders !== this.props.includeSubfolders ||
 			nextProps.page !== this.props.page ||
-			nextProps.pageSize !== this.props.pageSize
+			nextProps.pageSize !== this.props.pageSize ||
+			nextState.facesUseFileThumbnails !== this.state.facesUseFileThumbnails
 		) {
 			this.resetState();
 
@@ -241,11 +253,11 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 							{/* Scaling slider */}
 							{this.scaleManager.render(this.props.classes.scaleSlider)}
 						</Grid>
-						<Grid item md={this.props.rootType === "folders" ? 8 : 9}>
+						<Grid item md={this.props.rootType === "folders" || this.props.rootType === "people" ? 8 : 9}>
 							{/* Pagination links */}
 							<PaginationDisplay page={this.props.page} pageSize={this.props.pageSize} totalCount={this.state.data.contents.count} />
 						</Grid>
-						{this.props.rootType === "folders" && (
+						{(this.props.rootType === "folders" || this.props.rootType === "people") && (
 							<Grid item md={1}>
 								<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
 									<Icon>more_vert</Icon>
@@ -257,11 +269,11 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 					<Fragment>
 						{/* Mobile toolbars */}
 						<Grid container className={this.props.classes.mobileScaleSliderContainer}>
-							<Grid item xs={this.state.selection.length > 0 || this.props.rootType === "folders" ? 10 : 12}>
+							<Grid item xs={this.state.selection.length > 0 || this.props.rootType === "folders" || this.props.rootType === "people" ? 10 : 12}>
 								{this.scaleManager.render(this.props.classes.scaleSlider)}
 							</Grid>
 
-							{(this.state.selection.length > 0 || this.props.rootType === "folders") && (
+							{(this.state.selection.length > 0 || this.props.rootType === "folders" || this.props.rootType === "people") && (
 								<Grid item xs={2}>
 									<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
 										<Icon>more_vert</Icon>
@@ -283,12 +295,23 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 					onClose={this.menuClose}
 					MenuListProps={{ subheader: <ListSubheader>Display Options</ListSubheader> }}
 				>
-					<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
-						<ListItemIcon>
-							<Checkbox checked={this.props.includeSubfolders} />
-						</ListItemIcon>
-						Show subfolder contents
-					</MenuItem>
+					{this.props.rootType === "folders" && (
+						<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
+							<ListItemIcon>
+								<Checkbox checked={this.props.includeSubfolders} />
+							</ListItemIcon>
+							Show subfolder contents
+						</MenuItem>
+					)}
+
+					{this.props.rootType === "people" && (
+						<MenuItem onClick={() => this.setState({ facesUseFileThumbnails: !this.state.facesUseFileThumbnails })}>
+							<ListItemIcon>
+								<Checkbox checked={this.state.facesUseFileThumbnails} />
+							</ListItemIcon>
+							Show file thumbnails
+						</MenuItem>
+					)}
 				</Menu>
 
 				{/* Main virtualised list */}

@@ -42,7 +42,7 @@ export default class ScaleManager {
 
 	/** Get default/range for scale, based on the GridCard for the contents model */
 	private getScaleConfig(): { max: number; min: number; default: number } {
-		return this.view.class.rootModelClass.rootModelMeta.contentsCard.scaleConfig;
+		return this.view.state.data ? this.view.state.data.contents.card.scaleConfig : this.view.class.rootModelClass.rootModelMeta.contentsCard.scaleConfig;
 	}
 
 	/**
