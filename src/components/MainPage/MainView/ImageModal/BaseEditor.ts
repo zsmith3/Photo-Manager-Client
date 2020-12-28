@@ -40,7 +40,7 @@ export default abstract class BaseEditor<M extends BaseImageFile> {
 	setPublicData: (data: ESDOptional) => void;
 
 	/** Run any EditorMenu action */
-	abstract async menuAction(action: string, ...args: any[]): Promise<void>;
+	abstract menuAction(action: string, ...args: any[]): Promise<void>;
 
 	/** Mouse move event handler */
 	abstract onMouseMove(x: number, y: number): void;

@@ -11,6 +11,7 @@ import { UpdateHandler } from "../../../../utils";
 import { ImageLoader, LocationManager } from "../../../utils";
 import { EditorSharedData } from "./BaseEditor";
 import EditorCanvas from "./EditorCanvas";
+import FileInfoPane from "./FileInfoPane";
 import ScanEditorMenu from "./ScanEditorMenu";
 
 /** Props type for ImageModal */
@@ -28,7 +29,8 @@ interface Props {
 		arrowIcon: string;
 		arrowLeft: string;
 		arrowRight: string;
-		closeIcon: string;
+		rightIconContainer: string;
+		rightIcon: string;
 		editIcon: string;
 		progressBar: string;
 	};
@@ -78,11 +80,13 @@ class ImageModal extends React.Component<Props> {
 		arrowRight: {
 			right: "calc(10px + 2%)"
 		},
-		closeIcon: {
-			color: "white",
-			fontSize: 40,
+		rightIconContainer: {
 			position: "absolute" as "absolute",
 			right: 5
+		},
+		rightIcon: {
+			color: "white",
+			fontSize: 40
 		},
 		editIcon: {
 			color: "white"
@@ -118,6 +122,9 @@ class ImageModal extends React.Component<Props> {
 			left: 0,
 			top: 0
 		},
+
+		/** Whether the file info pane is displayed */
+		showInfo: false,
 
 		/** Whether editing mode is enabled */
 		editMode: false,
@@ -190,17 +197,21 @@ class ImageModal extends React.Component<Props> {
 	 * @param maxH Maximum height of the image ("min" fits image to screen size, "max" shows it at original size)
 	 * @param xPos X position of the left edge of the image ("c" to horizontally centre the image)
 	 * @param yPos Y position of the top edge of the image	("c" to vertically centre the image)
+	 * @param newState Additional state properties to change
 	 */
-	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number) {
+	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number, newState: { showInfo?: boolean } = {}) {
 		let previousZoomState = this.fileZoomStates.get(this.state.file.id);
 		let toolBarHeight = 64; // TODO height of the top imagemodal bar
 		let verticalMargin = 20;
+		let infoPaneWidth = ("showInfo" in newState ? newState.showInfo : this.state.showInfo) ? 0.2 * window.innerWidth : 0;
+		let horizontalMargin = (isWidthUp("md", this.props.width) ? 300 : window.innerWidth > window.innerHeight ? 150 : 0) + infoPaneWidth;
+		let fullWidth = window.innerWidth - infoPaneWidth;
 
 		// Calculate bounding box
 		maxW = maxW || previousZoomState.maxW || "min";
 		maxH = maxH || previousZoomState.maxH || "min";
 		if (maxW == "max") maxW = this.state.file.width;
-		else if (maxW == "min") maxW = window.innerWidth - (isWidthUp("md", this.props.width) ? 300 : window.innerWidth > window.innerHeight ? 150 : 0);
+		else if (maxW == "min") maxW = window.innerWidth - horizontalMargin;
 		if (maxH == "max") maxH = this.state.file.height;
 		else if (maxH == "min") maxH = window.innerHeight - toolBarHeight - verticalMargin;
 
@@ -217,7 +228,7 @@ class ImageModal extends React.Component<Props> {
 		// Calculate new position
 		if (xPos !== 0) xPos = xPos || previousZoomState.xPos || "c";
 		if (yPos !== 0) yPos = yPos || previousZoomState.yPos || "c";
-		if (xPos === "c") xPos = (window.innerWidth - newWidth) / 2;
+		if (xPos === "c") xPos = (fullWidth - newWidth) / 2;
 		if (yPos === "c") yPos = (window.innerHeight - newHeight + toolBarHeight) / 2;
 
 		// Update state
@@ -227,7 +238,8 @@ class ImageModal extends React.Component<Props> {
 				height: newHeight,
 				left: xPos,
 				top: yPos
-			}
+			},
+			...newState
 		});
 
 		// Store persistent zoom state for this file
@@ -421,60 +433,70 @@ class ImageModal extends React.Component<Props> {
 								{this.state.file && this.state.file.name}
 							</Typography>
 
-							<IconButton onClick={() => this.close()}>
-								<Icon className={this.props.classes.closeIcon}>clear</Icon>
-							</IconButton>
+							<div className={this.props.classes.rightIconContainer}>
+								<IconButton onClick={() => this.setZoom("min", "min", "c", "c", { showInfo: !this.state.showInfo })}>
+									<Icon className={this.props.classes.rightIcon}>info</Icon>
+								</IconButton>
+
+								<IconButton onClick={() => this.close()}>
+									<Icon className={this.props.classes.rightIcon}>clear</Icon>
+								</IconButton>
+							</div>
 						</Toolbar>
 					</AppBar>
 
-					{/* Loading bar */}
-					{this.state.editMode && this.state.editData.loading && <LinearProgress className={this.props.classes.progressBar} />}
+					<div style={{ position: "relative", width: this.state.showInfo ? "80vw" : "100vw", height: "100vh", display: "inline-block" }}>
+						{/* Loading bar */}
+						{this.state.editMode && this.state.editData.loading && <LinearProgress className={this.props.classes.progressBar} />}
 
-					{/* Main image */}
-					<Hammer onSwipe={this.onSwipe} onPinchStart={this.onPinchStart} onPinch={this.onPinch} onPan={this.onPan} options={{ recognizers: { pinch: { enable: true } } }}>
-						<div
-							onDoubleClick={() => (!this.state.editMode || this.state.editData.cursor === 0) && this.setZoom("min", "min", "c", "c")}
-							onWheel={event => (!this.state.editMode || this.state.editData.cursor === 0) && this.zoom(1 - event.deltaY / 500, event.clientX, event.clientY)}
-						>
-							{this.state.file && (
-								<ImageLoader
-									model={this.state.file}
-									maxSize={FileImgSizes.Original}
-									maxFirstSize={FileImgSizes.Large}
-									noQueue={true}
-									className={this.props.classes.img}
-									style={{ cursor: !this.state.editMode || this.state.editData.cursor === 0 ? "move" : "default", ...this.state.imgZoomStyle }}
-									onFirstLoad={() => this.setZoom("min", "min", "c", "c")}
-								/>
-							)}
-							{this.props.type === "scan" && (
-								<EditorCanvas
-									ref={this.editorRef}
-									style={{ pointerEvents: !this.state.editMode || this.state.editData.cursor === 0 ? "none" : "auto", ...this.state.imgZoomStyle }}
-									enabled={this.state.editMode}
-									type={this.props.type}
-									data={this.getEditData()}
-									updateData={this.updateEditData}
-								/>
-							)}
-						</div>
-					</Hammer>
+						{/* Main image */}
+						<Hammer onSwipe={this.onSwipe} onPinchStart={this.onPinchStart} onPinch={this.onPinch} onPan={this.onPan} options={{ recognizers: { pinch: { enable: true } } }}>
+							<div
+								onDoubleClick={() => (!this.state.editMode || this.state.editData.cursor === 0) && this.setZoom("min", "min", "c", "c")}
+								onWheel={event => (!this.state.editMode || this.state.editData.cursor === 0) && this.zoom(1 - event.deltaY / 500, event.clientX, event.clientY)}
+							>
+								{this.state.file && (
+									<ImageLoader
+										model={this.state.file}
+										maxSize={FileImgSizes.Original}
+										maxFirstSize={FileImgSizes.Large}
+										noQueue={true}
+										className={this.props.classes.img}
+										style={{ cursor: !this.state.editMode || this.state.editData.cursor === 0 ? "move" : "default", ...this.state.imgZoomStyle }}
+										onFirstLoad={() => this.setZoom("min", "min", "c", "c")}
+									/>
+								)}
+								{this.props.type === "scan" && (
+									<EditorCanvas
+										ref={this.editorRef}
+										style={{ pointerEvents: !this.state.editMode || this.state.editData.cursor === 0 ? "none" : "auto", ...this.state.imgZoomStyle }}
+										enabled={this.state.editMode}
+										type={this.props.type}
+										data={this.getEditData()}
+										updateData={this.updateEditData}
+									/>
+								)}
+							</div>
+						</Hammer>
 
-					{/* Arrows */}
-					{this.props.lastItemId !== null && (
-						<IconButton className={[this.props.classes.arrows, arrowPosClass, this.props.classes.arrowLeft].join(" ")} onClick={() => this.switchFile("last")}>
-							<Icon className={this.props.classes.arrowIcon}>keyboard_arrow_left</Icon>
-						</IconButton>
-					)}
-					{this.props.nextItemId !== null && (
-						<IconButton className={[this.props.classes.arrows, arrowPosClass, this.props.classes.arrowRight].join(" ")} onClick={() => this.switchFile("next")}>
-							<Icon className={this.props.classes.arrowIcon}>keyboard_arrow_right</Icon>
-						</IconButton>
-					)}
+						{/* Arrows */}
+						{this.props.lastItemId !== null && (
+							<IconButton className={[this.props.classes.arrows, arrowPosClass, this.props.classes.arrowLeft].join(" ")} onClick={() => this.switchFile("last")}>
+								<Icon className={this.props.classes.arrowIcon}>keyboard_arrow_left</Icon>
+							</IconButton>
+						)}
+						{this.props.nextItemId !== null && (
+							<IconButton className={[this.props.classes.arrows, arrowPosClass, this.props.classes.arrowRight].join(" ")} onClick={() => this.switchFile("next")}>
+								<Icon className={this.props.classes.arrowIcon}>keyboard_arrow_right</Icon>
+							</IconButton>
+						)}
 
-					{this.state.editMode && this.props.type === "scan" && (
-						<ScanEditorMenu data={this.getEditData<Scan>()} action={(action, ...args) => this.editorRef.current.menuAction(action, ...args)} />
-					)}
+						{this.state.editMode && this.props.type === "scan" && (
+							<ScanEditorMenu data={this.getEditData<Scan>()} action={(action, ...args) => this.editorRef.current.menuAction(action, ...args)} />
+						)}
+					</div>
+
+					{this.state.showInfo && <FileInfoPane fileId={this.props.itemId} />}
 				</div>
 			</Modal>
 		);

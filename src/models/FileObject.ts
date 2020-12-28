@@ -21,7 +21,7 @@ export class FileObject extends BaseImageFile {
 	/** File model metadata */
 	static meta = new ModelMeta<FileObject>({
 		modelName: DBTables.File,
-		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted"],
+		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted", "notes"],
 		specialProps: {
 			geotag: {
 				deserialize: (file: FileObject, prop) => {
@@ -65,6 +65,9 @@ export class FileObject extends BaseImageFile {
 
 	/** Whether file is marked for deletion */
 	is_deleted: boolean;
+
+	/** Comments/notes added to the file */
+	notes: string;
 
 	/** File geotag ID */
 	private geotagID: number;

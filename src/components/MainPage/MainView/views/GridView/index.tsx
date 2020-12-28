@@ -231,7 +231,11 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		// Set document focus to this on page change
 		let interval: NodeJS.Timeout;
 		let doFocus = () => {
-			if (this.mainRef.current !== null) {
+			if (LocationManager.currentQuery.get("file") || LocationManager.currentQuery.get("face") || LocationManager.currentQuery.get("scan")) {
+				// Cancel if ImageModal open
+				clearInterval(interval);
+			} else if (this.mainRef.current !== null) {
+				console.log("refocus");
 				this.mainRef.current.focus();
 				clearInterval(interval);
 			}
