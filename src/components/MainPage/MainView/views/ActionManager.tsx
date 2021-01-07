@@ -109,13 +109,13 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								Remove from Album
 							</MenuItem>
 						),
-						<MenuItem key="geotag_edit" onClick={() => this.dialogOpen("geotag_edit")}>
+						<MenuItem key="geotag_edit" onClick={() => this.dialogOpen("geotag_edit")} disabled={!selection.every(id => FileObject.getById(id).type === "image")}>
 							<ListItemIcon>
 								<Icon>my_location</Icon>
 							</ListItemIcon>
 							Edit Geotag
 						</MenuItem>,
-						<MenuItem key="rotate" onClick={() => this.dialogOpen("rotate")}>
+						<MenuItem key="rotate" onClick={() => this.dialogOpen("rotate")} disabled={!selection.every(id => FileObject.getById(id).type === "image")}>
 							<ListItemIcon>
 								<Icon>rotate_90_degrees_ccw</Icon>
 							</ListItemIcon>

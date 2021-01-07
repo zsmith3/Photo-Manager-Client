@@ -152,7 +152,7 @@ class ImageModal extends React.Component<Props> {
 					if (this.props.nextItemId !== null) this.switchFile("next");
 					else if (this.props.lastItemId !== null) this.switchFile("last");
 					else this.close();
-				} else this.setZoom("min", "min", "c", "c", {file: obj});
+				} else this.setZoom("min", "min", "c", "c", { file: obj });
 			});
 		};
 		switch (type) {
@@ -199,7 +199,7 @@ class ImageModal extends React.Component<Props> {
 	 * @param yPos Y position of the top edge of the image	("c" to vertically centre the image)
 	 * @param newState Additional state properties to change
 	 */
-	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number, newState: { showInfo?: boolean, file?: BaseImageFile } = {}) {
+	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number, newState: { showInfo?: boolean; file?: BaseImageFile } = {}) {
 		let file = newState.file || this.state.file;
 		let previousZoomState = this.fileZoomStates.get(file.id);
 		let toolBarHeight = 64; // TODO height of the top imagemodal bar
