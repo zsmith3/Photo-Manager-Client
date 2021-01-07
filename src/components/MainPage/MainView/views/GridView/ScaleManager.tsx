@@ -1,6 +1,7 @@
-import { Slider, Theme } from "@material-ui/core";
+import { isWidthUp, Slider, Theme } from "@material-ui/core";
 import React from "react";
 import { GridView } from ".";
+import { Database } from "../../../../../controllers/Database";
 import BaseGridCard from "../../cards/BaseGridCard";
 
 /** Manager for GridCard scaling in GridView */
@@ -32,7 +33,7 @@ export default class ScaleManager {
 	constructor(view: GridView) {
 		this.view = view;
 
-		this.view.state.currentScale = this.getScaleConfig().default;
+		this.view.state.currentScale = this.getScaleFromProp(Database.auth.getConfig("thumb_scale", isWidthUp("md", view.props.width)));
 	}
 
 	/** Get the actual width which can be occupied by all GridCards */
@@ -43,6 +44,26 @@ export default class ScaleManager {
 	/** Get default/range for scale, based on the GridCard for the contents model */
 	private getScaleConfig(): { max: number; min: number; default: number } {
 		return this.view.state.data ? this.view.state.data.contents.card.scaleConfig : this.view.class.rootModelClass.rootModelMeta.contentsCard.scaleConfig;
+	}
+
+	/**
+	 * Get scale in pixels from proportion (i.e. 0 to 1)
+	 * @param prop Scale proportion
+	 * @returns Actual scale in pixels
+	 */
+	getScaleFromProp(prop: number) {
+		const config = this.getScaleConfig();
+		return config.min + (config.max - config.min) * prop;
+	}
+
+	/**
+	 * Get scale proportion (0 to 1) from actual scale (pixels)
+	 * @param scale Scale in pixels
+	 * @returns Scale proportion
+	 */
+	getPropFromScale(scale: number) {
+		const config = this.getScaleConfig();
+		return (scale - config.min) / (config.max - config.min);
 	}
 
 	/**
@@ -81,7 +102,6 @@ export default class ScaleManager {
 
 		let minCount = this.getCountFromScale(config.max);
 		let maxCount = this.getCountFromScale(config.min);
-		let defaultCount = this.getCountFromScale(config.default);
 
 		return (
 			<Slider
@@ -91,7 +111,9 @@ export default class ScaleManager {
 				max={-minCount}
 				step={1}
 				onChange={(event, value) => this.view.setState({ currentScale: this.getScaleFromCount(-value) })}
-				onDoubleClick={event => this.view.setState({ currentScale: this.getScaleFromCount(defaultCount) })}
+				onChangeCommitted={(event, value) =>
+					Database.auth.updateConfig("thumb_scale", isWidthUp("md", this.view.props.width), this.getPropFromScale(this.getScaleFromCount(-value)))
+				}
 			/>
 		);
 	}

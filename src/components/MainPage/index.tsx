@@ -3,6 +3,7 @@ import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import { Location } from "history";
 import React, { Fragment } from "react";
+import { Database } from "../../controllers/Database";
 import { trimStr } from "../../utils";
 import { addressRootTypes } from "../App";
 import { LocationManager } from "../utils";
@@ -46,7 +47,7 @@ class MainPage extends React.Component<{ classes: { rightOfNavDrawer: string; to
 			} // TODO
 		} else addressRootId = null;
 		let addressPage = parseInt(LocationManager.currentQuery.get("page")) || 1;
-		let addressPageSize = parseInt(LocationManager.currentQuery.get("page_size")) || 100;
+		let addressPageSize = parseInt(LocationManager.currentQuery.get("page_size")) || Database.auth.getConfig("page_size", isWidthUp("md", this.props.width));
 
 		// Sizing
 		let toolbarHeight: number;
