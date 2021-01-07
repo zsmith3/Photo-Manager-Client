@@ -4,6 +4,7 @@ import { CSSProperties } from "@material-ui/core/styles/withStyles";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
 import { Link } from "react-router-dom";
+import { Database } from "../../../../../controllers/Database";
 import { LocationManager } from "../../../../utils";
 
 /** CSS Styles for PaginationDisplay */
@@ -61,6 +62,18 @@ class PaginationDisplay extends React.Component<Props> {
 				marginLeft: 5
 			}
 		} as Styles<CSSProperties>);
+
+	/**
+	 * Update URL and database on page size change
+	 * @param event Select element onChange event
+	 */
+	onChangePageSize = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
+		LocationManager.updateQuery({
+			page_size: event.target.value.toString(),
+			page: Math.floor(((this.props.page - 1) * this.props.pageSize) / parseInt(event.target.value.toString()) + 1).toString()
+		});
+		Database.auth.updateConfig("page_size", isWidthUp("md", this.props.width), event.target.value.toString());
+	};
 
 	render() {
 		let currentPage = this.props.page;
@@ -127,15 +140,7 @@ class PaginationDisplay extends React.Component<Props> {
 					</Typography>
 				</Grid>
 				<Grid item xs={3} md={2}>
-					<Select
-						value={this.props.pageSize}
-						onChange={event =>
-							LocationManager.updateQuery({
-								page_size: event.target.value.toString(),
-								page: Math.floor(((currentPage - 1) * this.props.pageSize) / parseInt(event.target.value.toString()) + 1).toString()
-							})
-						}
-					>
+					<Select value={this.props.pageSize} onChange={this.onChangePageSize}>
 						{[10, 25, 50, 100, 200, 500, 1000].map(page_size => (
 							<MenuItem key={page_size} value={page_size} className={this.props.classes.menuItem}>
 								{page_size}

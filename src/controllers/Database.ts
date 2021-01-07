@@ -55,6 +55,9 @@ abstract class BaseDatabase {
 
 	/** Authorisation-related functions */
 	auth: {
+		/** Local storage of user config settings */
+		config: { desktop_thumb_scale; mobile_thumb_scale; desktop_page_size; mobile_page_size };
+
 		/**
 		 * Determine whether the user is authorised to access the database
 		 * @returns Promise representing whether or not user is authorised
@@ -128,23 +131,26 @@ class WebDatabase extends BaseDatabase {
 	}
 
 	auth = {
+		config: null as { desktop_thumb_scale: number; mobile_thumb_scale: number; desktop_page_size: string; mobile_page_size: string },
+
 		checkAuth(): Promise<boolean> {
 			return new Promise((resolve, reject) => {
 				apiRequest("membership/status/")
 					.then(data => {
 						if (data.authenticated) {
 							window.sessionStorage.setItem("csrf_token", data.csrf_token);
+							this.config = data.config;
 
 							resolve(true);
 						} else {
-							Database.auth.logOut();
+							this.logOut();
 							resolve(false);
 						}
 					})
 					.catch(err => {
 						if (!(typeof err === "string") && "detail" in err) {
 							// TODO can't use in operator if err is a string
-							Database.auth.logOut();
+							this.logOut();
 						} else {
 							reject();
 						}
@@ -152,6 +158,27 @@ class WebDatabase extends BaseDatabase {
 						resolve(false);
 					});
 			});
+		},
+
+		/**
+		 * Get a config variable for current platform
+		 * @param name Variable name
+		 * @param isDesktop Whether current screen width is large
+		 */
+		getConfig(name: string, isDesktop: boolean) {
+			return this.config[(isDesktop ? "desktop" : "mobile") + "_" + name];
+		},
+
+		/**
+		 * Update (on remote database) a config variable (for current platform)
+		 * @param name Variable name
+		 * @param isDesktop Whether current screen width is large
+		 * @param value New value for variable
+		 */
+		updateConfig(name: string, isDesktop: boolean, value: any) {
+			let key = (isDesktop ? "desktop" : "mobile") + "_" + name;
+			this.config[key] = value;
+			return apiRequest("membership/status/", "PATCH", { config: { [key]: value } });
 		},
 
 		logIn(username: string, password: string, remain_in: boolean): Promise<void> {
