@@ -117,16 +117,14 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 	}
 
 	/** Reload the image on model updates */
-	onModelUpdate = () => {
+	onModelUpdate = model => {
 		this.state.imageData = null;
 		this.state.loadState = null;
-		this.loadFirst(this.props);
+		this.loadFirst({ ...this.props, model: model });
 	};
 
 	constructor(props: ImageLoaderPropsType) {
 		super(props);
-
-		this.loadFirst(props);
 
 		this.updateHandler = props.model.class.getById(props.model.id).updateHandlers.register(this.onModelUpdate);
 	}
@@ -152,11 +150,12 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 				this.state.imageData = null;
 				this.state.loadState = null;
 				this.updateHandler.unregister();
+				// (initial load is run by update handler upon registering)
 				this.updateHandler = nextProps.model.class.getById(nextProps.model.id).updateHandlers.register(this.onModelUpdate);
+			} else {
+				// Run the initial load given the new props
+				this.loadFirst(nextProps);
 			}
-
-			// Run the initial load given the new props
-			this.loadFirst(nextProps);
 
 			// No re-render yet
 			return false;

@@ -235,7 +235,6 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				// Cancel if ImageModal open
 				clearInterval(interval);
 			} else if (this.mainRef.current !== null) {
-				console.log("refocus");
 				this.mainRef.current.focus();
 				clearInterval(interval);
 			}
