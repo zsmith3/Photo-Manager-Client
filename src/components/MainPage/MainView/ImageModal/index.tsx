@@ -152,7 +152,7 @@ class ImageModal extends React.Component<Props> {
 					if (this.props.nextItemId !== null) this.switchFile("next");
 					else if (this.props.lastItemId !== null) this.switchFile("last");
 					else this.close();
-				} else this.setState({ file: obj });
+				} else this.setZoom("min", "min", "c", "c", {file: obj});
 			});
 		};
 		switch (type) {
@@ -199,8 +199,9 @@ class ImageModal extends React.Component<Props> {
 	 * @param yPos Y position of the top edge of the image	("c" to vertically centre the image)
 	 * @param newState Additional state properties to change
 	 */
-	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number, newState: { showInfo?: boolean } = {}) {
-		let previousZoomState = this.fileZoomStates.get(this.state.file.id);
+	setZoom(maxW: "min" | "max" | number, maxH: "min" | "max" | number, xPos: "c" | number, yPos: "c" | number, newState: { showInfo?: boolean, file?: BaseImageFile } = {}) {
+		let file = newState.file || this.state.file;
+		let previousZoomState = this.fileZoomStates.get(file.id);
 		let toolBarHeight = 64; // TODO height of the top imagemodal bar
 		let verticalMargin = 20;
 		let infoPaneWidth = ("showInfo" in newState ? newState.showInfo : this.state.showInfo) ? 0.2 * window.innerWidth : 0;
@@ -210,19 +211,19 @@ class ImageModal extends React.Component<Props> {
 		// Calculate bounding box
 		maxW = maxW || previousZoomState.maxW || "min";
 		maxH = maxH || previousZoomState.maxH || "min";
-		if (maxW == "max") maxW = this.state.file.width;
+		if (maxW == "max") maxW = file.width;
 		else if (maxW == "min") maxW = window.innerWidth - horizontalMargin;
-		if (maxH == "max") maxH = this.state.file.height;
+		if (maxH == "max") maxH = file.height;
 		else if (maxH == "min") maxH = window.innerHeight - toolBarHeight - verticalMargin;
 
 		// Calculate new size
 		let newWidth: number, newHeight: number;
-		if (maxW / maxH > this.state.file.width / this.state.file.height) {
-			newWidth = (maxH * this.state.file.width) / this.state.file.height;
+		if (maxW / maxH > file.width / file.height) {
+			newWidth = (maxH * file.width) / file.height;
 			newHeight = maxH;
 		} else {
 			newWidth = maxW;
-			newHeight = (maxW * this.state.file.height) / this.state.file.width;
+			newHeight = (maxW * file.height) / file.width;
 		}
 
 		// Calculate new position
@@ -243,7 +244,7 @@ class ImageModal extends React.Component<Props> {
 		});
 
 		// Store persistent zoom state for this file
-		this.fileZoomStates.set(this.state.file.id, {
+		this.fileZoomStates.set(file.id, {
 			maxW: maxW,
 			maxH: maxH,
 			xPos: xPos,

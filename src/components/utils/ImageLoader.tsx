@@ -121,6 +121,11 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 		this.state.imageData = null;
 		this.state.loadState = null;
 		this.loadFirst({ ...this.props, model: model });
+		// TODO want to be able to run update handlers when a new img size is loaded
+		// (e.g. so if we have two instances of the same image they update each other)
+		// but this currently isn't worth it because this function is run repeatedly
+		// want to refactor so that ImageLoader gets image src from update handlers,
+		// rather than directly from the call to load
 	};
 
 	constructor(props: ImageLoaderPropsType) {
@@ -152,13 +157,14 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 				this.updateHandler.unregister();
 				// (initial load is run by update handler upon registering)
 				this.updateHandler = nextProps.model.class.getById(nextProps.model.id).updateHandlers.register(this.onModelUpdate);
+				return true;
 			} else {
 				// Run the initial load given the new props
 				this.loadFirst(nextProps);
-			}
 
-			// No re-render yet
-			return false;
+				// No re-render yet
+				return false;
+			}
 		}
 	}
 
@@ -170,12 +176,13 @@ export default class ImageLoader extends MountTrackedComponent<ImageLoaderPropsT
 				{this.state.imageData === null ? (
 					this.props.style && (
 						<Icon
+							className={this.props.className}
 							style={{
-								width: this.props.style.width,
-								height: this.props.style.height,
+								...this.props.style,
 								fontSize: Math.min(this.props.style.width, this.props.style.height),
 								lineHeight: this.props.style.height + "px",
-								textAlign: "center"
+								textAlign: "center",
+								backgroundColor: "white"
 							}}
 						>
 							{this.props.model.imageMaterialIcon}
