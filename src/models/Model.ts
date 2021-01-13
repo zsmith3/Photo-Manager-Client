@@ -413,6 +413,7 @@ export class Model {
 
 	/**
 	 * Update model instance properties from data object
+	 * (accepts specialProps by remote name rather than local name)
 	 * @param obj Data object from which to update model instance
 	 * @param handleUpdate Whether to run update handler functions (default = true)
 	 */

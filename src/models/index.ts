@@ -9,3 +9,4 @@ export { Folder } from "./Folder";
 export { GeoTagArea, GeoTag } from "./GeoTag";
 export { PersonGroup, Person } from "./Person";
 export { ScanFolder } from "./ScanFolder";
+export { AuthGroup } from "./AuthGroup";

@@ -211,6 +211,9 @@ export class ListDialog extends React.Component<{
 		if (nextProps.list !== this.props.list) {
 			this.initItemsOpen(this.props.list);
 			return false;
+		} else if (nextProps.selected !== this.props.selected) {
+			this.setState({ selected: nextProps.selected });
+			return false;
 		} else return true;
 	}
 

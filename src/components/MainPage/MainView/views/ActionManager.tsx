@@ -1,6 +1,6 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, Radio, RadioGroup } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { Album, Face, FileObject, Person, PersonGroup } from "../../../../models";
+import { Album, AuthGroup, Face, FileObject, Person, PersonGroup } from "../../../../models";
 import { RotateDirection } from "../../../../models/FileObject";
 import { promiseChain } from "../../../../utils";
 import { addressRootTypes } from "../../../App";
@@ -28,6 +28,7 @@ interface ActionManagerState {
 		person_unknown: boolean;
 		person_not: boolean;
 		rotate: boolean;
+		access_edit: boolean;
 	};
 	/** State of additional options within dialogs */
 	dialogOptions: {
@@ -49,7 +50,8 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 			person_edit: false,
 			person_unknown: false,
 			person_not: false,
-			rotate: false
+			rotate: false,
+			access_edit: false
 		},
 		dialogOptions: {
 			album_remove_parents: false,
@@ -120,6 +122,12 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								<Icon>rotate_90_degrees_ccw</Icon>
 							</ListItemIcon>
 							Rotate
+						</MenuItem>,
+						<MenuItem key="access_edit" onClick={() => this.dialogOpen("access_edit")}>
+							<ListItemIcon>
+								<Icon>security</Icon>
+							</ListItemIcon>
+							Change access
 						</MenuItem>
 					]}
 
@@ -247,6 +255,28 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								</RadioGroup>
 							</FormControl>
 						</SimpleDialog>
+
+						{/* Edit access permissions */}
+						<ListDialog
+							open={this.state.openDialogs.access_edit}
+							onClose={() => this.dialogClose("access_edit")}
+							title="Edit access to file(s)"
+							actionText="Confirm"
+							list={AuthGroup.meta.objects}
+							selected={(() => {
+								let groups = selection.map(id => FileObject.getById(id).accessGroupId).filter((v, i, a) => a.indexOf(v) === i);
+								if (groups.length === 1) return groups[0];
+								else return null;
+							})()}
+							action={(authGroupId: number) =>
+								promiseChain(selection, (resolve, reject, id) =>
+									FileObject.getById(id)
+										.updateSave({ access_group: authGroupId })
+										.then(resolve)
+										.catch(reject)
+								)
+							}
+						/>
 					</Fragment>
 				)}
 

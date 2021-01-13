@@ -14,7 +14,8 @@ export enum DBTables {
 	GeoTag = "geotags",
 	AlbumFile = "album-files",
 	Scan = "scans",
-	ScanFolder = "scan-folders"
+	ScanFolder = "scan-folders",
+	AuthGroup = "auth-groups"
 }
 
 /** Platform-specific Database interface */
@@ -133,7 +134,7 @@ class WebDatabase extends BaseDatabase {
 	auth = {
 		config: null as { desktop_thumb_scale: number; mobile_thumb_scale: number; desktop_page_size: string; mobile_page_size: string },
 
-		checkAuth(): Promise<boolean> {
+		checkAuth(): Promise<any> {
 			return new Promise((resolve, reject) => {
 				apiRequest("membership/status/")
 					.then(data => {
@@ -141,7 +142,7 @@ class WebDatabase extends BaseDatabase {
 							window.sessionStorage.setItem("csrf_token", data.csrf_token);
 							this.config = data.config;
 
-							resolve(true);
+							resolve(data);
 						} else {
 							this.logOut();
 							resolve(false);

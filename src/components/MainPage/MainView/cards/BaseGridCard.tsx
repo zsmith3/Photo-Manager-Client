@@ -76,6 +76,12 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 	/** (Touch only) The timestamp at which this item was last selected (used to ignore extraneous click events) */
 	selectResetTime: number = 0;
 
+	/** Callback to run on right click (overrides props.onMenu) */
+	onMenu: (anchorPos: { top: number; left: number }) => void = null;
+
+	/** Render additional elements (e.g. custom menu/dialogs) */
+	renderExtra: () => JSX.Element = null;
+
 	/**
 	 * Get the size of this Card
 	 * @returns The width and height styles of the Card
@@ -106,8 +112,10 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 		// Ignore Hammer.onPress on non-touchscreen, as not relevant
 		if (event.type == "press" && !Input.isTouching) return;
 
-		if (!this.props.selected) this.props.onSelect(this.props.modelId, event.shiftKey ? SelectMode.Extend : event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace);
+		if (!this.props.selected && this.props.onSelect)
+			this.props.onSelect(this.props.modelId, event.shiftKey ? SelectMode.Extend : event.ctrlKey ? SelectMode.Toggle : SelectMode.Replace);
 		if (Input.isTouching) this.selectResetTime = Date.now();
+		else if (this.onMenu) this.onMenu({ top: event.clientY, left: event.clientX });
 		else this.props.onMenu(this.props.modelId, { top: event.clientY, left: event.clientX });
 	};
 
@@ -143,6 +151,7 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 						{/* Content from the specific GridCard type */}
 						<CardActionArea className={this.props.classes.action}>{content}</CardActionArea>
 					</Card>
+					{this.renderExtra && this.renderExtra()}
 				</div>
 			</Hammer>
 		);

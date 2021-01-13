@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, HashRouter, Route } from "react-router-dom";
 import { Database } from "../controllers/Database";
+import { AuthGroup } from "../models";
 import "../styles/App.css";
 import ErrorPage from "./ErrorPage";
 import LoadingPage from "./LoadingPage";
@@ -53,8 +54,9 @@ export default class App extends React.Component<{ error?: boolean }> {
 		ReactDOM.render(<LoadingPage />, rootElement);
 		Database.auth
 			.checkAuth()
-			.then(result => {
-				this.performRedirect(result);
+			.then(data => {
+				AuthGroup.addObjects(data.auth_groups);
+				this.performRedirect(data);
 
 				ReactDOM.render(<App />, rootElement);
 			})

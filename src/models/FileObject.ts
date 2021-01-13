@@ -2,6 +2,7 @@ import { GeoTag } from ".";
 import { LocationManager } from "../components/utils";
 import { DBTables } from "../controllers/Database";
 import { FileImgSizes } from "../controllers/Platform";
+import { AuthGroup } from "./AuthGroup";
 import { BaseImageFile } from "./BaseImageFile";
 import { ModelMeta } from "./Model";
 
@@ -23,6 +24,7 @@ export class FileObject extends BaseImageFile {
 		modelName: DBTables.File,
 		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted", "notes"],
 		specialProps: {
+			access_group: "accessGroupId",
 			geotag: {
 				deserialize: (file: FileObject, prop) => {
 					if (prop === null) file.geotagID = null;
@@ -68,6 +70,14 @@ export class FileObject extends BaseImageFile {
 
 	/** Comments/notes added to the file */
 	notes: string;
+
+	/** File access user group ID */
+	accessGroupId: number;
+
+	/** File access user group */
+	get access_group(): AuthGroup {
+		return AuthGroup.getById(this.accessGroupId);
+	}
 
 	/** File geotag ID */
 	private geotagID: number;

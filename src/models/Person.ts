@@ -48,8 +48,8 @@ export class PersonGroup extends Model {
 	 * Delete person group from the remote database
 	 * @returns Promise object representing completion
 	 */
-	delete(): Promise<never> {
-		return new Promise((resolve, reject) => {
+	delete() {
+		return new Promise<void>((resolve, reject) => {
 			Database.delete(PersonGroup.meta.modelName, this.id)
 				.then(() => {
 					PersonGroup.deleteById(this.id);
@@ -131,16 +131,12 @@ export class Person extends RootModel {
 	/** Handler functions to be run when associated faces are updated */
 	faceListUpdateHandlers: ((faces: Face[]) => void)[] = [];
 
-	constructor(obj) {
-		super(obj);
-	}
-
 	/**
 	 * Delete person from remote database
 	 * @returns Promise representing completion
 	 */
 	delete() {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			Database.delete(Person.meta.modelName, this.id)
 				.then(() => {
 					let unknownPerson = Person.getById(0);

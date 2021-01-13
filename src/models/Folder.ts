@@ -1,3 +1,4 @@
+import { AuthGroup } from ".";
 import FileCard from "../components/MainPage/MainView/cards/FileCard";
 import FolderCard from "../components/MainPage/MainView/cards/FolderCard";
 import { LocationManager } from "../components/utils";
@@ -11,7 +12,7 @@ export class Folder extends BaseFolder {
 	static meta = new ModelMeta<Folder>({
 		modelName: DBTables.Folder,
 		props: ["id", "name", "path", "file_count", "length"],
-		specialProps: { parent: "parentID" }
+		specialProps: { parent: "parentID", access_group: "accessGroupId" }
 	});
 
 	static rootModelMeta = {
@@ -23,6 +24,14 @@ export class Folder extends BaseFolder {
 
 	/** Folder size (bytes) */
 	length: number;
+
+	/** Folder access user group ID */
+	accessGroupId: number;
+
+	/** Folder access user group */
+	get access_group(): AuthGroup {
+		return AuthGroup.getById(this.accessGroupId);
+	}
 
 	/** Parent folder */
 	get parent(): Folder {
