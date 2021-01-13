@@ -497,7 +497,7 @@ class ImageModal extends React.Component<Props> {
 						)}
 					</div>
 
-					{this.state.showInfo && <FileInfoPane fileId={this.props.itemId} />}
+					{this.state.showInfo && this.state.file && <FileInfoPane fileId={this.state.file.id} />}
 				</div>
 			</Modal>
 		);
