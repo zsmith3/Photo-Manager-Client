@@ -242,6 +242,7 @@ export class ListDialog extends React.Component<{
 				/>
 				{/* Main list */}
 				{this.generateList(this.props.list, this.state.searchValue)}
+				{this.props.children}
 			</SimpleDialog>
 		);
 	}

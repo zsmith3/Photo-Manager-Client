@@ -1,4 +1,4 @@
-import { Icon, ListItemIcon, ListSubheader, Menu, MenuItem, withStyles, withWidth } from "@material-ui/core";
+import { Checkbox, FormControlLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
@@ -14,6 +14,7 @@ class FolderCard extends BaseFolderCard<Folder> {
 		menuAnchorPos: { top: number; left: number };
 		menuOpen: boolean;
 		accessDialogOpen: boolean;
+		accessGroupPropagate: boolean;
 	};
 
 	get folderModel() {
@@ -24,7 +25,7 @@ class FolderCard extends BaseFolderCard<Folder> {
 	constructor(props: GridCardProps & { width: Breakpoint; classes: any }) {
 		super(props);
 
-		this.state = { ...this.state, menuAnchorPos: { top: 0, left: 0 }, menuOpen: false, accessDialogOpen: false };
+		this.state = { ...this.state, menuAnchorPos: { top: 0, left: 0 }, menuOpen: false, accessDialogOpen: false, accessGroupPropagate: true };
 	}
 
 	/** Open menu (called on right click) */
@@ -59,8 +60,13 @@ class FolderCard extends BaseFolderCard<Folder> {
 					actionText="Confirm"
 					list={AuthGroup.meta.objects}
 					selected={this.state.model.accessGroupId}
-					action={(authGroupId: number) => this.state.model.updateSave({ access_group: authGroupId })}
-				/>
+					action={(authGroupId: number) => this.state.model.updateAccessGroup(authGroupId, this.state.accessGroupPropagate)}
+				>
+					<FormControlLabel
+						control={<Checkbox checked={this.state.accessGroupPropagate} onChange={event => this.setState({ accessGroupPropagate: event.target.checked })} />}
+						label="Propagate to children"
+					/>
+				</ListDialog>
 			</Fragment>
 		);
 	};

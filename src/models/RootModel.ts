@@ -56,10 +56,10 @@ export default class RootModel extends Model {
 	}
 
 	/** List of root objects for each (JSON-encoded) query */
-	private roots = new Map<string, number[]>();
+	protected roots = new Map<string, number[]>();
 
 	/** List of contents objects for each (JSON-encoded) query */
-	private contents = new Map<string, { count: number; objectIds: number[] }>();
+	protected contents = new Map<string, { count: number; objectIds: number[] }>();
 
 	/** Handler functions to run when the roots/contents are updated */
 	private contentsUpdateHandlers: UpdateHandlerList = new UpdateHandlerList(null, async (contentData: any, success: (data: any) => void, error: (error: any) => void) => {
