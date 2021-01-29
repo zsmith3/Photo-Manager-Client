@@ -73,6 +73,9 @@ class ScanEditorMenu extends React.Component<{
 						<Button className={this.props.classes.menuItem} title="Confirm Lines" onClick={() => this.props.action("confirm")}>
 							<Icon>check</Icon>
 						</Button>
+						<Button className={this.props.classes.menuItem} title="Clear all lines" onClick={() => this.props.action("clear")}>
+							<Icon>clear</Icon>
+						</Button>
 					</ButtonGroup>
 
 					<br />

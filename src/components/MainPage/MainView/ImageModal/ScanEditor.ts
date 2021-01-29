@@ -2,7 +2,7 @@ import { Axis, Line, Scan } from "../../../../models/Scan";
 import BaseEditor from "./BaseEditor";
 
 /** Actions in ScanEditorMenu */
-export type EditorMenuAction = "updateCursor" | "updateOption" | "preview" | "confirm";
+export type EditorMenuAction = "updateCursor" | "updateOption" | "preview" | "confirm" | "clear";
 
 /** Possible cursors in Scan edit mode */
 export enum ScanEditorCursor {
@@ -95,6 +95,10 @@ export default class ScanEditor extends BaseEditor<Scan> {
 				break;
 			case "confirm":
 				await this.publicData.model.confirmCrop(this.data.lines, { bounds: this.publicData.bounds });
+				break;
+			case "clear":
+				this.data.lines = [];
+				this.renderCanvas();
 				break;
 		}
 		this.setPublicData({ loading: false });

@@ -116,7 +116,7 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 		}
 
 		if (props.rootId === null) {
-			this.updateAddress(props, "/");
+			setTimeout(() => this.updateAddress(props, "/"), 0);
 			return;
 		}
 
