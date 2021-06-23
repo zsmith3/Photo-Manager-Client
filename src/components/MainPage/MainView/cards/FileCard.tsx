@@ -36,9 +36,16 @@ class FileCard extends BaseFileCard<FileObject> {
 						{FileCard.fileTypeIcons.get(this.state.model.type)}
 					</Icon>
 				)}
+				{this.state.model.is_deleted && (
+					<Icon className={this.props.classes.icon} style={{ fontSize: Math.max(16, this.props.scale / 4) }}>
+						delete
+					</Icon>
+				)}
 				{this.renderName()}
 			</Fragment>,
-			`${this.state.model.name}\nGeotag: ${this.state.model.geotagAreaName}\nDate: ${this.state.model.timestamp}\nNotes: ${this.state.model.notes || "None"}`
+			`${this.state.model.name}\nGeotag: ${this.state.model.geotagAreaName}\nDate: ${this.state.model.timestamp}\nNotes: ${this.state.model.notes || "None"}\n${
+				this.state.model.is_deleted ? "🗑" : ""
+			}`
 		);
 	}
 }

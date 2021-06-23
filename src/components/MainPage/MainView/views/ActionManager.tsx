@@ -29,6 +29,7 @@ interface ActionManagerState {
 		person_not: boolean;
 		rotate: boolean;
 		access_edit: boolean;
+		delete: boolean;
 	};
 	/** State of additional options within dialogs */
 	dialogOptions: {
@@ -51,7 +52,8 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 			person_unknown: false,
 			person_not: false,
 			rotate: false,
-			access_edit: false
+			access_edit: false,
+			delete: false
 		},
 		dialogOptions: {
 			album_remove_parents: false,
@@ -128,6 +130,12 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								<Icon>security</Icon>
 							</ListItemIcon>
 							Change access
+						</MenuItem>,
+						<MenuItem key="delete" onClick={() => this.dialogOpen("delete")}>
+							<ListItemIcon>
+								<Icon>delete</Icon>
+							</ListItemIcon>
+							Mark as deleted
 						</MenuItem>
 					]}
 
@@ -272,6 +280,23 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								promiseChain(selection, (resolve, reject, id) =>
 									FileObject.getById(id)
 										.updateSave({ access_group: authGroupId })
+										.then(resolve)
+										.catch(reject)
+								)
+							}
+						/>
+
+						{/* Mark as deleted */}
+						<SimpleDialog
+							open={this.state.openDialogs.delete}
+							onClose={() => this.dialogClose("delete")}
+							title="Mark file(s) as deleted"
+							actionText="Confirm"
+							text={`Are you sure you want to mark ${selection.length} file(s) as deleted?`}
+							action={() =>
+								promiseChain(selection, (resolve, reject, id) =>
+									FileObject.getById(id)
+										.updateSave({ is_deleted: true })
 										.then(resolve)
 										.catch(reject)
 								)

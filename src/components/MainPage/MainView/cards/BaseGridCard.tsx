@@ -66,6 +66,12 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 		},
 		action: {
 			cursor: "default"
+		},
+		icon: {
+			position: "absolute" as "absolute",
+			top: "5px",
+			right: "5px",
+			textShadow: "-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff"
 		}
 	};
 
