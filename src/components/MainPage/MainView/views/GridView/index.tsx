@@ -122,6 +122,8 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 	private onKeyUp = event => {
 		if (event.key === "Enter") {
 			(this.class.rootModelClass.rootModelMeta.contentsClass.getById(this.selectionManager.lastSelected) as Model & { open: () => any }).open();
+		} else if (event.key === "Delete") {
+			this.actionManager.current.dialogOpen("delete");
 		} else if (event.key.substr(0, 5) === "Arrow") {
 			if (event.ctrlKey) {
 				let maxPage = Math.ceil(this.state.data.contents.count / this.props.pageSize);

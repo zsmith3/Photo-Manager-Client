@@ -70,7 +70,7 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 	}
 
 	/** Open a dialog from its name */
-	private dialogOpen = (name: keyof ActionManagerState["openDialogs"]) => this.setState({ openDialogs: { ...this.state.openDialogs, [name]: true } });
+	dialogOpen = (name: keyof ActionManagerState["openDialogs"]) => this.setState({ openDialogs: { ...this.state.openDialogs, [name]: true } });
 
 	/** Close a dialog from its name */
 	private dialogClose = (name: keyof ActionManagerState["openDialogs"]) => this.setState({ openDialogs: { ...this.state.openDialogs, [name]: false } });
@@ -135,7 +135,7 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 							<ListItemIcon>
 								<Icon>delete</Icon>
 							</ListItemIcon>
-							Mark as deleted
+							Toggle deletion mark
 						</MenuItem>
 					]}
 
@@ -290,13 +290,13 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 						<SimpleDialog
 							open={this.state.openDialogs.delete}
 							onClose={() => this.dialogClose("delete")}
-							title="Mark file(s) as deleted"
+							title="Toggle file(s) as marked for deletion"
 							actionText="Confirm"
-							text={`Are you sure you want to mark ${selection.length} file(s) as deleted?`}
+							text={`Are you sure you want to toggle whether ${selection.length} file(s) are marked as deleted?`}
 							action={() =>
 								promiseChain(selection, (resolve, reject, id) =>
 									FileObject.getById(id)
-										.updateSave({ is_deleted: true })
+										.updateSave({ is_deleted: !FileObject.getById(id).is_deleted })
 										.then(resolve)
 										.catch(reject)
 								)
