@@ -120,6 +120,8 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 	 * @param event The KeyUp event
 	 */
 	private onKeyUp = event => {
+		if (this.actionManager.current.state.justClosed) return;
+
 		if (event.key === "Enter") {
 			(this.class.rootModelClass.rootModelMeta.contentsClass.getById(this.selectionManager.lastSelected) as Model & { open: () => any }).open();
 		} else if (event.key === "Delete") {

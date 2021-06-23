@@ -31,6 +31,8 @@ interface ActionManagerState {
 		access_edit: boolean;
 		delete: boolean;
 	};
+	/** Whether a dialog was closed in the last 200ms */
+	justClosed: boolean;
 	/** State of additional options within dialogs */
 	dialogOptions: {
 		album_remove_parents: boolean;
@@ -55,6 +57,7 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 			access_edit: false,
 			delete: false
 		},
+		justClosed: false,
 		dialogOptions: {
 			album_remove_parents: false,
 			rotate_direction: RotateDirection.Clockwise
@@ -73,7 +76,10 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 	dialogOpen = (name: keyof ActionManagerState["openDialogs"]) => this.setState({ openDialogs: { ...this.state.openDialogs, [name]: true } });
 
 	/** Close a dialog from its name */
-	private dialogClose = (name: keyof ActionManagerState["openDialogs"]) => this.setState({ openDialogs: { ...this.state.openDialogs, [name]: false } });
+	private dialogClose = (name: keyof ActionManagerState["openDialogs"]) => {
+		this.setState({ openDialogs: { ...this.state.openDialogs, [name]: false }, justClosed: true });
+		setTimeout(() => this.setState({ justClosed: false }), 200);
+	};
 
 	/** Update the state of an additional dialog option */
 	private updateOption(name: keyof ActionManagerState["dialogOptions"], value: any) {
