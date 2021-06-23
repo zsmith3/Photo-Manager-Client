@@ -37,7 +37,8 @@ class FileCard extends BaseFileCard<FileObject> {
 					</Icon>
 				)}
 				{this.renderName()}
-			</Fragment>
+			</Fragment>,
+			`${this.state.model.name}\nGeotag: ${this.state.model.geotagAreaName}\nDate: ${this.state.model.timestamp}\nNotes: ${this.state.model.notes || "None"}`
 		);
 	}
 }

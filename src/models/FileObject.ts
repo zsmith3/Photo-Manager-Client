@@ -87,6 +87,13 @@ export class FileObject extends BaseImageFile {
 		return GeoTag.getById(this.geotagID);
 	}
 
+	/** Display name for geotag */
+	get geotagAreaName(): string {
+		if (this.geotag === null) return "None";
+		else if (this.geotag.area === null) return "None";
+		else return this.geotag.area.name;
+	}
+
 	/**
 	 * Get (and load if needed) image data for this file
 	 * @param size The size at which to load the image

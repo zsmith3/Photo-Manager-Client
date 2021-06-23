@@ -126,9 +126,10 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 	/**
 	 * Render the base tile/card
 	 * @param content The inner content to render
+	 * @param title The on-hover title attribute for outer div
 	 * @returns The fully rendered Card
 	 */
-	renderBase(content: JSX.Element) {
+	renderBase(content: JSX.Element, title?: string) {
 		return (
 			<Hammer onPress={this.onContextMenu}>
 				{/* This <div> is needed for Hammer to bind event listeners */}
@@ -144,6 +145,7 @@ export default abstract class BaseGridCard<M extends Model & { open: () => any }
 						onDoubleClick={() => this.state.model.open()}
 						// onKeyUp={event => event.key === "Enter" && this.state.model.open()}
 						onContextMenu={this.onContextMenu}
+						title={title}
 					>
 						{/* Border to mark as selected */}
 						<div style={{ display: this.props.selected ? "block" : "none" }} className={this.props.classes.border} />
