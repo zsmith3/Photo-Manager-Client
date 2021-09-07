@@ -55,7 +55,7 @@ export default class App extends React.Component<{ error?: boolean }> {
 		Database.auth
 			.checkAuth()
 			.then(data => {
-				AuthGroup.addObjects(data.auth_groups);
+				if (data) AuthGroup.addObjects(data.auth_groups);
 				this.performRedirect(data);
 
 				ReactDOM.render(<App />, rootElement);

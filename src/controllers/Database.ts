@@ -182,7 +182,7 @@ class WebDatabase extends BaseDatabase {
 			return apiRequest("membership/status/", "PATCH", { config: { [key]: value } });
 		},
 
-		logIn(username: string, password: string, remain_in: boolean): Promise<void> {
+		logIn(username: string, password: string, remain_in: boolean): Promise<any> {
 			return new Promise((resolve, reject) => {
 				apiRequest("membership/login/", "POST", {
 					username: username,
@@ -192,7 +192,12 @@ class WebDatabase extends BaseDatabase {
 						if (remain_in) window.localStorage.setItem("jwtToken", data.token);
 						else window.sessionStorage.setItem("jwtToken", data.token);
 
-						resolve();
+						this.checkAuth()
+							.then(data => {
+								if (data) resolve(data);
+								else reject({ non_field_errors: "An unknown error occurred." });
+							})
+							.catch(reject);
 					})
 					.catch(reject);
 			});

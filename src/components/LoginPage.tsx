@@ -2,6 +2,7 @@ import { Button, Checkbox, FormControlLabel, TextField, Typography } from "@mate
 import React from "react";
 import { Link } from "react-router-dom";
 import { Database } from "../controllers/Database";
+import { AuthGroup } from "../models";
 import GenericPage from "./utils/GenericPage";
 
 /** Separate page for logging in */
@@ -17,7 +18,8 @@ export default class LoginPage extends React.Component<{ history: any }> {
 	handleSubmit(event: Event) {
 		Database.auth
 			.logIn(this.state.username, this.state.password, this.state.remain_in)
-			.then(() => {
+			.then(data => {
+				AuthGroup.addObjects(data.auth_groups);
 				this.props.history.push("/folders/");
 			})
 			.catch(error => {
