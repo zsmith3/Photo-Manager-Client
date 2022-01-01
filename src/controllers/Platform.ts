@@ -1,4 +1,4 @@
-import { mediaRequest } from "../utils";
+import { mediaRequest, promiseChain } from "../utils";
 
 /** Sizes for File image data requests */
 export enum FileImgSizes {
@@ -101,6 +101,135 @@ class WebPlatform extends BasePlatform {
 	}
 }
 
+class CordovaPlatform extends BasePlatform {
+	urls = {
+		get serverUrl () { return window.localStorage.serverUrl; },
+
+		getPageUrl(page, query) {
+			return page + ".html" + (query ? ("?" + query) : "");
+		},
+
+		getCurrentAddress() {
+			return new URLSearchParams(window.location.search).get("address") || "";
+		},
+
+		getCurrentQuery() {
+			let params = new URLSearchParams(window.location.search);
+			params.delete("address");
+			return params.toString();
+		},
+
+		getDisplayUrl(url) {
+			var query;
+			if (url.indexOf("?") !== -1) {
+				query = new URLSearchParams(url.substr(url.indexOf("?")));
+				url = url.substr(0, url.indexOf("?"));
+			} else query = new URLSearchParams();
+
+			query.set("address", url);
+
+			return "index.html?" + query.toString();
+		}
+	}
+
+	// Display notification
+	notify (data) {
+		cordova.plugins.notification.local.schedule({
+			id: data.id,
+			title: data.title,
+			text: data.text,
+			progressBar: (data.progress || data.progress === 0) ? { value: data.progress } : null
+		});
+	}
+
+	// Get the src for an image
+	getImgSrc(object, size) {
+		switch (object.type) {
+		case "file":
+			return mediaRequest("api/images/" + object.id + size);
+		case "face":
+			return mediaRequest("api/images/faces/" + object.id + size);
+		}
+	}
+
+	fileTransfer: FileTransfer = null
+
+	// TODO resolve all the missing modules
+	// and try to convert to async rather than callbacks
+
+	// Get the full paths of all files in a directory and subdirectories
+	getLocalFiles(baseDir: string): Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			window.resolveLocalFileSystemURL(baseDir, directory => {
+				let dReader = directory.createReader();
+				let entries = [];
+
+				let getEntries = () =>  {
+					dReader.readEntries(results => {
+						if (results.length) {
+							entries = entries.concat(results);
+							getEntries();
+						} else {
+							promiseChain(entries, (resolve, reject, entry, allFiles) => {
+								if (entry.isDirectory) {
+									this.getLocalFiles(entry.nativeURL).then(files => {
+										resolve(allFiles.concat(files));
+									});
+								} else {
+									resolve(allFiles.concat([entry.nativeURL]));
+								}
+							}, []).then(allFiles => {
+								resolve(allFiles);
+							});
+						}
+					});
+				};
+
+				getEntries();
+			}, reject);
+		});
+	}
+
+	// Delete a list of local files
+	deleteFiles(files: string[]) {
+		return promiseChain(files, (resolve, reject, filePath) => {
+			window.resolveLocalFileSystemURL(filePath, entry => {
+				if (entry.isDirectory) {
+					this.getLocalFiles(entry.toURL()).then((allFiles) => {
+						return this.deleteFiles(allFiles);
+					}).then(() => {
+						entry.remove(resolve, reject);
+					});
+				} else entry.remove(resolve, reject);
+			});
+		});
+	}
+
+	// Perform a list of file movements (each in the form {from: path1, to: path2})
+	moveFiles(movements: {from: string, to: string}[]) {
+		return promiseChain(movements, function (resolve, reject, movement) {
+			window.resolveLocalFileSystemURL(movement.from, fileEntry => {
+				let dirURL = movement.to.split("/").reverse().slice(1).reverse().join("/");
+				let newName = movement.to.split("/").reverse()[0];
+				window.resolveLocalFileSystemURL(dirURL, dirEntry => {
+					fileEntry.moveTo(dirEntry, newName, resolve, reject);
+				});
+			});
+		});
+	}
+
+	// Download a list of files and save them locally
+	downloadFiles(localDir: string, files: string[]) {
+		return promiseChain(files, (resolve, reject, file) => {
+			if (this.fileTransfer === null) throw "Tried to download files but FileTransfer instance not found"
+			else this.fileTransfer.download(this.urls.serverUrl + "api/images/" + file.split("/").reverse()[0].split(".")[0] + "/", localDir + file, resolve, reject);
+		});
+		// TODO check this does correct quality etc.
+		// TODO different sizes (as parameter to this)
+	}
+};
+
+
 /** Item format for MediaQueue */
 interface MediaQueueItem {
 	id: number;
@@ -196,4 +325,14 @@ class MediaQueue {
 	}
 }
 
-export const Platform = new WebPlatform();
+// Export correct Platform version
+let Platform: BasePlatform;
+
+if (process.env.BUILD_PLATFORM === undefined || process.env.BUILD_PLATFORM === "browser") {
+	Platform = new WebPlatform();
+} else {
+	Platform = new CordovaPlatform();
+	document.addEventListener("deviceready", () => (Platform as CordovaPlatform).fileTransfer = new FileTransfer(), false);
+}
+
+export default Platform;

@@ -1,6 +1,7 @@
 import { AppBar, Hidden, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, Toolbar, Typography, withStyles } from "@material-ui/core";
 import React from "react";
 import { Database } from "../../controllers/Database";
+import { LocationManager } from "../utils";
 import { navDrawerInstance, navDrawerWidth } from "./NavDrawer";
 
 /** Main title AppBar */
@@ -69,6 +70,12 @@ class FSAppBar extends React.Component<{ classes: { rightOfNavDrawer: string; pl
 								<Icon>refresh</Icon>
 							</ListItemIcon>
 							Refresh
+						</MenuItem>
+						<MenuItem onClick={() => LocationManager.updateLocation("/sync/")}>
+							<ListItemIcon>
+								<Icon>sync</Icon>
+							</ListItemIcon>
+							Manage Sync
 						</MenuItem>
 						<MenuItem onClick={() => Database.auth.logOut()}>
 							<ListItemIcon>

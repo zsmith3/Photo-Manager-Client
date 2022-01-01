@@ -1,14 +1,16 @@
-import { Grid, Paper, Theme, Typography, withStyles, withWidth } from "@material-ui/core";
+import { Grid, Icon, IconButton, Paper, Theme, Typography, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
+import LocationManager from "./LocationManager";
 
 /** Generic separate page */
 class GenericPage extends React.Component<{
-	classes: { center: string; paper: string; mainGridItem: string; background: string };
+	classes: { center: string; paper: string; mainGridItem: string; background: string; backArrow: string; };
 	width: Breakpoint;
 	title: string;
 	introText?: string;
+	showBackArrow?: boolean;
 }> {
 	static styles = (theme: Theme) => ({
 		background: {
@@ -18,6 +20,10 @@ class GenericPage extends React.Component<{
 			height: "100vh",
 			overflowX: "hidden" as "hidden",
 			paddingTop: "20px"
+		},
+		backArrow: {
+			top: "10px",
+			left: "10px"
 		},
 		center: {
 			margin: "auto",
@@ -47,6 +53,10 @@ class GenericPage extends React.Component<{
 
 		return (
 			<div className={this.props.classes.background}>
+				{/* TODO style this */}
+				{this.props.showBackArrow && <IconButton className={this.props.classes.backArrow} title="Back" onClick={() => LocationManager.instance.props.history.goBack()}>
+							<Icon>arrow_back</Icon>
+						</IconButton>}
 				<Grid container spacing={3}>
 					<Grid item xs={12} className={this.props.classes.center}>
 						<Typography variant={isWidthUp("sm", this.props.width) ? "h3" : "h4"} component="h1">
