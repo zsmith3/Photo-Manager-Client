@@ -127,7 +127,7 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 					title="Change album parent"
 					actionText="Change Parent"
 					list={[{ id: null, name: "/", children: Album.rootAlbums }]}
-					selected={this.state.model.parent === null ? null : this.state.model.parent.id}
+					selected={this.state.model.parent === null ? [] : [this.state.model.parent.id]}
 					selectableFilter={id =>
 						id === null ||
 						!Album.getById(id)
@@ -136,7 +136,7 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 							.includes(this.state.model.id)
 					}
 					openByDefault={true}
-					action={(parentId: number) => Album.getById(this.props.modelId).changeParent(parentId)}
+					action={(parentId: number[]) => Album.getById(this.props.modelId).changeParent(parentId[0])}
 				/>
 
 				{/* Delete album dialog */}

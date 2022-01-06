@@ -12,7 +12,7 @@ export class Folder extends BaseFolder {
 	static meta = new ModelMeta<Folder>({
 		modelName: DBTables.Folder,
 		props: ["id", "name", "path", "file_count", "length"],
-		specialProps: { parent: "parentID", access_group: "accessGroupId" }
+		specialProps: { parent: "parentID", access_groups: "accessGroupIds" }
 	});
 
 	static rootModelMeta = {
@@ -25,12 +25,12 @@ export class Folder extends BaseFolder {
 	/** Folder size (bytes) */
 	length: number;
 
-	/** Folder access user group ID */
-	accessGroupId: number;
+	/** Folder access user group IDs */
+	accessGroupIds: number[];
 
 	/** Folder access user group */
-	get access_group(): AuthGroup {
-		return AuthGroup.getById(this.accessGroupId);
+	get access_groups(): AuthGroup[] {
+		return this.accessGroupIds.map(id => AuthGroup.getById(id));
 	}
 
 	/** Parent folder */
@@ -50,21 +50,21 @@ export class Folder extends BaseFolder {
 	}
 
 	/**
-	 * Change user access group for this folder
-	 * @param accessGroupId New access group ID
+	 * Change user access groups for this folder
+	 * @param accessGroupIds New access group IDs
 	 * @param propagate Whether to propagate change to child folders
 	 * @param save Whether to save changes to remote database
 	 * @returns Promise representing completion
 	 */
-	updateAccessGroup(accessGroupId: number, propagate: boolean, save = true) {
-		this.accessGroupId = accessGroupId;
+	updateAccessGroups(accessGroupIds: number[], propagate: boolean, save = true) {
+		this.accessGroupIds = accessGroupIds;
 		if (propagate) {
-			Folder.meta.objects.filter(folder => folder.parentID === this.id).forEach(folder => folder.updateAccessGroup(accessGroupId, true, false));
+			Folder.meta.objects.filter(folder => folder.parentID === this.id).forEach(folder => folder.updateAccessGroups(accessGroupIds, true, false));
 			let allFileIds = [];
 			for (let entry of this.contents) allFileIds = allFileIds.concat(entry[1].objectIds);
 			allFileIds = allFileIds.filter((v, i, a) => a.indexOf(v) === i);
-			allFileIds.forEach(id => (FileObject.getById(id).accessGroupId = accessGroupId));
+			allFileIds.forEach(id => (FileObject.getById(id).accessGroupIds = accessGroupIds));
 		}
-		if (save) return Database.update(this.class.meta.modelName, this.id, { access_group: accessGroupId, propagate_ag: propagate }, true);
+		if (save) return Database.update(this.class.meta.modelName, this.id, { access_groups: accessGroupIds, propagate_ag: propagate }, true);
 	}
 }

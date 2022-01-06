@@ -59,8 +59,9 @@ class FolderCard extends BaseFolderCard<Folder> {
 					title="Edit access to folder"
 					actionText="Confirm"
 					list={AuthGroup.meta.objects}
-					selected={this.state.model.accessGroupId}
-					action={(authGroupId: number) => this.state.model.updateAccessGroup(authGroupId, this.state.accessGroupPropagate)}
+					selected={this.state.model.accessGroupIds}
+					multiple
+					action={(authGroupIds: number[]) => this.state.model.updateAccessGroups(authGroupIds, this.state.accessGroupPropagate)}
 				>
 					<FormControlLabel
 						control={<Checkbox checked={this.state.accessGroupPropagate} onChange={event => this.setState({ accessGroupPropagate: event.target.checked })} />}

@@ -195,7 +195,7 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 							actionText="Add"
 							list={Album.rootAlbums}
 							openByDefault={true}
-							action={(albumId: number) => Album.getById(albumId).addFiles(selection)}
+							action={(albumId: number[]) => Album.getById(albumId[0]).addFiles(selection)}
 						/>
 
 						{this.props.rootType === "albums" && (
@@ -278,14 +278,18 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 							actionText="Confirm"
 							list={AuthGroup.meta.objects}
 							selected={(() => {
-								let groups = selection.map(id => FileObject.getById(id).accessGroupId).filter((v, i, a) => a.indexOf(v) === i);
-								if (groups.length === 1) return groups[0];
-								else return null;
+								if (!selection.length) return [];
+								let first = FileObject.getById(selection[0]).accessGroupIds;
+								let firstString = first.sort().toString();
+								let allSame = selection.map(id => FileObject.getById(id).accessGroupIds).every(arr => arr.sort().toString() === firstString);
+								if (allSame) return first;
+								return [];
 							})()}
-							action={(authGroupId: number) =>
+							multiple
+							action={(authGroupIds: number[]) =>
 								promiseChain(selection, (resolve, reject, id) =>
 									FileObject.getById(id)
-										.updateSave({ access_group: authGroupId })
+										.updateSave({ access_groups: authGroupIds })
 										.then(resolve)
 										.catch(reject)
 								)
@@ -342,13 +346,13 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								noSelect: true,
 								children: group.people.map(person => ({ id: person.id, name: person.full_name }))
 							}))}
-							action={(personId: number) =>
+							action={(personId: number[]) =>
 								promiseChain(selection, (resolve, reject, id) =>
 									Face.getById(id)
-										.setPerson(personId)
+										.setPerson(personId[0])
 										.then(resolve)
 										.catch(reject)
-								).then(() => Person.getById(personId).resetData())
+								).then(() => Person.getById(personId[0]).resetData())
 							}
 						/>
 

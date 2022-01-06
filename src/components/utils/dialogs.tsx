@@ -1,5 +1,6 @@
 import {
 	Button,
+	Checkbox,
 	Collapse,
 	Dialog,
 	DialogActions,
@@ -59,6 +60,9 @@ export class SimpleDialog extends MountTrackedComponent<{
 			this.props.onClose();
 			this.setStateSafe({ loading: false });
 		});
+		// TODO add proper error handling here
+		// also ability to add a validation function to determine whether current input/selection/etc is valid,
+		// and so whether user is able to click confirm
 	};
 
 	componentDidUpdate() {
@@ -104,7 +108,8 @@ interface ListDialogItem {
  * @param actionText The name of the primary DialogAction (the secondary will always be "Cancel")
  * @param action The function to run when the primary DialogAction button is clicked
  * @param list List of items to display and select from
- * @param selected ID of initially selected item
+ * @param selected ID of initially selected item(s)
+ * @param multiple Whether user can select multiple items at once
  * @param openByDefault Whether collapsible list items are open by default (default = false)
  * @param selectableFilter Filter function applied to each item to determine if it is selectable
  */
@@ -114,14 +119,15 @@ export class ListDialog extends React.Component<{
 	title: string;
 	text?: string;
 	actionText: string;
-	action: (selected: number) => Promise<any>;
+	action: (selected: number[]) => Promise<any>;
 	list: ListDialogItem[];
-	selected?: number;
+	selected?: number[];
+	multiple?: boolean;
 	openByDefault?: boolean;
 	selectableFilter?: (id: number) => boolean;
 }> {
 	state: {
-		selected: number;
+		selected: number[];
 		itemsOpen: { [id: number]: boolean };
 		searchValue: string;
 	};
@@ -129,7 +135,9 @@ export class ListDialog extends React.Component<{
 	constructor(props) {
 		super(props);
 
-		this.state = { selected: props.selected, itemsOpen: {}, searchValue: "" };
+		if (props.selected?.length > 1 && !props.multiple) throw "ListDialog: cannot pass multiple selected items without multiple=true";
+
+		this.state = { selected: props.selected || [], itemsOpen: {}, searchValue: "" };
 	}
 
 	/**
@@ -173,6 +181,10 @@ export class ListDialog extends React.Component<{
 
 		let selectable = (itemId: number) => !this.props.selectableFilter || this.props.selectableFilter(itemId) || null;
 		let isOpen = (itemId: number) => searchValue === null || this.state.itemsOpen[itemId];
+		let selectItem = (itemId: number) =>
+			this.props.multiple
+				? this.setState({ selected: this.state.selected.includes(itemId) ? this.state.selected.filter(id => id !== itemId) : this.state.selected.concat([itemId]) })
+				: this.setState({ selected: [itemId] });
 		indent = indent || 0;
 		return (
 			<List>
@@ -180,10 +192,15 @@ export class ListDialog extends React.Component<{
 					<Fragment key={item.id}>
 						<ListItem
 							button={item.noSelect || selectable(item.id)}
-							onClick={item.noSelect ? () => this.toggleItemOpen(item.id) : selectable(item.id) && (() => this.setState({ selected: item.id }))}
+							onClick={item.noSelect ? () => this.toggleItemOpen(item.id) : selectable(item.id) && (() => selectItem(item.id))}
 							style={{ paddingLeft: indent * 16 + "px" }}
 						>
-							{!item.noSelect && <Radio checked={this.state.selected === item.id} disabled={!selectable(item.id)} />}
+							{!item.noSelect &&
+								(this.props.multiple ? (
+									<Checkbox checked={this.state.selected.includes(item.id)} disabled={!selectable(item.id)} />
+								) : (
+									<Radio checked={this.state.selected.includes(item.id)} disabled={!selectable(item.id)} />
+								))}
 							<ListItemText primary={item.name} />
 							{item.children &&
 								Boolean(item.children.length) &&
@@ -211,8 +228,8 @@ export class ListDialog extends React.Component<{
 		if (nextProps.list !== this.props.list) {
 			this.initItemsOpen(this.props.list);
 			return false;
-		} else if (nextProps.selected !== this.props.selected) {
-			this.setState({ selected: nextProps.selected });
+		} else if ((nextProps.selected || []).sort().toString() !== (this.props.selected || []).sort().toString()) {
+			this.setState({ selected: nextProps.selected || [] });
 			return false;
 		} else return true;
 	}
