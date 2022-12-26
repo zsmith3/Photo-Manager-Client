@@ -100,7 +100,9 @@ export default class LocationManager extends React.Component<{
 	 */
 	static updateQuery(newData: { [key: string]: string }, replace = false): void {
 		let nextLocation = this.getUpdatedQueryLocation(newData, replace);
-		this.updateLocation(nextLocation);
+
+		if (this.instance) this.instance.props.history.push(nextLocation);
+		else this.nextLocation = nextLocation;
 	}
 
 	constructor(props: { history: History }) {

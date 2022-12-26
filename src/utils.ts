@@ -29,6 +29,13 @@ function httpRequest(
 ): Promise<any> {
 	return new Promise((resolve, reject) => {
 		var xhr = new XMLHttpRequest();
+
+		const authToken = window.sessionStorage.getItem("authGroupToken");
+		if (authToken) {
+			if (url.includes("?")) url += "&auth=" + authToken;
+			else url += "?auth=" + authToken;
+		}
+
 		xhr.open(type, url);
 
 		let jwtToken = window.sessionStorage.getItem("jwtToken") || window.localStorage.getItem("jwtToken");

@@ -52,6 +52,10 @@ export default class App extends React.Component<{ error?: boolean }> {
 	 */
 	static start(rootElement: HTMLElement): void {
 		ReactDOM.render(<LoadingPage />, rootElement);
+
+		const authToken = LocationManager.currentQuery.get("auth");
+		if (authToken) window.sessionStorage.setItem("authGroupToken", authToken);
+
 		Database.auth
 			.checkAuth()
 			.then(data => {
