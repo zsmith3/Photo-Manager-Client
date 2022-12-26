@@ -197,7 +197,7 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 							<Icon>arrow_upward</Icon>
 						</IconButton>
 
-						<IconButton title="Return to root folders" onClick={() => LocationManager.updateLocation("/folders/", ["page"])}>
+						<IconButton title="Return to root folders" onClick={() => LocationManager.updateLocation("/folders/", ["page", "search"])}>
 							<Icon>home</Icon>
 						</IconButton>
 					</Grid>

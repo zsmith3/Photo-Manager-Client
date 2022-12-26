@@ -206,7 +206,7 @@ class WebDatabase extends BaseDatabase {
 		logOut(): void {
 			window.sessionStorage.removeItem("jwtToken");
 			window.localStorage.removeItem("jwtToken");
-			if (LocationManager.currentLocation != "/register") LocationManager.updateLocation("/login");
+			if (LocationManager.currentLocation != "/register") LocationManager.updateLocation("/login", true, true);
 		},
 
 		register(data: { first_name: string; last_name: string; username: string; email: string; password: string; confirm_password: string; token: string }): Promise<any> {
