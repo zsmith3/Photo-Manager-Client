@@ -1,11 +1,11 @@
-import { Grid, Hidden, Icon, IconButton, InputAdornment, TextField, Theme, Typography, withStyles, withWidth, Zoom } from "@material-ui/core";
+import { Grid, Hidden, Icon, IconButton, InputAdornment, List, ListItem, ListItemText, TextField, Theme, Typography, Zoom, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React from "react";
-import { Album, Folder, Person, ScanFolder } from "../../models";
+import { Album, AuthGroup, Folder, Person, ScanFolder } from "../../models";
 import { UpdateHandler } from "../../utils";
 import { addressRootTypes } from "../App";
-import { LocationManager } from "../utils";
+import { LocationManager, SimpleDialog } from "../utils";
 import { navDrawerWidth } from "./NavDrawer";
 
 /** Props for AddressBar */
@@ -27,6 +27,7 @@ interface AddressBarState {
 	address: string;
 	searchValue: string;
 	searchShown: boolean;
+	linkDialogOpen: boolean;
 }
 
 /** Address bar component */
@@ -48,10 +49,10 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 			margin: "0 10px",
 			direction: "rtl" as "rtl",
 			[theme.breakpoints.down("sm")]: {
-				maxWidth: "calc(100vw - 200px)"
+				maxWidth: "calc(100vw - 236px)"
 			},
 			[theme.breakpoints.up("md")]: {
-				maxWidth: "calc(100vw - " + (navDrawerWidth + 378) + "px)"
+				maxWidth: "calc(100vw - " + (navDrawerWidth + 414) + "px)"
 			}
 		},
 		placeholder: {
@@ -81,7 +82,8 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 	state: AddressBarState = {
 		address: "/",
 		searchValue: "",
-		searchShown: false
+		searchShown: false,
+		linkDialogOpen: false
 	};
 
 	/** Handler to update the displayed address on model change */
@@ -181,6 +183,14 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 
 		return (
 			<div className={this.props.classes.addressBar}>
+				<SimpleDialog open={this.state.linkDialogOpen} onClose={() => this.setState({linkDialogOpen: false})} title="Create sharable link" actionText="Confirm" action={async () => null}>
+					<List>
+						{AuthGroup.meta.objects.map(group => <ListItem key={group.id}>
+							<ListItemText primary={group.name} secondary={window.location.origin + LocationManager.getUpdatedQueryLocation({auth: group.token})} />
+						</ListItem>)}
+					</List>
+				</SimpleDialog>
+
 				{/* Grid is needed to avoid positioning of elements affecting each other */}
 				<Grid container>
 					{/* Navigation buttons */}
@@ -199,6 +209,10 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 
 						<IconButton title="Return to root folders" onClick={() => LocationManager.updateLocation("/folders/", ["page", "search"])}>
 							<Icon>home</Icon>
+						</IconButton>
+
+						<IconButton title="Create sharable link to current page" onClick={() => this.setState({"linkDialogOpen": true })}>
+							<Icon>link</Icon>
 						</IconButton>
 					</Grid>
 
