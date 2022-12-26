@@ -157,23 +157,28 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		if (props.rootId === null) {
 			// Load base root objects
 			const data = await this.class.rootModelClass.getAbsoluteRoots();
-			this.setState({ data: this.processData(data), dataLoaded: true });
+			this.setState({ data: this.processData(data), dataLoaded: true, hasError: false });
 		} else {
 			// Load children of chosen root object
-			const rootObject = await this.class.rootModelClass.loadObject<RootModel>(props.rootId);
+			try {
+				const rootObject = await this.class.rootModelClass.loadObject<RootModel>(props.rootId);
 
-			if (this.updateHandler) this.updateHandler.unregister();
-			this.updateHandler = rootObject.registerContentsUpdateHandler(
-				props.page,
-				props.pageSize,
-				props.searchQuery,
-				this.props.rootType === "folders" ? { isf: this.props.includeSubfolders } : {},
-				data => this.setState({ data: this.processData(data), dataLoaded: true }),
-				error => {
-					if (!(typeof error === "string") && "detail" in error && error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
-					else throw error;
-				}
-			);
+				if (this.updateHandler) this.updateHandler.unregister();
+				this.updateHandler = rootObject.registerContentsUpdateHandler(
+					props.page,
+					props.pageSize,
+					props.searchQuery,
+					this.props.rootType === "folders" ? { isf: this.props.includeSubfolders } : {},
+					data => this.setState({ data: this.processData(data), dataLoaded: true, hasError: false }),
+					error => {
+						if (!(typeof error === "string") && "detail" in error && error.detail === "Invalid page.") LocationManager.updateQuery({ page: "1" });
+						else throw error;
+					}
+				);
+			} catch {
+				console.log("ERROR");
+				this.setState({hasError: true})
+			}
 		}
 	}
 

@@ -122,19 +122,23 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 			return;
 		}
 
-		switch (props.rootType) {
-			case "folders":
-				(await Folder.loadObject<Folder>(props.rootId)).updateHandlers.register(folder => this.updateAddress(props, folder.path));
-				break;
-			case "people":
-				(await Person.loadObject<Person>(props.rootId)).updateHandlers.register(person => this.updateAddress(props, person.full_name));
-				break;
-			case "albums":
-				(await Album.loadObject<Album>(props.rootId)).updateHandlers.register(album => this.updateAddress(props, album.path));
-				break;
-			case "scans":
-				(await ScanFolder.loadObject<ScanFolder>(props.rootId)).updateHandlers.register(scanFolder => this.updateAddress(props, scanFolder.path));
-				break;
+		try {
+			switch (props.rootType) {
+				case "folders":
+					(await Folder.loadObject<Folder>(props.rootId)).updateHandlers.register(folder => this.updateAddress(props, folder.path));
+					break;
+				case "people":
+					(await Person.loadObject<Person>(props.rootId)).updateHandlers.register(person => this.updateAddress(props, person.full_name));
+					break;
+				case "albums":
+					(await Album.loadObject<Album>(props.rootId)).updateHandlers.register(album => this.updateAddress(props, album.path));
+					break;
+				case "scans":
+					(await ScanFolder.loadObject<ScanFolder>(props.rootId)).updateHandlers.register(scanFolder => this.updateAddress(props, scanFolder.path));
+					break;
+			}
+		} catch {
+			this.updateAddress(props, "<An error occurred>")
 		}
 	}
 
