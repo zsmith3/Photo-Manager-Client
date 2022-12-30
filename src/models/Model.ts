@@ -256,7 +256,7 @@ export class Model {
 					.then(data => {
 						this.meta.loadAllState = ModelLoadStates.loaded;
 						const loadedIds = data.map((obj: M) => obj.id);
-						this.meta.errorHandlers.forEach((handlers, objId) => loadedIds.includes(objId) || handlers.forEach(fn => fn && fn()))
+						this.meta.errorHandlers.forEach((handlers, objId) => loadedIds.includes(objId) || handlers.forEach(fn => fn && fn()));
 						resolve(this.setObjects(data));
 						delete this.meta.loadingPromise;
 					})
@@ -379,7 +379,8 @@ export class Model {
 			if (!id && id !== 0) reject("No ID given");
 
 			if ((this.meta.loadStates.get(id) === ModelLoadStates.loaded || this.meta.loadAllState === ModelLoadStates.loaded) && !refresh) resolve(this.getById(id));
-			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading || this.meta.loadAllState === ModelLoadStates.loading) this.meta.addIdLoadHandler(id, model => resolve(model), reject);
+			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading || this.meta.loadAllState === ModelLoadStates.loading)
+				this.meta.addIdLoadHandler(id, model => resolve(model), reject);
 			else {
 				Database.get(this.meta.modelName, id)
 					.then(data => {

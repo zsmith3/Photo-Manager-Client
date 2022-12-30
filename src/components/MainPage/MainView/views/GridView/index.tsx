@@ -176,8 +176,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 					}
 				);
 			} catch {
-				console.log("ERROR");
-				this.setState({hasError: true})
+				this.setState({ hasError: true });
 			}
 		}
 	}

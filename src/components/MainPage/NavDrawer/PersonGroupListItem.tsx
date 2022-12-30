@@ -1,8 +1,9 @@
-import { Collapse, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem } from "@material-ui/core";
+import { Checkbox, Collapse, FormControlLabel, Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, ListSubheader, Menu, MenuItem } from "@material-ui/core";
 import React from "react";
 import { Person, PersonGroup } from "../../../models/Person";
-import { HoverIconButton, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
+import { HoverIconButton, ListDialog, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
 import PersonList, { SortMethods } from "./PersonList";
+import { AuthGroup } from "../../../models";
 
 export default class PersonGroupListItem extends MountTrackedComponent<{
 	groupId: number;
@@ -15,7 +16,9 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 		openMenu: false,
 		openDialogRename: false,
 		openDialogNew: false,
-		openDialogRemove: false
+		openDialogAccess: false,
+		openDialogRemove: false,
+		accessGroupPropagate: true
 	};
 
 	constructor(props: { groupId: number; sortMethod: SortMethods }) {
@@ -79,6 +82,12 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 							</ListItemIcon>
 							New Person
 						</MenuItem>
+						<MenuItem onClick={() => this.dialogOpen("Access")}>
+							<ListItemIcon>
+								<Icon>security</Icon>
+							</ListItemIcon>
+							Change Access
+						</MenuItem>
 						<MenuItem onClick={() => this.dialogOpen("Remove")}>
 							<ListItemIcon>
 								<Icon>delete</Icon>
@@ -99,14 +108,34 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 					/>
 
 					{/* New person dialog */}
-					<TextDialog
+					<ListDialog
 						open={this.state.openDialogNew}
-						onClose={() => this.dialogClose("New")}
+						onClose={() => this.setState({ openDialogNew: false })}
 						title="Create Person"
 						actionText="Create"
-						label="Person Name"
-						action={(name: string) => Person.create(name, this.state.group.id)}
+						textLabel="Person Name"
+						list={AuthGroup.meta.objects}
+						selected={this.state.group.accessGroupIds}
+						multiple
+						action={(authGroupIds: number[], name: string) => Person.create(name, this.state.group.id, authGroupIds)}
 					/>
+
+					{/* Edit access groups dialog */}
+					<ListDialog
+						open={this.state.openDialogAccess}
+						onClose={() => this.dialogClose("Access")}
+						title="Edit access groups"
+						actionText="Confirm"
+						list={AuthGroup.meta.objects}
+						selected={this.state.group.accessGroupIds}
+						multiple
+						action={(authGroupIds: number[]) => this.state.group.updateAccessGroups(authGroupIds, this.state.accessGroupPropagate)}
+					>
+						<FormControlLabel
+							control={<Checkbox checked={this.state.accessGroupPropagate} onChange={event => this.setState({ accessGroupPropagate: event.target.checked })} />}
+							label="Propagate to contained people"
+						/>
+					</ListDialog>
 
 					{/* Delete group dialog */}
 					<SimpleDialog

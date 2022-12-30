@@ -1,6 +1,6 @@
-import { Icon, ListItemIcon, ListSubheader, Menu, MenuItem, TextField } from "@material-ui/core";
+import { Checkbox, FormControlLabel, Icon, ListItemIcon, ListSubheader, Menu, MenuItem, TextField } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { Album } from "../../../models";
+import { Album, AuthGroup } from "../../../models";
 import { HoverIconButton, ListDialog, SimpleDialog, TextDialog } from "../../utils";
 import AlbumList from "./AlbumList";
 import HierarchyListItem from "./HierarchyListItem";
@@ -24,9 +24,11 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 		openMenu: false,
 		openDialogRename: false,
 		openDialogNew: false,
+		openDialogAccess: false,
 		openDialogParent: false,
 		openDialogRemove: false,
-		loading: false
+		loading: false,
+		accessGroupPropagate: true
 	};
 
 	/** Current values of Dialog inputs */
@@ -89,6 +91,12 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 						</ListItemIcon>
 						Change Parent
 					</MenuItem>
+					<MenuItem onClick={() => this.dialogOpen("Access")}>
+						<ListItemIcon>
+							<Icon>security</Icon>
+						</ListItemIcon>
+						Change Access
+					</MenuItem>
 					<MenuItem onClick={() => this.dialogOpen("Remove")}>
 						<ListItemIcon>
 							<Icon>delete</Icon>
@@ -109,16 +117,38 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 				/>
 
 				{/* New sub-album dialog */}
-				<SimpleDialog
+				<ListDialog
 					open={this.state.openDialogNew}
 					onClose={() => this.dialogClose("New")}
 					title="Create Album"
 					actionText="Create"
-					action={() => Album.create(this.state.model.id, this.updates.subName)}
+					textLabel="New Album"
+					list={AuthGroup.meta.objects}
+					selected={AuthGroup.meta.objects.map(group => group.id)}
+					multiple
+					action={(authGroupIds: number[], name: string) => Album.create(this.state.model.id, name, authGroupIds)}
+					childrenBefore
 				>
 					<TextField disabled label="Parent Album" defaultValue={this.state.model.path + "/"} />
-					<TextField autoFocus label="New Album" onChange={event => (this.updates.subName = event.currentTarget.value)} />
-				</SimpleDialog>
+				</ListDialog>
+
+				{/* Edit access groups dialog */}
+				<ListDialog
+					open={this.state.openDialogAccess}
+					onClose={() => this.dialogClose("Access")}
+					title="Edit access groups"
+					text="Note this will add any new access groups to all contained files"
+					actionText="Confirm"
+					list={AuthGroup.meta.objects}
+					selected={this.state.model.accessGroupIds}
+					multiple
+					action={(authGroupIds: number[]) => this.state.model.updateAccessGroups(authGroupIds, this.state.accessGroupPropagate)}
+				>
+					<FormControlLabel
+						control={<Checkbox checked={this.state.accessGroupPropagate} onChange={event => this.setState({ accessGroupPropagate: event.target.checked })} />}
+						label="Propagate to child albums"
+					/>
+				</ListDialog>
 
 				{/* Change parent album dialog */}
 				<ListDialog

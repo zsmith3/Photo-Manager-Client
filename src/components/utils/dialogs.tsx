@@ -99,7 +99,7 @@ interface ListDialogItem {
 }
 
 /**
- * Simple Material-UI dialog with List selection
+ * Simple Material-UI dialog with List selection (and optional text field)
  * (most props are passed to base SimpleDialog)
  * @param open A state variable determining whether the dialog is open
  * @param onClose A function which closes the dialog (i.e. by setting "open" to false)
@@ -112,6 +112,8 @@ interface ListDialogItem {
  * @param multiple Whether user can select multiple items at once
  * @param openByDefault Whether collapsible list items are open by default (default = false)
  * @param selectableFilter Filter function applied to each item to determine if it is selectable
+ * @param textLabel Label for text input field (if empty then no text field)
+ * @param defaultTextValue Default value for text input field
  */
 export class ListDialog extends React.Component<{
 	open: boolean;
@@ -119,17 +121,21 @@ export class ListDialog extends React.Component<{
 	title: string;
 	text?: string;
 	actionText: string;
-	action: (selected: number[]) => Promise<any>;
+	action: (selected: number[], text?: string) => Promise<any>;
 	list: ListDialogItem[];
 	selected?: number[];
 	multiple?: boolean;
 	openByDefault?: boolean;
 	selectableFilter?: (id: number) => boolean;
+	textLabel?: string;
+	defaultTextValue?: string;
+	childrenBefore?: boolean;
 }> {
 	state: {
 		selected: number[];
 		itemsOpen: { [id: number]: boolean };
 		searchValue: string;
+		textValue: string;
 	};
 
 	constructor(props) {
@@ -137,7 +143,7 @@ export class ListDialog extends React.Component<{
 
 		if (props.selected?.length > 1 && !props.multiple) throw "ListDialog: cannot pass multiple selected items without multiple=true";
 
-		this.state = { selected: props.selected || [], itemsOpen: {}, searchValue: "" };
+		this.state = { selected: props.selected || [], itemsOpen: {}, searchValue: "", textValue: props.defaultTextValue };
 	}
 
 	/**
@@ -241,9 +247,26 @@ export class ListDialog extends React.Component<{
 				onClose={this.props.onClose}
 				title={this.props.title}
 				actionText={this.props.actionText}
-				action={() => this.props.action(this.state.selected)}
+				action={() => this.props.action(this.state.selected, this.state.textValue)}
 				noFocus={true}
 			>
+				{this.props.childrenBefore && this.props.children}
+
+				{this.props.textLabel && (
+					<Fragment>
+						<TextField
+							autoFocus
+							label={this.props.textLabel}
+							defaultValue={this.props.defaultTextValue}
+							onChange={event => (this.state.textValue = event.currentTarget.value)}
+							style={this.props.childrenBefore ? {} : { width: "100%" }}
+						/>
+
+						<br />
+						<br />
+					</Fragment>
+				)}
+
 				{/* Search box */}
 				<TextField
 					placeholder="Search"
@@ -256,10 +279,11 @@ export class ListDialog extends React.Component<{
 							</InputAdornment>
 						)
 					}}
+					style={{ width: "100%" }}
 				/>
 				{/* Main list */}
 				{this.generateList(this.props.list, this.state.searchValue)}
-				{this.props.children}
+				{!this.props.childrenBefore && this.props.children}
 			</SimpleDialog>
 		);
 	}

@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
-import { Album } from "../../../models";
-import { HoverIconButton, TextDialog } from "../../utils";
+import { Album, AuthGroup } from "../../../models";
+import { HoverIconButton, ListDialog, TextDialog } from "../../utils";
 import AlbumListItem from "./AlbumListItem";
 import HierarchyList from "./HierarchyList";
 
@@ -29,13 +29,16 @@ export default class AlbumList extends HierarchyList<Album> {
 				</HoverIconButton>
 
 				{/* New root album dialog */}
-				<TextDialog
+				<ListDialog
 					open={this.state.openDialogNew}
 					onClose={() => this.setState({ openDialogNew: false })}
 					title="Create Album"
 					actionText="Create"
-					label="Album Name"
-					action={(name: string) => Album.create(null, name)}
+					textLabel="Album Name"
+					list={AuthGroup.meta.objects}
+					selected={AuthGroup.meta.objects.map(group => group.id)}
+					multiple
+					action={(authGroupIds: number[], name: string) => Album.create(null, name, authGroupIds)}
 				/>
 			</Fragment>
 		);

@@ -2,10 +2,10 @@ import FileCard from "../components/MainPage/MainView/cards/FileCard";
 import FolderCard from "../components/MainPage/MainView/cards/FolderCard";
 import { FileObject } from "./FileObject";
 import { Model } from "./Model";
-import RootModel from "./RootModel";
+import { RootModelWithAccessGroups } from "./RootModel";
 
 /** Base class for Folder and ScanFolder models */
-export class BaseFolder extends RootModel {
+export class BaseFolder extends RootModelWithAccessGroups {
 	static rootModelMeta = {
 		hasRoots: true,
 		rootsName: "Folders",
@@ -22,9 +22,6 @@ export class BaseFolder extends RootModel {
 
 	/** Full path to the folder */
 	path: string;
-
-	/** ID of parent folder */
-	parentID: number;
 
 	/** Number of files in the folder (including subfolders) */
 	file_count: number;

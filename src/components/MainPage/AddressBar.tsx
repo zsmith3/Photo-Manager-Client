@@ -138,7 +138,7 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 					break;
 			}
 		} catch {
-			this.updateAddress(props, "<An error occurred>")
+			this.updateAddress(props, "<An error occurred>");
 		}
 	}
 
@@ -187,11 +187,19 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 
 		return (
 			<div className={this.props.classes.addressBar}>
-				<SimpleDialog open={this.state.linkDialogOpen} onClose={() => this.setState({linkDialogOpen: false})} title="Create sharable link" actionText="Confirm" action={async () => null}>
+				<SimpleDialog
+					open={this.state.linkDialogOpen}
+					onClose={() => this.setState({ linkDialogOpen: false })}
+					title="Create sharable link"
+					actionText="Confirm"
+					action={async () => null}
+				>
 					<List>
-						{AuthGroup.meta.objects.map(group => <ListItem key={group.id}>
-							<ListItemText primary={group.name} secondary={window.location.origin + LocationManager.getUpdatedQueryLocation({auth: group.token})} />
-						</ListItem>)}
+						{AuthGroup.meta.objects.map(group => (
+							<ListItem key={group.id}>
+								<ListItemText primary={group.name} secondary={window.location.origin + LocationManager.getUpdatedQueryLocation({ auth: group.token })} />
+							</ListItem>
+						))}
 					</List>
 				</SimpleDialog>
 
@@ -215,7 +223,7 @@ class AddressBar extends React.Component<AddressBarProps, AddressBarState> {
 							<Icon>home</Icon>
 						</IconButton>
 
-						<IconButton title="Create sharable link to current page" onClick={() => this.setState({"linkDialogOpen": true })}>
+						<IconButton title="Create sharable link to current page" onClick={() => this.setState({ linkDialogOpen: true })}>
 							<Icon>link</Icon>
 						</IconButton>
 					</Grid>

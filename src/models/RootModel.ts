@@ -1,5 +1,7 @@
 import { Model } from ".";
+import { AuthGroup } from "./AuthGroup";
 import { GridCardExport } from "../components/MainPage/MainView/cards/BaseGridCard";
+import { Database } from "../controllers/Database";
 import { UpdateHandlerList } from "../utils";
 import { ModelMeta } from "./Model";
 
@@ -194,5 +196,64 @@ export default class RootModel extends Model {
 			}
 		}
 		this.contentsUpdateHandlers.handle();
+	}
+}
+
+/** Type for contents models with access groups  */
+interface ContentsWithAccessGroups extends Model {
+	accessGroupIds: number[];
+}
+
+/** RootModel with ability to propagate access group changes through hierarchy (i.e. Folder, Album, ScanFolder) */
+export class RootModelWithAccessGroups extends RootModel {
+	// Typescript hacks
+	class: typeof RootModelWithAccessGroups;
+	static meta: ModelMeta<RootModelWithAccessGroups>;
+
+	/** ID of parent model (folder/album) */
+	parentID: number;
+
+	/** Parent folder */
+	getParent(): RootModelWithAccessGroups {
+		if (this.parentID === null) return null;
+		else return (this.class.getById(this.parentID) || undefined) as RootModelWithAccessGroups;
+	}
+
+	/** Access user group IDs */
+	accessGroupIds: number[];
+
+	/** Access user groups */
+	get access_groups(): AuthGroup[] {
+		return this.accessGroupIds.map(id => AuthGroup.getById(id));
+	}
+
+	/**
+	 * Change user access groups for this folder
+	 * @param accessGroupIds New access group IDs
+	 * @param propagate Whether to propagate change to child folders
+	 * @param save Whether to save changes to remote database
+	 * @returns Promise representing completion
+	 */
+	updateAccessGroups(accessGroupIds: number[], propagate: boolean, save = true) {
+		this.accessGroupIds = accessGroupIds;
+		this.addAccessGroupsToParents(accessGroupIds);
+		if (propagate) {
+			this.class.meta.objects.filter(obj => obj.parentID === this.id).forEach(obj => obj.updateAccessGroups(accessGroupIds, true, false));
+			let allContentIds = [];
+			for (let entry of this.contents) allContentIds = allContentIds.concat(entry[1].objectIds);
+			allContentIds = allContentIds.filter((v, i, a) => a.indexOf(v) === i);
+			allContentIds.forEach(id => ((this.class.rootModelMeta.contentsClass.getById(id) as ContentsWithAccessGroups).accessGroupIds = accessGroupIds));
+		}
+		if (save) return Database.update(this.class.meta.modelName, this.id, { access_groups: accessGroupIds, propagate_ag: propagate }, true);
+	}
+
+	/**
+	 * Recursively add new access groups to parent albums
+	 * @param newAccessGroupIds Full (new) set of access group IDs for child album
+	 */
+	addAccessGroupsToParents(newAccessGroupIds: number[]) {
+		for (let groupId of newAccessGroupIds) if (!this.accessGroupIds.includes(groupId)) this.accessGroupIds.push(groupId);
+		const parent = this.getParent();
+		if (parent !== null) parent.addAccessGroupsToParents(newAccessGroupIds);
 	}
 }

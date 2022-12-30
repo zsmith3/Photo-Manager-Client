@@ -64,7 +64,10 @@ export default class App extends React.Component<{ error?: boolean }> {
 
 				ReactDOM.render(<App />, rootElement);
 			})
-			.catch(() => ReactDOM.render(<App error={true} />, rootElement));
+			.catch(err => {
+				console.error(err);
+				ReactDOM.render(<App error={true} />, rootElement);
+			});
 	}
 
 	/**
