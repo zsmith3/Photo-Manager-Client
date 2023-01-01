@@ -2,7 +2,7 @@ import { Icon, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Li
 import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { FaceImgSizes, Platform } from "../../../controllers/Platform";
-import { Person, PersonGroup } from "../../../models";
+import { AuthGroup, Person, PersonGroup } from "../../../models";
 import { HoverIconButton, ListDialog, LocationManager, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
 
 /** Individual Person instance display, with menu for modification */
@@ -29,6 +29,7 @@ class PersonListItem extends MountTrackedComponent<{
 		openDialogRename: false,
 		openDialogGroup: false,
 		openDialogRemove: false,
+		openDialogAccess: false,
 		loading: false,
 		thumbnailSrc: null as string
 	};
@@ -100,6 +101,12 @@ class PersonListItem extends MountTrackedComponent<{
 							</ListItemIcon>
 							Edit Group
 						</MenuItem>
+						<MenuItem onClick={() => this.dialogOpen("Access")}>
+							<ListItemIcon>
+								<Icon>security</Icon>
+							</ListItemIcon>
+							Change Access
+						</MenuItem>
 						<MenuItem onClick={() => this.dialogOpen("Remove")}>
 							<ListItemIcon>
 								<Icon>delete</Icon>
@@ -130,12 +137,24 @@ class PersonListItem extends MountTrackedComponent<{
 						title="Change person group"
 						actionText="Change Group"
 						list={PersonGroup.meta.objects}
-						selected={this.state.person.group.id}
-						action={(groupId: number) =>
+						selected={[this.state.person.group.id]}
+						action={(groupId: number[]) =>
 							Person.getById(this.props.personId)
-								.updateSave({ group: groupId })
+								.updateSave({ group: groupId[0] })
 								.then(() => Person.meta.listUpdateHandlers.handle())
 						}
+					/>
+
+					{/* Edit access groups dialog */}
+					<ListDialog
+						open={this.state.openDialogAccess}
+						onClose={() => this.dialogClose("Access")}
+						title="Edit access groups"
+						actionText="Confirm"
+						list={AuthGroup.meta.objects}
+						selected={this.state.person.accessGroupIds}
+						multiple
+						action={(authGroupIds: number[]) => this.state.person.updateAccessGroups(authGroupIds)}
 					/>
 
 					{/* Delete person dialog */}

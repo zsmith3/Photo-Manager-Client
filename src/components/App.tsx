@@ -52,6 +52,10 @@ export default class App extends React.Component<{ error?: boolean }> {
 	 */
 	static start(rootElement: HTMLElement): void {
 		ReactDOM.render(<LoadingPage />, rootElement);
+
+		const authToken = LocationManager.currentQuery.get("auth");
+		if (authToken) window.sessionStorage.setItem("authGroupToken", authToken);
+
 		Database.auth
 			.checkAuth()
 			.then(data => {
@@ -60,7 +64,10 @@ export default class App extends React.Component<{ error?: boolean }> {
 
 				ReactDOM.render(<App />, rootElement);
 			})
-			.catch(() => ReactDOM.render(<App error={true} />, rootElement));
+			.catch(err => {
+				console.error(err);
+				ReactDOM.render(<App error={true} />, rootElement);
+			});
 	}
 
 	/**

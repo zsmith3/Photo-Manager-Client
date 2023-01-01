@@ -1,4 +1,5 @@
 import { ScanFolder } from ".";
+import { AuthGroup } from "./AuthGroup";
 import { LocationManager } from "../components/utils";
 import { Database, DBTables } from "../controllers/Database";
 import { BaseImageFile } from "./BaseImageFile";
@@ -24,7 +25,7 @@ export class Scan extends BaseImageFile {
 	static meta = new ModelMeta<Scan>({
 		modelName: DBTables.Scan,
 		props: ["id", "name", "format", "width", "height", "orientation"],
-		specialProps: { folder: "folderID" }
+		specialProps: { folder: "folderID", access_groups: "accessGroupIds" }
 	});
 
 	/** ID of parent folder */
@@ -33,6 +34,14 @@ export class Scan extends BaseImageFile {
 	/** Parent folder */
 	get folder() {
 		return ScanFolder.getById(this.folderID);
+	}
+
+	/** Access user group IDs */
+	accessGroupIds: number[];
+
+	/** Access user groups */
+	get access_groups(): AuthGroup[] {
+		return this.accessGroupIds.map(id => AuthGroup.getById(id));
 	}
 
 	/** Open the scan image */

@@ -24,7 +24,7 @@ export class FileObject extends BaseImageFile {
 		modelName: DBTables.File,
 		props: ["id", "name", "path", "type", "format", "length", "timestamp", "width", "height", "orientation", "duration", "is_starred", "is_deleted", "notes"],
 		specialProps: {
-			access_group: "accessGroupId",
+			access_groups: "accessGroupIds",
 			geotag: {
 				deserialize: (file: FileObject, prop) => {
 					if (prop === null) file.geotagID = null;
@@ -72,11 +72,11 @@ export class FileObject extends BaseImageFile {
 	notes: string;
 
 	/** File access user group ID */
-	accessGroupId: number;
+	accessGroupIds: number[];
 
 	/** File access user group */
-	get access_group(): AuthGroup {
-		return AuthGroup.getById(this.accessGroupId);
+	get access_group(): AuthGroup[] {
+		return this.accessGroupIds.map(id => AuthGroup.getById(id));
 	}
 
 	/** File geotag ID */

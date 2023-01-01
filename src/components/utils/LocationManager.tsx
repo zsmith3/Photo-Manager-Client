@@ -36,16 +36,25 @@ export default class LocationManager extends React.Component<{
 	 * Get the new location of the page (without updating the page)
 	 * @param url The new URL to move to
 	 * @param replaceQuery Whether to fully or partially replace the existing query
+	 * @param removeAuth Whether to remove the auth code from the query string
 	 * @returns The new location
 	 */
-	static getUpdatedLocation(url: string, replaceQuery: boolean | string[] = true): string {
+	static getUpdatedLocation(url: string, replaceQuery: boolean | string[] = true, removeAuth: boolean = false): string {
 		let newQuery = new URLSearchParams();
 		if (replaceQuery !== true) {
 			newQuery = this.currentQuery;
 			if (replaceQuery !== false) {
 				for (let param of replaceQuery) newQuery.delete(param);
 			}
+			if (removeAuth) newQuery.delete("auth");
 		}
+
+		// Ensure auth code is not replaced
+		if (!removeAuth) {
+			const queryAuth = this.currentQuery.get("auth");
+			if (queryAuth) newQuery.set("auth", queryAuth);
+		}
+
 		let newQString = newQuery.toString();
 		url = newQString ? url + "?" + newQString : url;
 
@@ -56,9 +65,10 @@ export default class LocationManager extends React.Component<{
 	 * Update the location of the page
 	 * @param url The new URL to move to
 	 * @param replaceQuery Whether to fully or partially replace the existing query
+	 * @param removeAuth Whether to remove the auth code from the query string
 	 */
-	static updateLocation(url: string, replaceQuery: boolean | string[] = true): void {
-		url = this.getUpdatedLocation(url, replaceQuery);
+	static updateLocation(url: string, replaceQuery: boolean | string[] = true, removeAuth: boolean = false): void {
+		url = this.getUpdatedLocation(url, replaceQuery, removeAuth);
 
 		if (this.instance) this.instance.props.history.push(url);
 		else this.nextLocation = url;
@@ -90,7 +100,9 @@ export default class LocationManager extends React.Component<{
 	 */
 	static updateQuery(newData: { [key: string]: string }, replace = false): void {
 		let nextLocation = this.getUpdatedQueryLocation(newData, replace);
-		this.updateLocation(nextLocation);
+
+		if (this.instance) this.instance.props.history.push(nextLocation);
+		else this.nextLocation = nextLocation;
 	}
 
 	constructor(props: { history: History }) {

@@ -53,6 +53,9 @@ export class ModelMeta<M extends Model> {
 	/** Handler functions to run when specific instances are loaded */
 	loadHandlers: Map<number, ((model: M) => void)[]> = new Map();
 
+	/** Handler functions to run when loading an instance fails */
+	errorHandlers: Map<number, (() => void)[]> = new Map();
+
 	/**
 	 * ModelMeta constructor
 	 * @param data Data object containing values for properties of ModelMeta instance
@@ -66,10 +69,14 @@ export class ModelMeta<M extends Model> {
 	 * @param id ID to insert at
 	 * @param callback Callback to add
 	 */
-	addIdLoadHandler(id: number, callback: (model: M) => void) {
+	addIdLoadHandler(id: number, callback: (model: M) => void, onerror: () => void) {
 		let list = this.loadHandlers.get(id);
 		if (list) list.push(callback);
 		else this.loadHandlers.set(id, [callback]);
+
+		let errorList = this.errorHandlers.get(id);
+		if (errorList) errorList.push(onerror);
+		else this.errorHandlers.set(id, [onerror]);
 	}
 }
 
@@ -221,7 +228,8 @@ export class Model {
 			loadObject(id: number, refresh?: boolean): Promise<M>;
 		},
 		id: number,
-		callback: (model: M) => void
+		callback: (model: M) => void,
+		onerror: () => void
 	): void {
 		switch (this.meta.loadStates.get(id)) {
 			case ModelLoadStates.loaded:
@@ -229,7 +237,7 @@ export class Model {
 				break;
 			case ModelLoadStates.loading:
 			case ModelLoadStates.notLoaded:
-				this.meta.addIdLoadHandler(id, callback);
+				this.meta.addIdLoadHandler(id, callback, onerror);
 			case ModelLoadStates.notLoaded:
 				this.loadObject(id);
 				break;
@@ -247,6 +255,8 @@ export class Model {
 				Database.get(this.meta.modelName)
 					.then(data => {
 						this.meta.loadAllState = ModelLoadStates.loaded;
+						const loadedIds = data.map((obj: M) => obj.id);
+						this.meta.errorHandlers.forEach((handlers, objId) => loadedIds.includes(objId) || handlers.forEach(fn => fn && fn()));
 						resolve(this.setObjects(data));
 						delete this.meta.loadingPromise;
 					})
@@ -339,7 +349,7 @@ export class Model {
 					if (!fn()) {
 						ids.forEach(id => {
 							if (this.meta.loadStates.get(id) === ModelLoadStates.loading) {
-								this.meta.addIdLoadHandler(id, fn);
+								this.meta.addIdLoadHandler(id, fn, reject);
 							}
 						});
 					}
@@ -370,7 +380,7 @@ export class Model {
 
 			if ((this.meta.loadStates.get(id) === ModelLoadStates.loaded || this.meta.loadAllState === ModelLoadStates.loaded) && !refresh) resolve(this.getById(id));
 			else if (this.meta.loadStates.get(id) === ModelLoadStates.loading || this.meta.loadAllState === ModelLoadStates.loading)
-				this.meta.addIdLoadHandler(id, model => resolve(model));
+				this.meta.addIdLoadHandler(id, model => resolve(model), reject);
 			else {
 				Database.get(this.meta.modelName, id)
 					.then(data => {

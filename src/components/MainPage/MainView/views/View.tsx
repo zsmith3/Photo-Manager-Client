@@ -24,6 +24,7 @@ export interface ViewProps {
 /** State for View component */
 export interface ViewState {
 	dataLoaded: boolean;
+	hasError: boolean;
 	selection: number[];
 	currentScale: number;
 }
@@ -32,6 +33,7 @@ export interface ViewState {
 export default abstract class View<S extends ViewState, P extends { classes?: any } = {}> extends MountTrackedComponent<ViewProps & P, S> {
 	state = {
 		dataLoaded: false,
+		hasError: false,
 		selection: [],
 		currentScale: null
 	} as S;
@@ -47,7 +49,7 @@ export default abstract class View<S extends ViewState, P extends { classes?: an
 
 	/** Reset `this.state` when the page changes */
 	resetState() {
-		this.setState({ dataLoaded: false });
+		this.setState({ dataLoaded: false, hasError: false });
 		Platform.mediaQueue.reset();
 	}
 
@@ -79,6 +81,7 @@ export default abstract class View<S extends ViewState, P extends { classes?: an
 					)}
 				</Fragment>
 			);
-		} else return <LinearProgress />;
+		} else if (this.state.hasError) return <p>An error occurred.</p>;
+		else return <LinearProgress />;
 	}
 }

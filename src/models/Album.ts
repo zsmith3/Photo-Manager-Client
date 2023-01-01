@@ -1,17 +1,18 @@
 import FileCard from "../components/MainPage/MainView/cards/FileCard";
 import { Database, DBTables } from "../controllers/Database";
 import { promiseChain } from "../utils";
+import { AuthGroup } from "./AuthGroup";
 import { FileObject } from "./FileObject";
 import { ModelMeta } from "./Model";
-import RootModel from "./RootModel";
+import { RootModelWithAccessGroups } from "./RootModel";
 
 /** Album model */
-export class Album extends RootModel {
+export class Album extends RootModelWithAccessGroups {
 	/** Album model metadata */
 	static meta = new ModelMeta<Album>({
 		modelName: DBTables.Album,
 		props: ["id", "name", "file_count"],
-		specialProps: { parent: "parentID" }
+		specialProps: { parent: "parentID", access_groups: "accessGroupIds" }
 	});
 
 	static rootModelMeta = {
@@ -31,11 +32,12 @@ export class Album extends RootModel {
 	 * Create a new album and add it to the remote database
 	 * @param parentId ID of the parent album (-1 for root-level) TODO this
 	 * @param name Name of the new album
+	 * @param authGroupIds IDs of AuthGroups for new album
 	 * @returns Promise object representing new album
 	 */
-	static create(parentId: number, name: string): Promise<Album> {
+	static create(parentId: number, name: string, authGroupIds: number[]): Promise<Album> {
 		return new Promise((resolve, reject) => {
-			Database.create(Album.meta.modelName, { parent: parentId, name: name })
+			Database.create(Album.meta.modelName, { parent: parentId, name: name, access_groups: authGroupIds })
 				.then(data => {
 					let album = Album.addObject(data);
 
@@ -54,12 +56,9 @@ export class Album extends RootModel {
 	/** Number of files in this album (and children) */
 	file_count: number;
 
-	/** ID of parent album */
-	private parentID: number;
-
-	/** Parent album (undefined if root-level) */
-	get parent(): Album {
-		return this.parentID === null ? null : Album.getById(this.parentID);
+	/** Parent album */
+	get parent() {
+		return this.getParent() as Album;
 	}
 
 	/** All parent albums (found recursively) */
@@ -94,6 +93,8 @@ export class Album extends RootModel {
 	 */
 	async addFile(fileId: number, multiple = false): Promise<void> {
 		await Database.create(DBTables.AlbumFile, { album: this.id, file: fileId });
+		// const file = FileObject.getById(fileId)
+		// for (let groupId of this.accessGroupIds) if (!file.accessGroupIds.includes(groupId)) file.accessGroupIds.push(groupId);
 		if (!multiple) this.updateParents();
 	}
 

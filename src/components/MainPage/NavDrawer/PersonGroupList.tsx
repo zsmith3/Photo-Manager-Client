@@ -1,7 +1,7 @@
 import { List, ListItemIcon, ListSubheader, Menu, MenuItem, Radio } from "@material-ui/core";
 import React, { Fragment } from "react";
-import { PersonGroup } from "../../../models";
-import { HoverIconButton, MountTrackedComponent, TextDialog } from "../../utils";
+import { AuthGroup, PersonGroup } from "../../../models";
+import { HoverIconButton, ListDialog, MountTrackedComponent, TextDialog } from "../../utils";
 import PersonGroupListItem from "./PersonGroupListItem";
 import { SortMethods } from "./PersonList";
 
@@ -55,14 +55,17 @@ export default class PersonGroupList extends MountTrackedComponent<{ height?: st
 					))}
 				</List>
 
-				{/* New root album dialog */}
-				<TextDialog
+				{/* New person group dialog */}
+				<ListDialog
 					open={this.state.openDialogNew}
 					onClose={() => this.setState({ openDialogNew: false })}
 					title="Create Group"
 					actionText="Create"
-					label="Group Name"
-					action={(name: string) => PersonGroup.create(name)}
+					textLabel="Group Name"
+					list={AuthGroup.meta.objects}
+					selected={AuthGroup.meta.objects.map(accessGroup => accessGroup.id)}
+					multiple
+					action={(authGroupIds: number[], name: string) => PersonGroup.create(name, authGroupIds)}
 				/>
 
 				{/* Options (sorting) menu */}

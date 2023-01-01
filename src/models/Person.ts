@@ -1,5 +1,6 @@
 import FaceCard from "../components/MainPage/MainView/cards/FaceCard";
 import { Database, DBTables } from "../controllers/Database";
+import { AuthGroup } from "./AuthGroup";
 import { Face } from "./Face";
 import { Model, ModelMeta } from "./Model";
 import RootModel from "./RootModel";
@@ -9,7 +10,8 @@ export class PersonGroup extends Model {
 	/** Person group model metadata */
 	static meta = new ModelMeta<PersonGroup>({
 		modelName: DBTables.PersonGroup,
-		props: ["id", "name"]
+		props: ["id", "name"],
+		specialProps: { access_groups: "accessGroupIds" }
 	});
 
 	/**
@@ -17,9 +19,9 @@ export class PersonGroup extends Model {
 	 * @param name Name of the group
 	 * @returns Promise object representing new group
 	 */
-	static create(name: string): Promise<PersonGroup> {
+	static create(name: string, accessGroupIds: number[]): Promise<PersonGroup> {
 		return new Promise(function(resolve, reject) {
-			Database.create(PersonGroup.meta.modelName, { name: name })
+			Database.create(PersonGroup.meta.modelName, { name: name, access_groups: accessGroupIds })
 				.then(function(data) {
 					let newGroup = PersonGroup.addObject(data);
 					// App.app.els.navDrawer.addPersonGroup(newGroup);
@@ -44,6 +46,14 @@ export class PersonGroup extends Model {
 		return this.people.length;
 	}
 
+	/** Access user group IDs */
+	accessGroupIds: number[];
+
+	/** Access user groups */
+	get access_groups(): AuthGroup[] {
+		return this.accessGroupIds.map(id => AuthGroup.getById(id));
+	}
+
 	/**
 	 * Delete person group from the remote database
 	 * @returns Promise object representing completion
@@ -59,6 +69,18 @@ export class PersonGroup extends Model {
 				.catch(reject);
 		});
 	}
+
+	/**
+	 * Change user access groups for this PersonGroup
+	 * @param accessGroupIds New access group IDs
+	 * @param propagate Whether to propagate change to contained people
+	 * @returns Promise representing completion
+	 */
+	updateAccessGroups(accessGroupIds: number[], propagate: boolean) {
+		this.accessGroupIds = accessGroupIds;
+		if (propagate) this.people.forEach(person => (person.accessGroupIds = accessGroupIds));
+		return Database.update(this.class.meta.modelName, this.id, { access_groups: accessGroupIds, propagate_ag: propagate }, true);
+	}
 }
 
 /** Person model */
@@ -67,7 +89,7 @@ export class Person extends RootModel {
 	static meta = new ModelMeta<Person>({
 		modelName: DBTables.Person,
 		props: ["id", "full_name", "face_count", "face_count_confirmed", "thumbnail"],
-		specialProps: { group: "groupID" }
+		specialProps: { group: "groupID", access_groups: "accessGroupIds" }
 	});
 
 	static rootModelMeta = {
@@ -82,13 +104,15 @@ export class Person extends RootModel {
 	 * Create a new Person and add to the remote database
 	 * @param name Name of the new person
 	 * @param groupID ID of the person group to add to
+	 * @param accessGroupIds IDs of access groups for new person to belong to
 	 * @returns Promise object representing new Person
 	 */
-	static create(name: string, groupID?: number): Promise<Person> {
+	static create(name: string, groupID: number, accessGroupIds: number[]): Promise<Person> {
 		return new Promise((resolve, reject) => {
 			Database.create(Person.meta.modelName, {
 				full_name: name,
-				group: groupID
+				group: groupID,
+				access_groups: accessGroupIds
 			})
 				.then(data => {
 					let newPerson = Person.addObject(data);
@@ -131,6 +155,14 @@ export class Person extends RootModel {
 	/** Handler functions to be run when associated faces are updated */
 	faceListUpdateHandlers: ((faces: Face[]) => void)[] = [];
 
+	/** Access user group IDs */
+	accessGroupIds: number[];
+
+	/** Access user groups */
+	get access_groups(): AuthGroup[] {
+		return this.accessGroupIds.map(id => AuthGroup.getById(id));
+	}
+
 	/**
 	 * Delete person from remote database
 	 * @returns Promise representing completion
@@ -147,5 +179,16 @@ export class Person extends RootModel {
 				})
 				.catch(reject);
 		});
+	}
+
+	/**
+	 * Change user access groups for this Person
+	 * @param accessGroupIds New access group IDs
+	 * @returns Promise representing completion
+	 */
+	updateAccessGroups(accessGroupIds: number[]) {
+		this.accessGroupIds = accessGroupIds;
+		// for (let accessGroupId of accessGroupIds) if (!this.group.accessGroupIds.includes(accessGroupId)) this.group.accessGroupIds.push(accessGroupId);
+		return Database.update(this.class.meta.modelName, this.id, { access_groups: accessGroupIds }, true);
 	}
 }
