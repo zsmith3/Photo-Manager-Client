@@ -5,7 +5,7 @@ import { Model } from "../../../models";
 import { HoverIconButton, LocationManager, MountTrackedComponent } from "../../utils";
 
 /** Base class for Album and Folder ListItem */
-export default abstract class HierarchyListItem<M extends Model & { name: string; path: string; file_count: number; children: M[] }> extends MountTrackedComponent<{
+export default abstract class HierarchyListItem<M extends Model & { name: string; path: string; file_count: number; children: M[], parent: M }> extends MountTrackedComponent<{
 	modelId: number;
 	indent?: number;
 }> {
@@ -49,7 +49,7 @@ export default abstract class HierarchyListItem<M extends Model & { name: string
 					component={Link}
 					to={LocationManager.getUpdatedLocation(`/${this.class.modelTypeName.toLowerCase()}s/${this.state.model.id}/`, ["page"])}
 				>
-					<ListItemText primary={`${this.state.model.name} (${this.state.model.file_count})`} />
+					<ListItemText primary={`${this.state.model.parent === undefined ? this.state.model.path : this.state.model.name} (${this.state.model.file_count})`} />
 
 					<ListItemSecondaryAction onClick={event => event.preventDefault()}>
 						{this.renderMenuButton()}

@@ -26,9 +26,12 @@ export default abstract class HierarchyList<M extends Model & { parent: M }> ext
 
 		this.class = this.constructor as typeof HierarchyList;
 		this.class.modelType.registerListUpdateHandler((items: M[]) => {
+			console.log(items);
 			this.setStateSafe({
 				modelIds: items
-					.filter((item: M) => (this.props.parentID === undefined ? item.parent === null : item.parent && item.parent.id === this.props.parentID))
+					// Note: in the root list, we include items with a parent which is either null (ie root items)
+					// or undefined (ie their parent is not accessible to the user)
+					.filter((item: M) => (this.props.parentID === undefined ? !item.parent : item.parent && item.parent.id === this.props.parentID))
 					.map((item: M) => item.id)
 			});
 		});

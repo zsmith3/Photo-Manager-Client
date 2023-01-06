@@ -1,6 +1,6 @@
 import List from "@material-ui/core/List";
 import React from "react";
-import { Person } from "../../../models";
+import { Person, PersonGroup } from "../../../models";
 import { MountTrackedComponent } from "../../utils";
 import PersonListItem from "./PersonListItem";
 
@@ -37,7 +37,7 @@ export default class PersonList extends MountTrackedComponent<{ groupId?: number
 
 		Person.registerListUpdateHandler((people: Person[]) => {
 			this.setStateSafe({
-				personIds: people.filter((person: Person) => this.props.groupId === undefined || person.group.id === this.props.groupId).map((person: Person) => person.id)
+				personIds: people.filter((person: Person) => this.props.groupId === undefined || (this.props.groupId === (person.group ? person.group.id : 0))).map((person: Person) => person.id)
 			});
 		});
 	}

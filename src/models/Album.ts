@@ -69,7 +69,7 @@ export class Album extends RootModelWithAccessGroups {
 
 	/** Child albums */
 	get children(): Album[] {
-		return Album.meta.objects.filter(album => album.parent !== null && album.parent.id == this.id);
+		return Album.meta.objects.filter(album => album.parent && album.parent.id == this.id);
 	}
 
 	/** All child albums (found recursively) */

@@ -137,7 +137,7 @@ class PersonListItem extends MountTrackedComponent<{
 						title="Change person group"
 						actionText="Change Group"
 						list={PersonGroup.meta.objects}
-						selected={[this.state.person.group.id]}
+						selected={this.state.person.group && [this.state.person.group.id]}
 						action={(groupId: number[]) =>
 							Person.getById(this.props.personId)
 								.updateSave({ group: groupId[0] })

@@ -157,6 +157,7 @@ Here is a list of existing features, as well as features which I intend to add i
 
 - Some issues with ordering - e.g. user-uploaded files are not ordered correctly until after refreshing the page
 - TSC errors
+- Currently album paths are computed locally rather than exposed in the API. This means that if a user has access to a child album but not its parent, then the full path is not displayed. Not sure if this is a bug or a feature.
 
 ## Contributing
 

@@ -38,7 +38,7 @@ export class PersonGroup extends Model {
 
 	/** People within group */
 	get people(): Person[] {
-		return Person.meta.objects.filter(person => person.group.id == this.id);
+		return Person.meta.objects.filter(person => person.group && person.group.id == this.id);
 	}
 
 	/** Number of people within group */

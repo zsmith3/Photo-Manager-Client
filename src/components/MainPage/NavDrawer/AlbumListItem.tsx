@@ -42,7 +42,7 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 
 		this.updates = {
 			subName: "",
-			parent: this.state.model.parent !== null ? this.state.model.parent.id : null
+			parent: this.state.model.parent ? this.state.model.parent.id : null
 		};
 	}
 
@@ -157,7 +157,7 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 					title="Change album parent"
 					actionText="Change Parent"
 					list={[{ id: null, name: "/", children: Album.rootAlbums }]}
-					selected={this.state.model.parent === null ? [] : [this.state.model.parent.id]}
+					selected={this.state.model.parent ? [this.state.model.parent.id] : []}
 					selectableFilter={id =>
 						id === null ||
 						!Album.getById(id)
