@@ -95,10 +95,13 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [x] Contains a search bar
 	- [x] Main files container
 		- [x] Items can be selected and modified (see Sorting capabilities)
+			- [ ] Allow renaming of files
+			- [ ] Allow creation of albums from within 'Add to album' dialog
 		- [ ] Show details for selected items
 		- [ ] Different views
 			- [ ] Map view
 			- [ ] Option to show files containing person or faces within folder
+		- [x] Users can upload files to certain folders
 	- [x] Open file
 		- [x] Image files can be displayed full screen
 			- [x] Images can be panned and zoomed
@@ -106,6 +109,9 @@ Here is a list of existing features, as well as features which I intend to add i
 			- [ ] Display outlines of faces in images
 			- [ ] Show options menu for open images
 		- [ ] Allow other file types to be opened
+	- [ ] Accessibility
+		- [ ] Make context menu available anywhere in page
+		- [ ] Make keystrokes for most features
 - [x] Navigation
 	- [x] 3 main hiearachies
 		- [x] Folders
@@ -119,6 +125,7 @@ Here is a list of existing features, as well as features which I intend to add i
 			- [ ] List child albums
 	- [x] Separate view for scanned photos
 		- [x] Editor with cropping function
+			- [ ] Allow crop lines to be deleted
 	- [x] Filtering
 		- [x] Searching
 			- [x] Files
@@ -129,6 +136,9 @@ Here is a list of existing features, as well as features which I intend to add i
 			- [ ] Allow searching of faces (via their file)
 			- [x] Can search search only immediate children, or optionally all subfolder contents
 		- [ ] (*possibly*) More explicit filtering system
+	- [x] Access to all objects limited by user groups
+		- [x] Guest access available through url-based authorisation
+		- Note: access groups currently behave 'as the user expects' - nothing is automatically changed unless requested. This can allow for odd behaviour, but it is at least fully user-controlled behaviour. It might make sense to remove access groups for folders/albums/people/etc. and instead just look at which files a user has access to, and whether any are included in that album/folder/person/etc.
 - [x] Cross-platform
 	- [x] Web
 	- [x] Mobile application
@@ -142,6 +152,11 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [ ] Synchronise full database to allow offline usage
 		- [ ] Allow fully local usage with local-only files
 
+
+## Known bugs
+
+- Some issues with ordering - e.g. user-uploaded files are not ordered correctly until after refreshing the page
+- TSC errors
 
 ## Contributing
 

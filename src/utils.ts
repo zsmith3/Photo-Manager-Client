@@ -25,55 +25,69 @@ function httpRequest(
 	responseType: xhrResponseTypes = "blob",
 	readerType: fileReaderTypes = "readAsArrayBuffer",
 	timeoutLength: number = 2000,
-	timeoutCount: number = 3
-): Promise<any> {
-	return new Promise((resolve, reject) => {
-		var xhr = new XMLHttpRequest();
+	timeoutCount: number = 3,
+	onUploadProgress?: (event: ProgressEvent) => void
+): [Promise<any>, () => Promise<void>] {
+	var xhr = new XMLHttpRequest();
 
-		const authToken = window.sessionStorage.getItem("authGroupToken");
-		if (authToken) {
-			if (url.includes("?")) url += "&auth=" + authToken;
-			else url += "?auth=" + authToken;
+	const authToken = window.sessionStorage.getItem("authGroupToken");
+	if (authToken) {
+		if (url.includes("?")) url += "&auth=" + authToken;
+		else url += "?auth=" + authToken;
+	}
+
+	xhr.open(type, url);
+
+	let jwtToken = window.sessionStorage.getItem("jwtToken") || window.localStorage.getItem("jwtToken");
+	if (jwtToken) xhr.setRequestHeader("Authorization", "JWT " + jwtToken);
+
+	for (let key in headers) xhr.setRequestHeader(key, headers[key]);
+	xhr.responseType = responseType;
+
+	var cancelled = false;
+
+	return [
+		new Promise((resolve, reject) => {
+			xhr.onload = function() {
+				var status = [200, 201, 204].includes(this.status);
+
+				if (this.response && this.response.size && responseType == "blob") {
+					let fileReader = new FileReader();
+
+					fileReader.onload = function() {
+						if (status) resolve(this.result);
+						else reject(this.result);
+					};
+
+					fileReader.onerror = reject;
+
+					fileReader[readerType](this.response);
+				} else if (status) resolve(this.response);
+				else reject(this.response);
+			};
+
+			xhr.onerror = reject;
+			xhr.timeout = timeoutLength;
+			xhr.ontimeout = () => {
+				if (timeoutCount > 1 && !cancelled)
+					httpRequest(url, type, data, headers, responseType, readerType, timeoutLength * 2, timeoutCount - 1, onUploadProgress)[0]
+						.then(resolve)
+						.catch(reject);
+				else reject("Request timed out.");
+			};
+
+			xhr.upload.onprogress = onUploadProgress;
+
+			xhr.send(data);
+		}),
+		() => {
+			cancelled = true;
+			return new Promise((resolve, reject) => {
+				xhr.onabort = () => resolve();
+				xhr.abort();
+			});
 		}
-
-		xhr.open(type, url);
-
-		let jwtToken = window.sessionStorage.getItem("jwtToken") || window.localStorage.getItem("jwtToken");
-		if (jwtToken) xhr.setRequestHeader("Authorization", "JWT " + jwtToken);
-
-		for (let key in headers) xhr.setRequestHeader(key, headers[key]);
-		xhr.responseType = responseType;
-
-		xhr.onload = function() {
-			var status = [200, 201, 204].includes(this.status);
-
-			if (this.response && this.response.size && responseType == "blob") {
-				let fileReader = new FileReader();
-
-				fileReader.onload = function() {
-					if (status) resolve(this.result);
-					else reject(this.result);
-				};
-
-				fileReader.onerror = reject;
-
-				fileReader[readerType](this.response);
-			} else if (status) resolve(this.response);
-			else reject(this.response);
-		};
-
-		xhr.onerror = reject;
-		xhr.timeout = timeoutLength;
-		xhr.ontimeout = () => {
-			if (timeoutCount > 1)
-				httpRequest(url, type, data, headers, responseType, readerType, timeoutLength * 2, timeoutCount - 1)
-					.then(resolve)
-					.catch(reject);
-			else reject("Request timed out.");
-		};
-
-		xhr.send(data);
-	});
+	];
 }
 
 /**
@@ -101,8 +115,8 @@ export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTi
 	return new Promise((resolve, reject) => {
 		let request: Promise<any>;
 		if (process.env.NODE_ENV === "production")
-			request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 5000 : 2000);
-		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", noTimeout ? 5000 : 2000);
+			request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 5000 : 2000)[0];
+		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", noTimeout ? 5000 : 2000)[0];
 		request
 			.then(data => {
 				if (type == "DELETE") {
@@ -145,7 +159,34 @@ function decodeData(data: any, onsuccess: (data: any) => void, onerror: (data: a
  * @param url Request URL (relative to server root)
  */
 export function mediaRequest(url: string): Promise<string> {
-	return httpRequest(Platform.urls.serverUrl + url, "GET", null, null, "blob", "readAsDataURL");
+	return httpRequest(Platform.urls.serverUrl + url, "GET", null, null, "blob", "readAsDataURL")[0];
+}
+
+/** HTTP file upload function
+ * @param url Absolute URL of the request
+ * @param data Data object to POST, including file to be uploaded
+ * @returns Promise object representing response data
+ */
+export function httpFileUpload(url: string, data: any, onUploadProgress: (event: ProgressEvent) => void): [Promise<any>, () => Promise<void>] {
+	let formData = new FormData();
+	for (let prop in data) formData.append(prop, data[prop]);
+
+	const headers = process.env.NODE_ENV === "production" ? { Accept: "application/msgpack" } : {};
+	const responseType = process.env.NODE_ENV === "production" ? "blob" : "json";
+	let [request, abort] = httpRequest(Platform.urls.serverUrl + "api/" + url, "POST", formData, headers, responseType, "readAsArrayBuffer", 120000, 1, onUploadProgress);
+
+	return [
+		new Promise((resolve, reject) => {
+			request
+				.then(responseData => {
+					decodeData(responseData, resolve, reject);
+				})
+				.catch(function(error) {
+					decodeData(error, reject, reject);
+				});
+		}),
+		abort
+	];
 }
 
 // Modifications to the Promise prototype to add progress-tracking (for chain promises)

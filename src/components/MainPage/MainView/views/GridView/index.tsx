@@ -1,10 +1,10 @@
-import { Checkbox, Grid, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, Theme, withStyles, withWidth } from "@material-ui/core";
+import { Checkbox, Divider, Grid, Icon, IconButton, ListItemIcon, ListSubheader, Menu, MenuItem, Theme, withStyles, withWidth } from "@material-ui/core";
 import { Breakpoint } from "@material-ui/core/styles/createBreakpoints";
 import { isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
 import { List, ListRowProps } from "react-virtualized";
 import { Input } from "../../../../../controllers/Input";
-import { Face, Model } from "../../../../../models";
+import { Face, Folder, Model } from "../../../../../models";
 import RootModel, { objectSetType } from "../../../../../models/RootModel";
 import { LocationManager } from "../../../../utils";
 import BaseGridCard, { GridCardExport } from "../../cards/BaseGridCard";
@@ -13,6 +13,7 @@ import SelectionManager from "../SelectionManager";
 import View, { ViewProps, ViewState } from "../View";
 import PaginationDisplay from "./PaginationDisplay";
 import ScaleManager from "./ScaleManager";
+import UploadDialog from "./UploadDialog";
 
 /** Height of the MUI ListSubheader (used in scaling) */
 const listSubHeaderHeight = 48;
@@ -41,6 +42,7 @@ interface GridViewState extends ViewState {
 	menuOpen: boolean;
 	menuAnchorEl: HTMLElement;
 	facesUseFileThumbnails: boolean;
+	openDialogUpload: boolean;
 }
 
 /** Data type for GridView props */
@@ -92,6 +94,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 		this.class = this.constructor as typeof GridView;
 
 		this.state.menuOpen = false;
+		this.state.openDialogUpload = false;
 
 		this.getData(props);
 
@@ -299,21 +302,26 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 				)}
 
 				{/* Options menu */}
-				<Menu
-					anchorEl={this.state.menuAnchorEl}
-					open={this.state.menuOpen}
-					onClick={this.menuClose}
-					onClose={this.menuClose}
-					MenuListProps={{ subheader: <ListSubheader>Display Options</ListSubheader> }}
-				>
-					{this.props.rootType === "folders" && (
-						<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })}>
+				<Menu anchorEl={this.state.menuAnchorEl} open={this.state.menuOpen} onClick={this.menuClose} onClose={this.menuClose}>
+					{this.props.rootType === "folders" && [
+						<MenuItem onClick={() => LocationManager.updateQuery({ isf: (!this.props.includeSubfolders).toString() })} key="isf">
 							<ListItemIcon>
 								<Checkbox checked={this.props.includeSubfolders} />
 							</ListItemIcon>
 							Show subfolder contents
-						</MenuItem>
-					)}
+						</MenuItem>,
+
+						this.props.rootId &&
+							Folder.getById(this.props.rootId).allow_upload && [
+								<Divider key="divider" />,
+								<MenuItem onClick={() => this.setState({ openDialogUpload: true })} style={{ paddingTop: 15, paddingBottom: 15 }} key="upload">
+									<ListItemIcon>
+										<Icon>upload</Icon>
+									</ListItemIcon>
+									Upload file(s)
+								</MenuItem>
+							]
+					]}
 
 					{this.props.rootType === "people" && (
 						<MenuItem onClick={() => this.setState({ facesUseFileThumbnails: !this.state.facesUseFileThumbnails })}>
@@ -324,6 +332,9 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 						</MenuItem>
 					)}
 				</Menu>
+
+				{/* File upload dialog */}
+				<UploadDialog open={this.state.openDialogUpload} onClose={() => this.setState({ openDialogUpload: false })} folderId={this.props.rootId} />
 
 				{/* Main virtualised list */}
 				<div onClick={event => !(event.ctrlKey || event.shiftKey) && this.selectionManager.selectAll(false)}>
