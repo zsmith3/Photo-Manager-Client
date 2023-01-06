@@ -11,7 +11,7 @@ import { ModelMeta } from "./Model";
 export class Folder extends BaseFolder {
 	static meta = new ModelMeta<Folder>({
 		modelName: DBTables.Folder,
-		props: ["id", "name", "path", "file_count", "length"],
+		props: ["id", "name", "path", "file_count", "length", "allow_upload"],
 		specialProps: { parent: "parentID", access_groups: "accessGroupIds" }
 	});
 
@@ -24,6 +24,9 @@ export class Folder extends BaseFolder {
 
 	/** Folder size (bytes) */
 	length: number;
+
+	/** Whether users can upload files to this folder */
+	allow_upload: boolean;
 
 	/** Parent folder */
 	get parent() {

@@ -1,12 +1,48 @@
 a {
-    text-decoration: none;
+	text-decoration: none;
 }
 
 *:focus {
-    outline: none;
+	outline: none;
 }
 
 /* Override to make Google Maps autocomplete box visible */
 .pac-container {
-    z-index: 10000;
+	z-index: 10000;
+}
+
+/* Filepond (uploader) sizing */
+
+@media (max-width: 960px) {
+	.filepond--root {
+		width: calc(90vw - 120px);
+	}
+}
+
+@media (min-width: 960px) {
+	.filepond--root {
+		width: 800px;
+	}
+
+	.filepond--item {
+		width: 240px;
+	}
+}
+
+@media (min-width: 1400px) {
+	.filepond--root {
+		width: 1040px;
+	}
+}
+
+@media (min-width: 1600px) {
+	.filepond--root {
+		width: 1280px;
+	}
+}
+
+@media (min-width: 2000px) {
+	.filepond--root {
+		width: 1520px;
+	}
 }

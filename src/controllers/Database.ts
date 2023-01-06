@@ -1,6 +1,6 @@
 import { LocationManager } from "../components/utils";
 import { FilterType } from "../models/Model";
-import { apiRequest, httpMethodTypes } from "../utils";
+import { apiRequest, httpMethodTypes, httpFileUpload } from "../utils";
 
 /** Database table names for different models (used in API urls) */
 export enum DBTables {
@@ -53,6 +53,13 @@ abstract class BaseDatabase {
 	 * @returns Promise representing completion
 	 */
 	abstract delete(table: DBTables, id: number): Promise<any>;
+
+	/**
+	 * Create new model instance with file upload
+	 * @param table Model table name
+	 * @param data Data object, including uploaded file
+	 */
+	abstract uploadFile(table: DBTables, data: any, onProgress: (event: ProgressEvent) => void): [Promise<any>, () => Promise<void>];
 
 	/** Authorisation-related functions */
 	auth: {
@@ -129,6 +136,10 @@ class WebDatabase extends BaseDatabase {
 
 	delete(table: DBTables, id: number): Promise<any> {
 		return this.request("DELETE", table, id);
+	}
+
+	uploadFile(table: DBTables, data: any, onProgress: (event: ProgressEvent) => void) {
+		return httpFileUpload(table + "/", data, onProgress);
 	}
 
 	auth = {

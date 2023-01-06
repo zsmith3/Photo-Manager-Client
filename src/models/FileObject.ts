@@ -1,6 +1,6 @@
-import { GeoTag } from ".";
+import { Folder, GeoTag } from ".";
 import { LocationManager } from "../components/utils";
-import { DBTables } from "../controllers/Database";
+import { DBTables, Database } from "../controllers/Database";
 import { FileImgSizes } from "../controllers/Platform";
 import { AuthGroup } from "./AuthGroup";
 import { BaseImageFile } from "./BaseImageFile";
@@ -92,6 +92,28 @@ export class FileObject extends BaseImageFile {
 		if (this.geotag === null) return "None";
 		else if (this.geotag.area === null) return "None";
 		else return this.geotag.area.name;
+	}
+
+	/**
+	 * Upload a file to the remote database
+	 * @param file User-uploaded File object
+	 * @param folderId ID of folder in which to place file
+	 * @returns Promise representing new FileObject created
+	 */
+	static upload(file: File, folderId: number, onProgress: (event: ProgressEvent) => void): [Promise<any>, () => Promise<void>] {
+		if (!Folder.getById(folderId).allow_upload) throw "Tried to upload a file to a folder which doesn't allow uploads.";
+		const [uploadPromise, abort] = Database.uploadFile(DBTables.File, { file_uploaded: file, folder: folderId }, onProgress);
+		return [
+			new Promise((resolve, reject) => {
+				uploadPromise
+					.then(newFileData => {
+						const newFile = this.addObject(newFileData);
+						resolve(newFile);
+					})
+					.catch(reject);
+			}),
+			abort
+		];
 	}
 
 	/**
