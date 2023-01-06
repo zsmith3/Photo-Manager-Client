@@ -138,6 +138,7 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [ ] (*possibly*) More explicit filtering system
 	- [x] Access to all objects limited by user groups
 		- [x] Guest access available through url-based authorisation
+		- Note: access groups currently behave 'as the user expects' - nothing is automatically changed unless requested. This can allow for odd behaviour, but it is at least fully user-controlled behaviour. It might make sense to remove access groups for folders/albums/people/etc. and instead just look at which files a user has access to, and whether any are included in that album/folder/person/etc.
 - [x] Cross-platform
 	- [x] Web
 	- [x] Mobile application
