@@ -61,6 +61,14 @@ abstract class BaseDatabase {
 	 */
 	abstract uploadFile(table: DBTables, data: any, onProgress: (event: ProgressEvent) => void): [Promise<any>, () => Promise<void>];
 
+	/**
+	 * Create zip folder for download
+	 * @param files IDs of individual files to be downloaded
+	 * @param folders IDs of folders to be downloaded
+	 * @param albums IDs of albums to be downloaded
+	 */
+	abstract createDownload(files: number[], folders: number[], albums: number[]): Promise<any>;
+
 	/** Authorisation-related functions */
 	auth: {
 		/** Current user */
@@ -146,6 +154,10 @@ class WebDatabase extends BaseDatabase {
 
 	uploadFile(table: DBTables, data: any, onProgress: (event: ProgressEvent) => void) {
 		return httpFileUpload(table + "/", data, onProgress);
+	}
+
+	createDownload(files: number[], folders: number[] = [], albums: number[] = []) {
+		return apiRequest("download/", "POST", { files, folders, albums }, 0);
 	}
 
 	auth = {

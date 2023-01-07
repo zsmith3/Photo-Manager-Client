@@ -53,6 +53,13 @@ class FolderCard extends BaseFolderCard<Folder> {
 						</ListItemIcon>
 						Change access
 					</MenuItem>
+
+					<MenuItem key="download" onClick={() => this.state.model.download()}>
+						<ListItemIcon>
+							<Icon>download</Icon>
+						</ListItemIcon>
+						Download folder
+					</MenuItem>
 				</Menu>
 
 				{/* Edit access permissions */}

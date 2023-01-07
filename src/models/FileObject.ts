@@ -5,6 +5,7 @@ import { FileImgSizes } from "../controllers/Platform";
 import { AuthGroup } from "./AuthGroup";
 import { BaseImageFile } from "./BaseImageFile";
 import { ModelMeta } from "./Model";
+import { Platform } from "../controllers/Platform";
 
 /** Possible values for File.type field */
 export type FileTypes = "image" | "video" | "file";
@@ -75,7 +76,7 @@ export class FileObject extends BaseImageFile {
 	accessGroupIds: number[];
 
 	/** File access user group */
-	get access_group(): AuthGroup[] {
+	get access_groups(): AuthGroup[] {
 		return this.accessGroupIds.map(id => AuthGroup.getById(id));
 	}
 
@@ -114,6 +115,15 @@ export class FileObject extends BaseImageFile {
 			}),
 			abort
 		];
+	}
+
+	/**
+	 * Download file(s) as a .zip
+	 * @param fileIds List of IDs of files to be downloaded
+	 */
+	static async download(fileIds: number[]) {
+		const data = await Database.createDownload(fileIds);
+		window.open(data.url);
 	}
 
 	/**

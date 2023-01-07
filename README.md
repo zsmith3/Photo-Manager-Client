@@ -101,7 +101,6 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [ ] Different views
 			- [ ] Map view
 			- [ ] Option to show files containing person or faces within folder
-		- [x] Users can upload files to certain folders
 	- [x] Open file
 		- [x] Image files can be displayed full screen
 			- [x] Images can be panned and zoomed
@@ -112,6 +111,9 @@ Here is a list of existing features, as well as features which I intend to add i
 	- [ ] Accessibility
 		- [ ] Make context menu available anywhere in page
 		- [ ] Make keystrokes for most features
+	- [x] Users can upload files to certain folders
+	- [x] Users can download files/folders/albums
+		- [ ] Provide a progress bar for large downloads
 - [x] Navigation
 	- [x] 3 main hiearachies
 		- [x] Folders
@@ -138,6 +140,7 @@ Here is a list of existing features, as well as features which I intend to add i
 		- [ ] (*possibly*) More explicit filtering system
 	- [x] Access to all objects limited by user groups
 		- [x] Guest access available through url-based authorisation
+		- [ ] Allow users to create access groups and/or urls
 		- [ ] Distinguish between read and write access
 		- Note: access groups currently behave 'as the user expects' - nothing is automatically changed unless requested. This can allow for odd behaviour, but it is at least fully user-controlled behaviour. It might make sense to remove access groups for folders/albums/people/etc. and instead just look at which files a user has access to, and whether any are included in that album/folder/person/etc.
 - [x] Cross-platform

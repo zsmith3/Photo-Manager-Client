@@ -99,7 +99,7 @@ function httpRequest(
  * @param noTimeout Whether to extend timeout on HTTP request (to 5s)
  * @returns Promise object representing API response
  */
-export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTimeout: boolean = false): Promise<any> {
+export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTimeout: boolean | number = false): Promise<any> {
 	var encData;
 	if (process.env.NODE_ENV === "production") {
 		if (data) encData = new Blob([msgpack.encode(data)]);
@@ -114,9 +114,9 @@ export function apiRequest(url: string, type?: httpMethodTypes, data?: any, noTi
 
 	return new Promise((resolve, reject) => {
 		let request: Promise<any>;
-		if (process.env.NODE_ENV === "production")
-			request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", noTimeout ? 5000 : 2000)[0];
-		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", noTimeout ? 5000 : 2000)[0];
+		const timeout = noTimeout === true ? 5000 : noTimeout === false ? 2000 : noTimeout;
+		if (process.env.NODE_ENV === "production") request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "blob", "readAsArrayBuffer", timeout)[0];
+		else request = httpRequest(Platform.urls.serverUrl + "api/" + url, type, encData, headers, "json", "readAsArrayBuffer", timeout)[0];
 		request
 			.then(data => {
 				if (type == "DELETE") {

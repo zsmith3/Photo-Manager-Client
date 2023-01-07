@@ -193,4 +193,10 @@ export class Album extends RootModelWithAccessGroups {
 				.catch(reject);
 		});
 	}
+
+	/** Download this album as a .zip */
+	async download() {
+		const data = await Database.createDownload([], [], [this.id]);
+		window.open(data.url);
+	}
 }

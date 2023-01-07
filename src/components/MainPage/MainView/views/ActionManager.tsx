@@ -145,6 +145,12 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 								<Icon>delete</Icon>
 							</ListItemIcon>
 							Toggle deletion mark
+						</MenuItem>,
+						<MenuItem key="download" onClick={() => FileObject.download(selection)}>
+							<ListItemIcon>
+								<Icon>download</Icon>
+							</ListItemIcon>
+							Download file(s)
 						</MenuItem>
 					]}
 

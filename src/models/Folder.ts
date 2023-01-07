@@ -42,4 +42,10 @@ export class Folder extends BaseFolder {
 	open() {
 		LocationManager.updateLocation("/folders/" + this.id + "/", ["page"]);
 	}
+
+	/** Download this folder as a .zip */
+	async download() {
+		const data = await Database.createDownload([], [this.id]);
+		window.open(data.url);
+	}
 }

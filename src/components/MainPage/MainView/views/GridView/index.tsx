@@ -4,7 +4,7 @@ import { isWidthUp } from "@material-ui/core/withWidth";
 import React, { Fragment } from "react";
 import { List, ListRowProps } from "react-virtualized";
 import { Input } from "../../../../../controllers/Input";
-import { Face, Folder, Model } from "../../../../../models";
+import { Album, Face, Folder, Model } from "../../../../../models";
 import RootModel, { objectSetType } from "../../../../../models/RootModel";
 import { LocationManager } from "../../../../utils";
 import BaseGridCard, { GridCardExport } from "../../cards/BaseGridCard";
@@ -267,17 +267,16 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 							{/* Scaling slider */}
 							{this.scaleManager.render(this.props.classes.scaleSlider)}
 						</Grid>
-						<Grid item md={this.props.rootType === "folders" || this.props.rootType === "people" ? 8 : 9}>
+						<Grid item md={8}>
 							{/* Pagination links */}
 							<PaginationDisplay page={this.props.page} pageSize={this.props.pageSize} totalCount={this.state.data.contents.count} />
 						</Grid>
-						{(this.props.rootType === "folders" || this.props.rootType === "people") && (
-							<Grid item md={1}>
-								<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
-									<Icon>more_vert</Icon>
-								</IconButton>
-							</Grid>
-						)}
+
+						<Grid item md={1}>
+							<IconButton className={this.props.classes.menuButton} onClick={this.menuOpen}>
+								<Icon>more_vert</Icon>
+							</IconButton>
+						</Grid>
 					</Grid>
 				) : (
 					<Fragment>
@@ -322,6 +321,15 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 								</MenuItem>
 							]
 					]}
+
+					{(this.props.rootType === "folders" || this.props.rootType === "albums") && this.props.rootId && (
+						<MenuItem onClick={() => (this.class.rootModelClass as typeof Folder | typeof Album).getById<Folder | Album>(this.props.rootId).download()} key="download">
+							<ListItemIcon>
+								<Icon>download</Icon>
+							</ListItemIcon>
+							Download {this.props.rootType === "folders" ? "folder" : "album"}
+						</MenuItem>
+					)}
 
 					{this.props.rootType === "people" && (
 						<MenuItem onClick={() => this.setState({ facesUseFileThumbnails: !this.state.facesUseFileThumbnails })}>
