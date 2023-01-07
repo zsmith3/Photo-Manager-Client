@@ -3,6 +3,7 @@ import { Album, AuthGroup } from "../../../models";
 import { HoverIconButton, ListDialog, TextDialog } from "../../utils";
 import AlbumListItem from "./AlbumListItem";
 import HierarchyList from "./HierarchyList";
+import { Database } from "../../../controllers/Database";
 
 /** List of Album instances (for root or child albums) */
 export default class AlbumList extends HierarchyList<Album> {
@@ -22,6 +23,8 @@ export default class AlbumList extends HierarchyList<Album> {
 	};
 
 	renderHeaderButton() {
+		if (!Database.auth.isLoggedIn()) return;
+
 		return (
 			<Fragment>
 				<HoverIconButton action={() => this.setState({ openDialogNew: true })} layers={1} style={{ float: "right" }}>

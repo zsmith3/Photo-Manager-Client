@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { FaceImgSizes, Platform } from "../../../controllers/Platform";
 import { AuthGroup, Person, PersonGroup } from "../../../models";
 import { HoverIconButton, ListDialog, LocationManager, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
+import { Database } from "../../../controllers/Database";
 
 /** Individual Person instance display, with menu for modification */
 class PersonListItem extends MountTrackedComponent<{
@@ -74,9 +75,11 @@ class PersonListItem extends MountTrackedComponent<{
 						})`}
 					/>
 
-					<ListItemSecondaryAction>
-						<HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>
-					</ListItemSecondaryAction>
+					{Database.auth.isLoggedIn() && (
+						<ListItemSecondaryAction>
+							<HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>
+						</ListItemSecondaryAction>
+					)}
 				</ListItem>
 
 				{/* Linked menu and dialogs for modifying person */}

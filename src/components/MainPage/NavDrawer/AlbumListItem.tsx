@@ -4,6 +4,7 @@ import { Album, AuthGroup } from "../../../models";
 import { HoverIconButton, ListDialog, SimpleDialog, TextDialog } from "../../utils";
 import AlbumList from "./AlbumList";
 import HierarchyListItem from "./HierarchyListItem";
+import { Database } from "../../../controllers/Database";
 
 /** ListItem to display a single album, with children as collapsible sub-list */
 export default class AlbumListItem extends HierarchyListItem<Album> {
@@ -59,7 +60,7 @@ export default class AlbumListItem extends HierarchyListItem<Album> {
 	dialogClose = type => this.setStateSafe({ ["openDialog" + type]: false, loading: false });
 
 	renderMenuButton() {
-		return <HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>;
+		return Database.auth.isLoggedIn() && <HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>;
 	}
 
 	renderPopups() {

@@ -13,6 +13,7 @@ import { EditorSharedData } from "./BaseEditor";
 import EditorCanvas from "./EditorCanvas";
 import FileInfoPane from "./FileInfoPane";
 import ScanEditorMenu from "./ScanEditorMenu";
+import { Database } from "../../../../controllers/Database";
 
 /** Props type for ImageModal */
 interface Props {
@@ -424,7 +425,7 @@ class ImageModal extends React.Component<Props> {
 					{/* Top bar */}
 					<AppBar style={{ background: "rgba(0, 0, 0, 0.8)" }}>
 						<Toolbar>
-							{this.props.type === "scan" && (
+							{Database.auth.isLoggedIn() && this.props.type === "scan" && (
 								<IconButton onClick={this.toggleEditMode} title={this.state.editMode ? "Save Edits" : "Enter edit mode"}>
 									<Icon className={this.props.classes.editIcon}>{this.state.editMode ? "check" : "create"}</Icon>
 								</IconButton>

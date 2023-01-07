@@ -6,6 +6,7 @@ import { AuthGroup, Folder } from "../../../../models";
 import { ListDialog } from "../../../utils";
 import BaseFolderCard from "./BaseFolderCard";
 import { GridCardExport, GridCardProps } from "./BaseGridCard";
+import { Database } from "../../../../controllers/Database";
 
 /** GridCard for Folder model */
 class FolderCard extends BaseFolderCard<Folder> {
@@ -34,6 +35,8 @@ class FolderCard extends BaseFolderCard<Folder> {
 	closeMenu = () => this.setState({ menuOpen: false });
 
 	renderExtra = () => {
+		if (!Database.auth.isLoggedIn()) return;
+
 		return (
 			<Fragment>
 				<Menu

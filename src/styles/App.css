@@ -14,35 +14,35 @@ a {
 /* Filepond (uploader) sizing */
 
 @media (max-width: 960px) {
-	.filepond--root {
+	.filepond--root, .upload-dialog-text {
 		width: calc(90vw - 120px);
 	}
 }
 
 @media (min-width: 960px) {
-	.filepond--root {
+	.filepond--root, .upload-dialog-text {
 		width: 800px;
 	}
 
-	.filepond--item {
+	.filepond--item, .upload-dialog-text {
 		width: 240px;
 	}
 }
 
 @media (min-width: 1400px) {
-	.filepond--root {
+	.filepond--root, .upload-dialog-text {
 		width: 1040px;
 	}
 }
 
 @media (min-width: 1600px) {
-	.filepond--root {
+	.filepond--root, .upload-dialog-text {
 		width: 1280px;
 	}
 }
 
 @media (min-width: 2000px) {
-	.filepond--root {
+	.filepond--root, .upload-dialog-text {
 		width: 1520px;
 	}
 }

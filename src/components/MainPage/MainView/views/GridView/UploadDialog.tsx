@@ -12,6 +12,7 @@ import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import "filepond/dist/filepond.min.css";
 import { FilePond, registerPlugin } from "react-filepond";
+import Typography from "@material-ui/core/Typography";
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview, FilePondPluginFileValidateSize, FilePondPluginFileValidateType);
 
 interface UploadDialogProps {
@@ -64,8 +65,10 @@ class UploadDialog extends React.Component<UploadDialogProps> {
 						}
 					}}
 				/>
-				Warning: if you attempt to cancel an upload after it has started, the upload may still be completed. If it does not explicitly say cancelled, then it has not been
-				cancelled. Likewise, completed uploads cannot be undone (pressing the undo button will just remove them from this list).
+				<Typography className="upload-dialog-text">
+					Warning: if you attempt to cancel an upload after it has started, the upload may still be completed. If it does not explicitly say cancelled, then it has not been
+					cancelled. Likewise, completed uploads cannot be undone (pressing the undo button will just remove them from this list).
+				</Typography>
 			</SimpleDialog>
 		);
 	}

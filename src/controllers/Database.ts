@@ -63,6 +63,9 @@ abstract class BaseDatabase {
 
 	/** Authorisation-related functions */
 	auth: {
+		/** Current user */
+		user: { username: string; full_name: string };
+
 		/** Local storage of user config settings */
 		config: { desktop_thumb_scale; mobile_thumb_scale; desktop_page_size; mobile_page_size };
 
@@ -71,6 +74,9 @@ abstract class BaseDatabase {
 		 * @returns Promise representing whether or not user is authorised
 		 */
 		checkAuth(): Promise<boolean>;
+
+		/** Check whether user is logged in (vs link auth) */
+		isLoggedIn(): boolean;
 
 		/**
 		 * Log the user in (using localStorage)
@@ -143,6 +149,7 @@ class WebDatabase extends BaseDatabase {
 	}
 
 	auth = {
+		user: null,
 		config: null as { desktop_thumb_scale: number; mobile_thumb_scale: number; desktop_page_size: string; mobile_page_size: string },
 
 		checkAuth(): Promise<any> {
@@ -152,6 +159,7 @@ class WebDatabase extends BaseDatabase {
 						if (data.authenticated) {
 							window.sessionStorage.setItem("csrf_token", data.csrf_token);
 							this.config = data.config;
+							this.user = data.user;
 
 							resolve(data);
 						} else {
@@ -170,6 +178,10 @@ class WebDatabase extends BaseDatabase {
 						resolve(false);
 					});
 			});
+		},
+
+		isLoggedIn() {
+			return this.user.username !== null;
 		},
 
 		/**

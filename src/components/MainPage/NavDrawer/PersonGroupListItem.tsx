@@ -4,6 +4,7 @@ import { Person, PersonGroup } from "../../../models/Person";
 import { HoverIconButton, ListDialog, MountTrackedComponent, SimpleDialog, TextDialog } from "../../utils";
 import PersonList, { SortMethods } from "./PersonList";
 import { AuthGroup } from "../../../models";
+import { Database } from "../../../controllers/Database";
 
 export default class PersonGroupListItem extends MountTrackedComponent<{
 	groupId: number;
@@ -51,7 +52,7 @@ export default class PersonGroupListItem extends MountTrackedComponent<{
 					<ListItemText primary={this.state.group.name} />
 
 					<ListItemSecondaryAction>
-						<HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>
+						{Database.auth.isLoggedIn() && <HoverIconButton action={this.menuOpen}>more_vert</HoverIconButton>}
 
 						<HoverIconButton action={() => this.setState({ openCollapse: !this.state.openCollapse })}>{this.state.openCollapse ? "expand_less" : "expand_more"}</HoverIconButton>
 					</ListItemSecondaryAction>

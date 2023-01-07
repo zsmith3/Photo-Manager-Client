@@ -5,7 +5,7 @@ import { Model } from "../../../models";
 import { HoverIconButton, LocationManager, MountTrackedComponent } from "../../utils";
 
 /** Base class for Album and Folder ListItem */
-export default abstract class HierarchyListItem<M extends Model & { name: string; path: string; file_count: number; children: M[], parent: M }> extends MountTrackedComponent<{
+export default abstract class HierarchyListItem<M extends Model & { name: string; path: string; file_count: number; children: M[]; parent: M }> extends MountTrackedComponent<{
 	modelId: number;
 	indent?: number;
 }> {

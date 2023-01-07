@@ -4,6 +4,7 @@ import React from "react";
 import { FileObject } from "../../../../models";
 import { UpdateHandler } from "../../../../utils";
 import { MountTrackedComponent } from "../../../utils";
+import { Database } from "../../../../controllers/Database";
 
 /** File Info Pane Styles */
 interface FIPStyles<T> {
@@ -119,14 +120,24 @@ class FileInfoPane extends MountTrackedComponent<FIPProps, FIPState> {
 							<Typography color="textPrimary">Notes:</Typography>
 						</Grid>
 						<Grid item xs={12} className={this.props.classes.gridRow}>
-							<TextField multiline value={this.state.editData.notes} onChange={event => this.setState({ editData: { ...this.state.editData, notes: event.target.value } })} />
+							<TextField
+								multiline
+								disabled={!Database.auth.isLoggedIn()}
+								value={this.state.editData.notes}
+								onChange={event => this.setState({ editData: { ...this.state.editData, notes: event.target.value } })}
+							/>
 						</Grid>
 
-						<Grid item xs={12} className={this.props.classes.gridRow}>
-							<Button disabled={this.state.editData.notes === this.state.model.notes || (!this.state.editData.notes && !this.state.model.notes)} onClick={() => this.saveChanges()}>
-								Save
-							</Button>
-						</Grid>
+						{Database.auth.isLoggedIn() && (
+							<Grid item xs={12} className={this.props.classes.gridRow}>
+								<Button
+									disabled={this.state.editData.notes === this.state.model.notes || (!this.state.editData.notes && !this.state.model.notes)}
+									onClick={() => this.saveChanges()}
+								>
+									Save
+								</Button>
+							</Grid>
+						)}
 					</Grid>
 				</MuiThemeProvider>
 			</div>

@@ -4,6 +4,7 @@ import { AuthGroup, PersonGroup } from "../../../models";
 import { HoverIconButton, ListDialog, MountTrackedComponent, TextDialog } from "../../utils";
 import PersonGroupListItem from "./PersonGroupListItem";
 import { SortMethods } from "./PersonList";
+import { Database } from "../../../controllers/Database";
 
 /** List of PersonGroup instances, with modification options */
 export default class PersonGroupList extends MountTrackedComponent<{ height?: string }> {
@@ -44,9 +45,11 @@ export default class PersonGroupList extends MountTrackedComponent<{ height?: st
 							<HoverIconButton action={this.menuOpen} layers={1} style={{ float: "right" }}>
 								more_vert
 							</HoverIconButton>
-							<HoverIconButton action={() => this.setState({ openDialogNew: true })} layers={1} style={{ float: "right" }}>
-								add
-							</HoverIconButton>
+							{Database.auth.isLoggedIn() && (
+								<HoverIconButton action={() => this.setState({ openDialogNew: true })} layers={1} style={{ float: "right" }}>
+									add
+								</HoverIconButton>
+							)}
 						</ListSubheader>
 					}
 				>

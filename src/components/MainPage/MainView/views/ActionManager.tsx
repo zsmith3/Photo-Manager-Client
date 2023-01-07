@@ -8,6 +8,7 @@ import { ListDialog, SimpleDialog } from "../../../utils";
 import GMapDialog from "./GMapDialog";
 import SelectionManager from "./SelectionManager";
 import { ViewState } from "./View";
+import { Database } from "../../../../controllers/Database";
 
 interface ActionManagerProps<S extends ViewState> {
 	rootType: addressRootTypes;
@@ -93,6 +94,8 @@ export default class ActionManager<S extends ViewState> extends React.Component<
 
 	render() {
 		let selection = this.props.selectionManager.view.state.selection;
+
+		if (!Database.auth.isLoggedIn()) return null;
 
 		return (
 			<Fragment>
