@@ -109,6 +109,7 @@ export class FileObject extends BaseImageFile {
 				uploadPromise
 					.then(newFileData => {
 						const newFile = this.addObject(newFileData);
+						Folder.getById(folderId).addFileUpdateProps(newFile.length);
 						resolve(newFile);
 					})
 					.catch(reject);

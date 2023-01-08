@@ -44,6 +44,16 @@ export class Folder extends BaseFolder {
 		LocationManager.updateLocation("/folders/" + this.id + "/", ["page"]);
 	}
 
+	/**
+	 * Recursively (upwards) update length/file count after user upload
+	 * @param fileSize Size of newly uploaded file
+	 */
+	addFileUpdateProps(fileSize: number) {
+		this.file_count += 1;
+        this.length += fileSize;
+        if (this.parent) this.parent.addFileUpdateProps(fileSize);
+	}
+
 	/** Download this folder as a .zip */
 	async download() {
 		const data = await Database.createDownload([], [this.id]);
