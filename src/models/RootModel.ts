@@ -52,7 +52,7 @@ export default class RootModel extends Model {
 	 * @param searchQuery The current search query (null if none)
 	 * @param options Other query parameters
 	 */
-	private static encodeKey(searchQuery?: string, options?: object) {
+	protected static encodeKey(searchQuery?: string, options?: object) {
 		const defaultOptions = { isf: false };
 		return JSON.stringify({ search: searchQuery, ...Object.assign(defaultOptions, options) });
 	}
@@ -64,7 +64,7 @@ export default class RootModel extends Model {
 	protected contents = new Map<string, { count: number; objectIds: number[] }>();
 
 	/** Handler functions to run when the roots/contents are updated */
-	private contentsUpdateHandlers: UpdateHandlerList = new UpdateHandlerList(null, async (contentData: any, success: (data: any) => void, error: (error: any) => void) => {
+	protected contentsUpdateHandlers: UpdateHandlerList = new UpdateHandlerList(null, async (contentData: any, success: (data: any) => void, error: (error: any) => void) => {
 		try {
 			const data = await this.getContents(contentData.page, contentData.pageSize, contentData.searchQuery, contentData.options);
 			success(data);

@@ -6,6 +6,7 @@ import { Database, DBTables } from "../controllers/Database";
 import { BaseFolder } from "./BaseFolder";
 import { FileObject } from "./FileObject";
 import { ModelMeta } from "./Model";
+import RootModel from "./RootModel";
 
 /** Standard file folder model */
 export class Folder extends BaseFolder {
@@ -47,5 +48,21 @@ export class Folder extends BaseFolder {
 	async download() {
 		const data = await Database.createDownload([], [this.id]);
 		window.open(data.url);
+	}
+
+	/**
+	 * Create a new folder as a child of this one
+	 * @param name Name of new folder
+	 */
+	async createChild(name: string) {
+		const data = await Database.create(DBTables.Folder, { name, parent: this.id });
+		const newFolder = Folder.addObject(data);
+		const defaultKey = RootModel.encodeKey(null);
+		for (let entry of this.roots) {
+			if (entry[0] === defaultKey) this.roots.set(entry[0], entry[1].concat([newFolder.id]));
+			else this.roots.delete(entry[0]);
+		}
+		this.contentsUpdateHandlers.handle();
+		return newFolder;
 	}
 }

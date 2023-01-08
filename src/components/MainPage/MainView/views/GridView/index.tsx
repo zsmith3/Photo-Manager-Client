@@ -6,7 +6,7 @@ import { List, ListRowProps } from "react-virtualized";
 import { Input } from "../../../../../controllers/Input";
 import { Album, Face, Folder, Model } from "../../../../../models";
 import RootModel, { objectSetType } from "../../../../../models/RootModel";
-import { LocationManager } from "../../../../utils";
+import { LocationManager, TextDialog } from "../../../../utils";
 import BaseGridCard, { GridCardExport } from "../../cards/BaseGridCard";
 import FileCard from "../../cards/FileCard";
 import SelectionManager from "../SelectionManager";
@@ -43,6 +43,7 @@ interface GridViewState extends ViewState {
 	menuAnchorEl: HTMLElement;
 	facesUseFileThumbnails: boolean;
 	openDialogUpload: boolean;
+	openDialogNewFolder: boolean;
 }
 
 /** Data type for GridView props */
@@ -95,6 +96,7 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 
 		this.state.menuOpen = false;
 		this.state.openDialogUpload = false;
+		this.state.openDialogNewFolder = false;
 
 		this.getData(props);
 
@@ -313,6 +315,12 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 						this.props.rootId &&
 							Folder.getById(this.props.rootId).allow_upload && [
 								<Divider key="divider" />,
+								<MenuItem onClick={() => this.setState({ openDialogNewFolder: true })} key="new_folder">
+									<ListItemIcon>
+										<Icon>create_new_folder</Icon>
+									</ListItemIcon>
+									New folder
+								</MenuItem>,
 								<MenuItem onClick={() => this.setState({ openDialogUpload: true })} style={{ paddingTop: 15, paddingBottom: 15 }} key="upload">
 									<ListItemIcon>
 										<Icon>upload</Icon>
@@ -343,6 +351,16 @@ export abstract class GridView extends View<GridViewState, GridViewProps> {
 
 				{/* File upload dialog */}
 				<UploadDialog open={this.state.openDialogUpload} onClose={() => this.setState({ openDialogUpload: false })} folderId={this.props.rootId} />
+
+				{/* New folder dialog */}
+				<TextDialog
+					open={this.state.openDialogNewFolder}
+					onClose={() => this.setState({ openDialogNewFolder: false })}
+					title="New Folder"
+					actionText="Create"
+					label="Name"
+					action={name => Folder.getById(this.props.rootId).createChild(name)}
+				/>
 
 				{/* Main virtualised list */}
 				<div onClick={event => !(event.ctrlKey || event.shiftKey) && this.selectionManager.selectAll(false)}>
